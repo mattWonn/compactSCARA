@@ -11,6 +11,7 @@ int main(void)
 	return 0;
 
 
+	int thisis = 56;
 	int newitem =43;
     // you yo yo
 	// testing 123
