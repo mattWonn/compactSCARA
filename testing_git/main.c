@@ -14,10 +14,7 @@ int main(void)
 	int thislove = 56;
 	int newitem =43;
     // you yo yo
-	// testing 123
-	// this is
-	//newnew
-	//hello
+	// anyone home?
 
 
 }
