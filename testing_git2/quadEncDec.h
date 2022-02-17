@@ -38,4 +38,14 @@ volatile unsigned char preB;
 volatile unsigned char currA;
 volatile unsigned char currB;
 
+volatile unsigned int prevState2;
+volatile unsigned int currentState2;
+volatile unsigned int dirStatus2;
+volatile signed int posCount2;
+
+volatile unsigned char preA2;
+volatile unsigned char preB2;
+volatile unsigned char currA2;
+volatile unsigned char currB2;
+
 #endif /* QUADENCDEC_H_ */

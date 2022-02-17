@@ -11,7 +11,7 @@
 void timerA0Init(unsigned int pwmFreq);
 char timerA0PwmFreqSet(unsigned int pwmFreq);
 char timerA0DutyCycleSet(unsigned char dutyCycle);
-char timerA02DutyCycleSet(unsigned char dutyCycle);
+char timerA0DutyCycleSet2(unsigned char dutyCycle);
 
 
 

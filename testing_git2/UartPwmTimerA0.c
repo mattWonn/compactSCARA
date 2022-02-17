@@ -23,7 +23,9 @@ void timerA0Init(unsigned int pwmFreq){                                         
     TA0CCR1 = 0;  // capture compare register 1 initialized to 0%
     TA0CCR2 = 0;  // capture compare register 2 initialized to 0%
     TA0CCTL1 |= (OUTMOD_7); // reset set mode (output is reset when the timer counts to the TAxCCRn value, it is set when the time counts to the TAxCCR0 value
+    TA0CCTL2 |= (OUTMOD_7); // reset set mode (output is reset when the timer counts to the TAxCCRn value, it is set when the time counts to the TAxCCR0 value
     TA0EX0 = 0x004;     // bits 000  divide by 1
+
 
     pwmFreqSetRet = timerA0PwmFreqSet(pwmFreq);
 
@@ -102,7 +104,7 @@ char timerA0DutyCycleSet(unsigned char dutyCycle)
                //TA0CCR1 = TA0CCR0+1;  // pwm goes high for braking on vnh7070 board
                TA0CCR1 =0;             // pwm low for braking on cytron driver
                dutyPrev =0;
-               __delay_cycles(5000);  // 1/Mclk * t =  delay for braking
+               __delay_cycles(5000);  // 1/Mclk * t =  delay for braking, this should be a moot line since driver.c has delay
       }
 
       if (ramp >= DUTY_RAMP_MIN && dutyCycle != 0){ // checking if ramping is needed
@@ -117,7 +119,7 @@ char timerA0DutyCycleSet(unsigned char dutyCycle)
                   dutyPrev++;
               percentDuty = (double)dutyPrev/(double)DUTY_INC;
               TA0CCR1 = (percentDuty*(TA0CCR0+1));
-              __delay_cycles(500);                 // 1/Mclk * t = .5second delay for ramping motor
+              __delay_cycles(5000);                 // 1/Mclk * t = .5second delay for ramping motor
           }
       }
       else{
@@ -143,7 +145,7 @@ char timerA0DutyCycleSet(unsigned char dutyCycle)
  * returns 0.  if dutyCycle is not within the range 0:10 then return -1.
  *
  ****************************************/
-char timerA02DutyCycleSet(unsigned char dutyCycle)
+char timerA0DutyCycleSet2(unsigned char dutyCycle)
 {
     volatile signed char value =0;
     volatile unsigned char num = 0;
@@ -153,35 +155,35 @@ char timerA02DutyCycleSet(unsigned char dutyCycle)
     volatile char decreaseDuty =0; // 1 if ramping down
     volatile signed int ramp; // checking if a ramp is needed
 
-    sign = dutyCycle - dutyPrev; // absolute value of difference
+    sign = dutyCycle - dutyPrev2; // absolute value of difference
     if (sign <0)
         ramp = (-1) * sign;
     else
         ramp = sign;
-    if (dutyCycle < dutyPrev) // ramp direction
+    if (dutyCycle < dutyPrev2) // ramp direction
         decreaseDuty =1;
 
 
      if (dutyCycle <= DUTYCYCLEMAX && dutyCycle >= 0){
 
-      if ((clkWise == 1 && prevClkCountNot == 0) || (countClkWise == 1 && prevClkCountNot ==1) || (dutyCycle == DUTY_INC)){  // changing direction, holding PWM high
+      if ((clkWise2 == 1 && prevClkCountNot2 == 0) || (countClkWise2 == 1 && prevClkCountNot2 ==1) || (dutyCycle == DUTY_INC)){  // changing direction, holding PWM high
                //TA0CCR1 = TA0CCR0+1;  // pwm goes high for braking on vnh7070 board
                TA0CCR2 =0;             // pwm low for braking on cytron driver
-               dutyPrev =0;
+               dutyPrev2 =0;
                __delay_cycles(5000);  // 1/Mclk * t =  delay for braking
       }
 
       if (ramp >= DUTY_RAMP_MIN && dutyCycle != 0){ // checking if ramping is needed
               if (decreaseDuty ==1)
-                  num = (dutyPrev - dutyCycle);
+                  num = (dutyPrev2 - dutyCycle);
               else
-                  num = (dutyCycle - dutyPrev);
+                  num = (dutyCycle - dutyPrev2);
           for (start; start<num; start++){
               if (decreaseDuty == 1)
-                  dutyPrev--;         // increase the previous dutyCycle
+                  dutyPrev2--;         // increase the previous dutyCycle
               else
-                  dutyPrev++;
-              percentDuty = (double)dutyPrev/(double)DUTY_INC;
+                  dutyPrev2++;
+              percentDuty = (double)dutyPrev2/(double)DUTY_INC;
               TA0CCR2 = (percentDuty*(TA0CCR0+1));
               __delay_cycles(500);    // 1/Mclk * t = .5second delay for ramping motor
           }
@@ -189,7 +191,7 @@ char timerA02DutyCycleSet(unsigned char dutyCycle)
       else{
           percentDuty = (double)dutyCycle/(double)DUTY_INC;
           TA0CCR2 = (percentDuty*(TA0CCR0+1));
-          dutyPrev = dutyCycle;
+          dutyPrev2 = dutyCycle;
           }
     }
     else

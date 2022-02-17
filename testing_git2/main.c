@@ -61,20 +61,31 @@ int main(void) {
        volatile unsigned char cwRet =0;
        volatile unsigned char ccwRet =0;
 
+       volatile unsigned char counter2 = 0;
+       volatile unsigned char dutyReturned2 =0;
+       volatile unsigned char cwRet2 =0;
+       volatile unsigned char ccwRet2 =0;
+
        prevClkCountNot = 1;
        countClkWise =0;
        clkWise =1;
        dutyPrev = 0;
+
+       prevClkCountNot2 = 1;
+       countClkWise2 =0;
+       clkWise2 =1;
+       dutyPrev2 = 0;
 
        timerA0Init(PWMFREQ);        // initialize TimerA0 and ports
        motorCmdInit(mddCmds); // add new commands to this function and define them in the motor driver.h file
 
        // INA, INB, SEL outputs
        P3OUT |= 0x00;
-       P3DIR |= (BIT0 + BIT1 +BIT2); // pins set as output direction
-       P3OUT &= (~BIT0 & ~BIT1 & ~BIT2); // P3out set to 0 (led's off)
+       P3DIR |= (BIT0 + BIT1 +BIT2 +BIT3 + BIT4 +BIT5); // pins set as output direction
+       P3OUT &= (~BIT0 & ~BIT1 & ~BIT2 & ~BIT3 & ~BIT4 & ~BIT5); // P3out set to 0 (led's off)
    //--------------------------------------
        cwRet = mddCW(dutyPrev);
+       cwRet2 = mddCW2(dutyPrev2);
    //------------- Encoder-----------------
 
 
@@ -99,24 +110,30 @@ int main(void) {
            posCount = 0;
            enterLoop = 0;
 
+           posCount2 = 0;
+           enterLoop2 = 0;
+
     while (1){
 
       char rxGetString[BUFFLEN] = {0};   // reset getString buffer
 
-     /* mddCW(10);
-      __delay_cycles(500000); // 1/2 sec
-     // mddCW(70);
-      __delay_cycles(500000);
-     // mddCCW(70);
-      __delay_cycles(500000);
-      mddCCW(10);
-      __delay_cycles(500000);
+      mddCW(10);
+     // __delay_cycles(5000000); // 1/2 sec
+      mddCW2(10);
+      __delay_cycles(50000000);
+      mddCCW(50);
+      mddCCW2(50);
+      __delay_cycles(50000000);
       mddBrake();
-      __delay_cycles(3000000);*/
+      mddCCW(10);
+      //__delay_cycles(50000000);
+      mddBrake2();
+      mddCCW2(10);
+      __delay_cycles(30000000);
 
 
      // command interpreter input: This should be in its own function
-      returned = usciA1UartGets(&rxGetString);  // get a string from the console
+   /*   returned = usciA1UartGets(&rxGetString);  // get a string from the console
 
       if (returned != 0){
          parseRet = parseCmd(mddCmds, rxGetString); // send string to motor control
@@ -125,7 +142,7 @@ int main(void) {
       }
       else
          numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-
+*/
     }
 
 
