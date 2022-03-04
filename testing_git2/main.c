@@ -17,8 +17,12 @@
  *
  *  using P1.2 as PWM1
  *  using P1.3 as PWM2
- *  using P3.0 as INA
- *  using P3.1 as INB
+ *
+ *  using P3.0 as INA1
+ *  using P3.1 as INB1
+ *
+ *  using P3.3 as INA2
+ *  using P3.4 as INB2
  *
  */
 
@@ -107,29 +111,43 @@ int main(void) {
        //    P2IE &= ~0xFF;       // disable posCount
            __enable_interrupt();
 
+           angJ1Desired =0;
+           angJ2Desired =0;
            posCount = 0;
-           enterLoop = 0;
-
            posCount2 = 0;
-           enterLoop2 = 0;
+           enterLoop = 0;
+        //   enterLoop2 = 0;
 
     while (1){
 
       char rxGetString[BUFFLEN] = {0};   // reset getString buffer
 
-      mddCW(10);
-     // __delay_cycles(5000000); // 1/2 sec
-      mddCW2(10);
-      __delay_cycles(50000000);
-      mddCCW(50);
-      mddCCW2(50);
+      angJ1Desired = 180; // update desired angle
+      enterLoop = 1;
+      while(doneM1 != 1){};
       __delay_cycles(50000000);
       mddBrake();
+      angJ1Desired = 0; // update desired angle
+      enterLoop = 1;
+      while(doneM1 != 1){};
+      __delay_cycles(50000000);
+      mddBrake();
+
+
+      mddCW(10);
+     // __delay_cycles(5000000); // 1/2 sec
+     // mddCW2(10);
+      __delay_cycles(10000000);
+      mddBrake();
       mddCCW(10);
+    //  mddCCW2(50);
+      __delay_cycles(10000000);
+      mddBrake();
+     // mddCCW(10);
       //__delay_cycles(50000000);
-      mddBrake2();
-      mddCCW2(10);
-      __delay_cycles(30000000);
+    //  mddBrake2();
+    //  mddCCW2(10);
+    //  __delay_cycles(30000000);
 
 
      // command interpreter input: This should be in its own function

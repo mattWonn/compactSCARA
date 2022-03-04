@@ -56,44 +56,58 @@ void updateTimer(){
     volatile double angJ1Current;
     volatile double voutM1;
     volatile signed int sendPWM;
+    volatile int dir1;
+
+
+    volatile unsigned int currentPul2;
+    volatile double error2;
+    volatile double angJ1Current2;
+    volatile double voutM2;
+    volatile signed int sendPWM2;
+
 
 
     if (enterLoop == 1){
+        doneM1 =0;
 
         // need to change posCount to long signed int
         angJ1Current = (posCount) * DEG_PER_PUL;
-
         error = angJ1Desired - angJ1Current;
+       // angJ2Current = (posCount2) * DEG_PER_PUL;
+     //   error2 = angJ2Desired - angJ2Current;
+
         if (error < 1  && error > -1) // uncertainty.
+        {
             error = 0;
-
+            enterLoop =0;
+            doneM1 =1;
+        }
         voutM1 = SLOPE*error;
-
         sendPWM = round(TRANS_FUNC_V_TO_PWM * voutM1);
+
+
 
         if (error == 0) // stop here
             mddCW(0);
 
-        if (sendPWM > 90) // constrain limits
-            sendPWM =90;
-        else if (sendPWM < -90)
-            sendPWM = -90;
+        dir1 = sendPWM/-1;
+        if (dir1 >0)
+        sendPWM = -1*sendPWM;
 
-        if (sendPWM < 0 && sendPWM >= -90){
-            if (sendPWM > -5 && sendPWM < 0 && error != 0)
-                sendPWM  = -5;
-            else if (sendPWM <= -55)
-                sendPWM = -55;
-            sendPWM = -1*sendPWM;
-            mddCCW(sendPWM);
+        if (sendPWM > MAX_PWM) // constrain max limits
+           sendPWM = MAX_PWM;
+
+        if (sendPWM > 0 && sendPWM <= MAX_PWM){ // min voltage condition cw
+               if (sendPWM < MIN_VELOCITY && sendPWM > 0 && error != 0) // min speed cw
+                   sendPWM  = MIN_VELOCITY;
+               else if (sendPWM >= MAX_VELOCITY) // max speed cw
+                   sendPWM = MAX_VELOCITY;
         }
-        else if (sendPWM > 0 && sendPWM <= 90){
-            if (sendPWM < 5 && sendPWM > 0 && error != 0)
-                sendPWM  = 5;
-            else if (sendPWM > 55)
-                sendPWM = 55;
+
+        if (dir1 <0)
             mddCW(sendPWM);
-        }
+        else
+            mddCCW(sendPWM);
 
     }
 }

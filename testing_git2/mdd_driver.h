@@ -84,19 +84,27 @@ int executeCmd(CMD *cmdList, int cmdIndex);
 //------- loop and position variables---------
 //#define ANG_RES 0  // N =
 //#define L1 5;
-#define MAX_V 8.1 // 90% * 9V
-#define MIN_V -8.1 // max in negative direction
+#define MAX_V 9.0 // 90% * 9V
+#define MIN_V -9.0 // max in negative direction
 #define MIN_V_MOVE 0.09 // 1% * 9V
-#define SLOPE 0.0225
+
+#define MAX_PWM 90
+#define MAX_VELOCITY 70
+#define MIN_VELOCITY 7
+
+
+#define SLOPE 0.025
 #define DEG_PER_PUL 0.128571
 
 #define TRANS_FUNC_V_TO_PWM 11.1111 //90/8.1
 
-
+volatile int doneM1;
+volatile int doneM2;
 volatile double angJ1Desired;
 volatile double angJ2Desired;
 volatile int enterLoop;
 volatile int enterLoop2;
+
 
 
 //------- motor section-----------------------------
