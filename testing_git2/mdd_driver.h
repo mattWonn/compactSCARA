@@ -89,12 +89,15 @@ int executeCmd(CMD *cmdList, int cmdIndex);
 #define MIN_V_MOVE 0.09 // 1% * 9V
 
 #define MAX_PWM 90
+//#define MAX_VELOCITY 15
+//#define MIN_VELOCITY 7
 #define MAX_VELOCITY 70
-#define MIN_VELOCITY 7
+#define MIN_VELOCITY 10
 
 
 #define SLOPE 0.025
-#define DEG_PER_PUL 0.128571
+//#define DEG_PER_PUL 0.128571//N = 44
+#define DEG_PER_PUL 0.105388//N = 71.165, 3415.92 countable events on O/P shaft
 
 #define TRANS_FUNC_V_TO_PWM 11.1111 //90/8.1
 

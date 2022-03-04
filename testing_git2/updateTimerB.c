@@ -76,7 +76,7 @@ void updateTimer(){
        // angJ2Current = (posCount2) * DEG_PER_PUL;
      //   error2 = angJ2Desired - angJ2Current;
 
-        if (error < 1  && error > -1) // uncertainty.
+        if (error < 2  && error > -2) // uncertainty.
         {
             error = 0;
             enterLoop =0;
@@ -84,7 +84,7 @@ void updateTimer(){
         }
         voutM1 = SLOPE*error;
         sendPWM = round(TRANS_FUNC_V_TO_PWM * voutM1);
-
+        //!!!! change this, only should round up???
 
 
         if (error == 0) // stop here
