@@ -101,10 +101,15 @@ int main(void) {
            ucsiA1UartInit();
            updateTimerBInit();
 
-           prevState = (P2IN & 0x30); // read currentState
+           prevState = CURRSTATE1; // read currentState
            P2IES = prevState;
            preA = (P2IN & 0x20)>>5;
            preB = (P2IN & 0x10)>>4;
+
+           prevState2 = CURRSTATE2; // read currentState
+           P2IES = (prevState2 || P2IES);
+           preA = (P2IN & 0x40)>>6;
+           preB = (P2IN & 0x80)>>7;
 
            P2IFG &= 0x00; // flags are cleared
        //    TA0CCTL1 &= ~CCIFG;
@@ -116,37 +121,49 @@ int main(void) {
            posCount = 0;
            posCount2 = 0;
            enterLoop = 0;
-        //   enterLoop2 = 0;
+           enterLoop2 = 0;
 
     while (1){
 
       char rxGetString[BUFFLEN] = {0};   // reset getString buffer
 
-      angJ1Desired = 180; // update desired angle
-      enterLoop = 1;
-      while(doneM1 != 1){};
+/*    //  angJ1Desired = 180; // update desired angle
+      angJ2Desired = 180;
+    //  enterLoop =1;
+      enterLoop2 = 1;
+    //  while(doneM1 != 1){};
+      while(doneM2 != 1){};
+    //  mddBrake();
+      mddBrake2();
       __delay_cycles(50000000);
-      mddBrake();
-      angJ1Desired = 0; // update desired angle
-      enterLoop = 1;
-      while(doneM1 != 1){};
+ /*    // angJ1Desired = 0; // update desired angle
+      angJ2Desired = 0;
+    //  enterLoop =1;
+      enterLoop2 = 1;
+  //    while(doneM1 != 1){};
+      while(doneM2 != 1){};
+   //   mddBrake();
+      mddBrake2();
       __delay_cycles(50000000);
-      mddBrake();
+*/
 
-
-      mddCW(10);
+  //    mddCW(10);
      // __delay_cycles(5000000); // 1/2 sec
-     // mddCW2(10);
+      mddCW2(20);
+      __delay_cycles(38000000);
+      mddBrake();
+      mddBrake2();
+      __delay_cycles(35000000);
+
+  /*    mddCCW(30);
+      mddCCW2(30);
       __delay_cycles(10000000);
       mddBrake();
-      mddCCW(10);
-    //  mddCCW2(50);
-      __delay_cycles(10000000);
-      mddBrake();
-     // mddCCW(10);
-      //__delay_cycles(50000000);
-    //  mddBrake2();
-    //  mddCCW2(10);
+      mddBrake2();
+    //  mddCCW(10);
+   //   __delay_cycles(50000000);
+   //   mddBrake2();
+   //   mddCCW2(10);
     //  __delay_cycles(30000000);
 
 

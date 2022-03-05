@@ -8,6 +8,10 @@
 #ifndef MDD_DRIVER_H_
 #define MDD_DRIVER_H_
 
+//--------------- motor driver -----------------------
+unsigned int counting1;
+unsigned int counting2;
+
 #define CTRLPORT P3OUT
 
 #define CTRLMASK (BIT0 + BIT1 +BIT2 )
@@ -31,7 +35,8 @@
 #define CTRLCCW2 (CTRLMASK2 & (INB2 & ~INA2 & ~SEL2))
 #define CTRLBRAKE2 (CTRLMASK2 & (~INA2 & ~INB2 & ~SEL2))
 
-//-----------------------------------
+
+//-------- cmdInterpreter -----------
 
 #define NULLNUM 0x00
 #define MAX_ARGS 2
@@ -39,8 +44,6 @@
 
 #define BUFFLEN 60
 
-
-//-------- cmdInterpreter -----------
 #define CMD0 "pwmFreqSet"
 #define CMD0_NARGS 1
 #define CMD1 "moveM1"
@@ -82,6 +85,7 @@ int validateCmd(CMD *cmdList ,char * cmdName);
 int executeCmd(CMD *cmdList, int cmdIndex);
 
 //------- loop and position variables---------
+
 //#define ANG_RES 0  // N =
 //#define L1 5;
 #define MAX_V 9.0 // 90% * 9V
@@ -91,26 +95,29 @@ int executeCmd(CMD *cmdList, int cmdIndex);
 #define MAX_PWM 90
 //#define MAX_VELOCITY 15
 //#define MIN_VELOCITY 7
-#define MAX_VELOCITY 70
-#define MIN_VELOCITY 10
+#define MAX_VELOCITY 12
+#define MIN_VELOCITY 12
 
 
-#define SLOPE 0.025
-//#define DEG_PER_PUL 0.128571//N = 44
+//#define SLOPE 0.025
+#define SLOPE 50 // 100% conversion from 180deg to PWM is 0.55, this number is 0.25 multiplied for integer math
+#define DEG_PER_PUL1 0.128571//N = 44
 #define DEG_PER_PUL 0.105388//N = 71.165, 3415.92 countable events on O/P shaft
+
 
 #define TRANS_FUNC_V_TO_PWM 11.1111 //90/8.1
 
 volatile int doneM1;
 volatile int doneM2;
-volatile double angJ1Desired;
-volatile double angJ2Desired;
+volatile unsigned int angJ1Desired;
+volatile unsigned int angJ2Desired;
 volatile int enterLoop;
 volatile int enterLoop2;
 
 
 
-//------- motor section-----------------------------
+//------- PWM conditions-----------------------------
+
 #define PWMFREQMAX 20000     //18.935?  20kHz?
 #define PWMFREQMIN 100       // 18.9 Hz
 #define PWMFREQ 1000 // current pwm frequency
@@ -120,7 +127,7 @@ volatile int enterLoop2;
 #define DUTY_INC 100
 #define DUTY_RAMP_MIN 60
 
-//---- CW and CCW / brake global vars--------------
+//---- CW and CCW / brake global variabless--------------
 
 unsigned char prevClkCountNot; // 1 = clockwise, 0 = counter clockwise
 unsigned char countClkWise; // current direction

@@ -320,7 +320,7 @@ char mddBrake2()
 
     if (inputRet != -1){
         dutyRet = timerA0DutyCycleSet2(0); // set pwm low
-        __delay_cycles(2000000);// brake signal delay
+        __delay_cycles(10000);// brake signal delay
 
         // decide if normal braking or if braking was used to change directions
         if (prevClkCountNot2 == 1 && clkWise2 == 1){ // same direction braking to stop
