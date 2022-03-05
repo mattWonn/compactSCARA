@@ -52,9 +52,9 @@ void updateTimer(){
 
     _BIS_SR(GIE);
 
-    volatile double error;
-    volatile double angJ1Current;
-    volatile double voutM1;
+    volatile signed int error;
+    volatile signed int angJ1Current;
+    volatile signed int voutM1;
     volatile signed int sendPWM;
     volatile int dir1;
 
@@ -72,24 +72,20 @@ void updateTimer(){
         doneM1 =0;
 
         // need to change posCount to long signed int
+    //    angJ1Current = (posCount) * DEG_PER_PUL1;
         angJ1Current = (posCount) * DEG_PER_PUL1;
-        error = angJ1Desired - angJ1Current;
+        error = (angJ1Desired) - angJ1Current;
 
 
-        if (error < 3  && error > -3) // uncertainty.
+        if (error < 2  && error > -2) // uncertainty.
         {
             error = 0;
             enterLoop =0;
             doneM1 =1;
         }
-        voutM1 = 0.025*error;
-        if (voutM1 > 0 && voutM1 <0.5)
-            voutM1 = 0.5;
-        if (voutM1 < 0 && voutM1 >-0.5)
-            voutM1 = -0.5;
-        sendPWM = round(TRANS_FUNC_V_TO_PWM * voutM1);
-        //!!!! change this, only should round up???
 
+        sendPWM = error * SLOPE;
+        sendPWM = sendPWM/100;
 
         if (error == 0) // stop here
             mddCW(0);
@@ -125,7 +121,7 @@ void updateTimer(){
         error2 = (angJ2Desired) - angJ2Current;
 
 
-        if (error2 < 3  && error2 > -3) // uncertainty.
+        if (error2 < 2  && error2 > -2) // uncertainty.
         {
             error2 = 0;
             enterLoop2 =0;

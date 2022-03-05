@@ -125,29 +125,29 @@ int main(void) {
     while (1){
 
       char rxGetString[BUFFLEN] = {0};   // reset getString buffer
-
-     // angJ1Desired = 180; // update desired angle
-  /*    angJ2Desired = 180;
-     // enterLoop =1;
+/*
+      angJ1Desired = 180; // update desired angle
+      angJ2Desired = 180;
+      enterLoop =1;
       enterLoop2 = 1;
-    //  while(doneM1 != 1){};
+      while(doneM1 != 1){};
       while(doneM2 != 1){};
-    //  mddBrake();
+      mddBrake();
       mddBrake2();
       __delay_cycles(50000000);
- /*    // angJ1Desired = 0; // update desired angle
+      angJ1Desired = 0; // update desired angle
       angJ2Desired = 0;
-    //  enterLoop =1;
+      enterLoop =1;
       enterLoop2 = 1;
-  //    while(doneM1 != 1){};
+      while(doneM1 != 1){};
       while(doneM2 != 1){};
-   //   mddBrake();
+      mddBrake();
       mddBrake2();
       __delay_cycles(50000000);
-*/
+      */
+
 
       mddCW(10);
-     // __delay_cycles(5000000); // 1/2 sec
       mddCW2(20);
       __delay_cycles(15000000);
       mddBrake();

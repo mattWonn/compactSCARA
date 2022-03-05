@@ -95,7 +95,7 @@ int executeCmd(CMD *cmdList, int cmdIndex);
 #define MAX_PWM 90
 //#define MAX_VELOCITY 15
 //#define MIN_VELOCITY 7
-#define MAX_VELOCITY 12
+#define MAX_VELOCITY 50
 #define MIN_VELOCITY 12
 
 
