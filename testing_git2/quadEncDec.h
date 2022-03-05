@@ -11,18 +11,17 @@
 #define CHAMASK 0xDF
 #define CHBMASK 0xEF
 
-#define CH2A BIT6
-#define CH2B BIT7
+#define CH2B BIT6
+#define CH2A BIT7
 #define CHA BIT5
 #define CHB BIT4
 #define CURRSTATE1 (P2IN & 0x30)
 #define CURRSTATE2 (P2IN & 0xC0)
 
-#define PORT2DIR P2DIR &= (~CHB &~ CHA &~ CH2B &~ CH2A ) // input, this is wrong!!!!!!!!!!!!
+#define PORT2DIR P2DIR &= (~CHB &~ CHA &~ CH2B &~ CH2A ) // input
 //#define PORT2IN P2IN |= (CHB | CHA | CH2B | CH2A ) // read only
-//#define RISISTOREN P2REN |= ( CHB | CHA |CH2B | CH2A) // resistors enabled
 #define CLEARFLAGS P2IFG = 0x00
-#define INTERUPTEN P2IE |= (CHB | CHA | CH2B | CH2B) //
+#define INTERUPTEN P2IE |= (CHB | CHA | CH2B | CH2A) //
 
 
 void quadEncInit();

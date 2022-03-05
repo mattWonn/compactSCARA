@@ -102,14 +102,13 @@ int main(void) {
            updateTimerBInit();
 
            prevState = CURRSTATE1; // read currentState
-           P2IES = prevState;
            preA = (P2IN & 0x20)>>5;
            preB = (P2IN & 0x10)>>4;
 
            prevState2 = CURRSTATE2; // read currentState
-           P2IES = (prevState2 || P2IES);
-           preA = (P2IN & 0x40)>>6;
-           preB = (P2IN & 0x80)>>7;
+           P2IES = (prevState2 + prevState);
+           preB2 = (P2IN & 0x40)>>6;
+           preA2 = (P2IN & 0x80)>>7;
 
            P2IFG &= 0x00; // flags are cleared
        //    TA0CCTL1 &= ~CCIFG;
@@ -127,9 +126,9 @@ int main(void) {
 
       char rxGetString[BUFFLEN] = {0};   // reset getString buffer
 
-/*    //  angJ1Desired = 180; // update desired angle
-      angJ2Desired = 180;
-    //  enterLoop =1;
+     // angJ1Desired = 180; // update desired angle
+  /*    angJ2Desired = 180;
+     // enterLoop =1;
       enterLoop2 = 1;
     //  while(doneM1 != 1){};
       while(doneM2 != 1){};
@@ -147,10 +146,10 @@ int main(void) {
       __delay_cycles(50000000);
 */
 
-  //    mddCW(10);
+      mddCW(10);
      // __delay_cycles(5000000); // 1/2 sec
       mddCW2(20);
-      __delay_cycles(38000000);
+      __delay_cycles(15000000);
       mddBrake();
       mddBrake2();
       __delay_cycles(35000000);
