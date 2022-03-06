@@ -107,8 +107,6 @@ int executeCmd(CMD *cmdList, int cmdIndex);
 
 #define TRANS_FUNC_V_TO_PWM 11.1111 //90/8.1
 
-volatile int doneM1;
-volatile int doneM2;
 volatile unsigned int angJ1Desired;
 volatile unsigned int angJ2Desired;
 volatile int enterLoop;
