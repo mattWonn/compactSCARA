@@ -149,7 +149,7 @@ int main(void) {
 
       mddCW(10);
       mddCW2(20);
-      __delay_cycles(15000000);
+      __delay_cycles(55000000);
       mddBrake();
       mddBrake2();
       __delay_cycles(35000000);

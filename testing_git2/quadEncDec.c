@@ -24,11 +24,13 @@ void quadEncInit(){
  __interrupt void Port2_ISR1 (void) // Port 2 interrupt service routine
 {
 
-     if (currentState2 != CURRSTATE2){
-         currentState2 = CURRSTATE2;
+     counting1++;
+    // counting2 = P2IFG & 0xC0;
+     if(P2IFG & 0xC0){
+         currentState2 = (P2IN & 0xC0);
          currB2 = (currentState2 & 0x40)>>6; // /64
          currA2 = (currentState2 & 0x80)>>7; // /128
-         P2IES &= ((currentState+currentState2) & 0xF0);//fixxx
+         P2IES = ((currentState+currentState2) & 0xF0);//fixxx
              if (currB2 ^ preA2){ // CCW
                  posCount2--;
                  dirStatus2 =1;
@@ -43,7 +45,6 @@ void quadEncInit(){
          P2IFG &= ( ~BIT6 & ~BIT7); // flags are cleared when exiting routine
      }
      else{
-
      currentState = CURRSTATE1;
      currA = (currentState & 0x20)>>5; // /32
      currB = (currentState & 0x10)>>4; // /16
@@ -59,7 +60,7 @@ void quadEncInit(){
              // need to add overflow condition for revs
          }
          preA = currA; // only need to update previousA because we are not using preB
-     P2IFG &= ( ~BIT4 & ~BIT5 ); // flags are cleared when exiting routine*/*/
+     P2IFG &= ( ~BIT4 & ~BIT5 ); // flags are cleared when exiting routine*/
      }
 
 
