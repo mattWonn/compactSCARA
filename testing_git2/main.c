@@ -137,11 +137,11 @@ int main(void) {
 
            volatile unsigned int waiting=2;
 
-           scaraState.scaraArm.theta1 =0;
-           scaraState.scaraArm.theta2 =0;
-           scaraState.scaraArm.xPos =30;
-           scaraState.scaraArm.yPos =0;
-           scaraState.scaraArm.armSol =1; //(LHS)
+           scaraStateEnd.scaraArm.theta1 =0;
+           scaraStateEnd.scaraArm.theta2 =0;
+           scaraStateEnd.scaraArm.xPos =15;
+           scaraStateEnd.scaraArm.yPos =0;
+           scaraStateEnd.scaraArm.armSol =1; //(LHS)
 
 
     while (1){// main loop
@@ -168,8 +168,8 @@ int main(void) {
       while (doneM2 !=1){}
       doneM2=0;*/
 
-   //  waiting = scaraFk((scaraState.scaraArm.theta1), (scaraState.scaraArm.theta2), &(scaraState.scaraArm.xPos), &(scaraState.scaraArm.yPos));
-   //   waiting = scaraIk(&(scaraState.scaraArm.theta1), &(scaraState.scaraArm.theta2), (scaraState.scaraArm.xPos), (scaraState.scaraArm.yPos), scaraState.scaraArm.armSol);
+   //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
+   //   waiting = scaraIk(&(scaraStateEnd.scaraArm.theta1), &(scaraStateEnd.scaraArm.theta2), (scaraStateEnd.scaraArm.xPos), (scaraStateEnd.scaraArm.yPos), &(scaraStateEnd.scaraArm.armSol));
 
 
 

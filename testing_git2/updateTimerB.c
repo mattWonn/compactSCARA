@@ -54,14 +54,14 @@ void updateTimer(){
     _BIS_SR(GIE);
 
     volatile signed int error;
-    //volatile signed int angJ1Current;
+    volatile signed int angJ1Current;
     volatile signed int voutM1;
     volatile signed int sendPWM;
     volatile int dir1 = 1;
 
 
     volatile signed int error2;
-    //volatile signed int angJ2Current;
+    volatile signed int angJ2Current;
     volatile signed int voutM2;
     volatile signed int sendPWM2;
     volatile int dir2 =1;
@@ -73,10 +73,8 @@ void updateTimer(){
     if (startM1 == 1){
 
         //------------------- M1 ------------------------
-   //     angJ1Current = (posCount) * DEG_PER_PUL1; // find the current angle
-    //    error = (angJ1Desired) - angJ1Current;// find the error
-        scaraState.scaraArm.theta1 = (posCount) * DEG_PER_PUL1; // find the current angle
-        error = (angJ1Desired) - scaraState.scaraArm.theta1;// find the error
+        angJ1Current = (posCount) * DEG_PER_PUL1; // find the current angle
+        error = (angJ1Desired) - angJ1Current;// find the error
         if (error < 2  && error > -2) // uncertainty.
         {
             error = 0;
@@ -111,10 +109,8 @@ void updateTimer(){
         //------------------------ M2 -----------------------
     if (startM2 == 1){
 
-   //     angJ2Current = (posCount2) * DEG_PER_PUL;// find the current angle
-   //     error2 = (angJ2Desired) - angJ2Current;// find the error
-        scaraState.scaraArm.theta2 = (posCount2) * DEG_PER_PUL; // find the current angle
-        error2 = (angJ2Desired) - scaraState.scaraArm.theta2;// find the error
+        angJ2Current = (posCount2) * DEG_PER_PUL;// find the current angle
+        error2 = (angJ2Desired) - angJ2Current;// find the error
         if (error2 < 2  && error2 > -2){ // uncertainty
             error2 = 0;
             doneM2=1;

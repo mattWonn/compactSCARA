@@ -22,6 +22,18 @@
 #define MIN_ABS_X 0      // min x value
 #define MIN_ABS_Y -30       // min y value
 
+#define W_MAX 180 // deg/s
+#define A_MAX 1080 //deg/s^2
+
+
+typedef struct PARABOLIC_PROFILE{
+     volatile unsigned int controlJoint;
+     volatile double timeMove;
+     volatile double aMaxCTRLJoint;
+     volatile double vMaxCTRLJoint;
+     volatile double aMaxSlowJoint;
+}PARABOLIC_PROFILE;
+
 // definition of a point
 typedef struct POINT_2D {
     volatile double x;
@@ -53,19 +65,24 @@ typedef struct SCARA_TOOL {
 
 // using above structures, define he SCARA ROBOT
 typedef struct SCARA_ROBOT{
+     PARABOLIC_PROFILE scaraVel;
      SCARA_POS scaraArm;
      SCARA_TOOL scaraTool;
      volatile int motorSpeed1;
      volatile int motorSpeed2;
  }SCARA_ROBOT;
 
- SCARA_ROBOT scaraState;
+
+
+ SCARA_ROBOT scaraStateEnd;
+ SCARA_ROBOT scaraStateSet;
 
 
  double DegToRad(double);  // returns angle in radians from input angle in degrees
  double RadToDeg(double);  // returns angle in degrees from input angle in radians
 
+unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2);
 unsigned int scaraFk(signed int ang1, signed int ang2, double* toolX, double* toolY);
-unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, int armSolution);
+unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, int *armSolution);
 
 #endif /* MOVEMENT_H_ */
