@@ -297,7 +297,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
 
         break;
     case 1://---------------move (cw/ccw) (dutyCycle)--------
-        enterLoop = 0;
+        startM1 = 0;
         if (cmdList[1].args[0] == 0){             //  CCW command
             dutySend = cmdList[1].args[1];        //  dutyCycle request
             if (dutySend >= DUTYCYCLEMIN && dutySend <= DUTYCYCLEMAX){  // if dutyCycle is valid
@@ -322,7 +322,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
 
         break;
     case 2://----------------brake()-------------
-        enterLoop = 0;
+        startM1 = 0;
         dutySend = 0;
         result = mddBrake(); // send brake signal
         break;
@@ -331,15 +331,15 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         break;
     case 4://--------------moveJ---------------------
         angJ1Desired = cmdList[4].args[0]; // update desired angle
-        enterLoop = 1;
+        startM1 = 1;
         break;
     case 5://--------------resetCount--------------
-        enterLoop = 0;
+        startM1 = 0;
         posCount =0;
         displayPos();
         break;
     case 6://---------------move (cw/ccw) (dutyCycle)--------
-        enterLoop2 = 0;
+        startM2 = 0;
         if (cmdList[6].args[0] == 0){             //  CCW command
             dutySend2 = cmdList[6].args[1];        //  dutyCycle request
             if (dutySend2 >= DUTYCYCLEMIN && dutySend2 <= DUTYCYCLEMAX){  // if dutyCycle is valid
@@ -364,7 +364,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
 
         break;
     case 7://----------------vnhBrake()-------------
-        enterLoop2 = 0;
+        startM2 = 0;
         dutySend2 = 0;
         result = mddBrake2(); // send brake signal
         break;
@@ -373,10 +373,10 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         break;
     case 9://--------------moveJ---------------------
         angJ2Desired = cmdList[9].args[0]; // update desired angle
-        enterLoop2 = 1;
+        startM2 = 1;
         break;
     case 10://--------------resetCount--------------
-        enterLoop2 = 0;
+        startM2 = 0;
         posCount2 =0;
         displayPos2();
         break;

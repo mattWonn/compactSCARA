@@ -10,6 +10,7 @@
 #include <quadEncDec.h>
 #include <ucsiUart.h>
 #include <mdd_driver.h>
+#include <movement.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -53,34 +54,39 @@ void updateTimer(){
     _BIS_SR(GIE);
 
     volatile signed int error;
-    volatile signed int angJ1Current;
+    //volatile signed int angJ1Current;
     volatile signed int voutM1;
     volatile signed int sendPWM;
     volatile int dir1 = 1;
 
 
     volatile signed int error2;
-    volatile signed int angJ2Current;
+    //volatile signed int angJ2Current;
     volatile signed int voutM2;
     volatile signed int sendPWM2;
     volatile int dir2 =1;
 
+  //  volatile char posPrint[25]; // Uart
+  //  volatile int ret;
 
 
-    if (enterLoop == 1){
+    if (startM1 == 1){
 
         //------------------- M1 ------------------------
-        angJ1Current = (posCount) * DEG_PER_PUL1;
-        error = (angJ1Desired) - angJ1Current;
+   //     angJ1Current = (posCount) * DEG_PER_PUL1; // find the current angle
+    //    error = (angJ1Desired) - angJ1Current;// find the error
+        scaraState.scaraArm.theta1 = (posCount) * DEG_PER_PUL1; // find the current angle
+        error = (angJ1Desired) - scaraState.scaraArm.theta1;// find the error
         if (error < 2  && error > -2) // uncertainty.
         {
             error = 0;
-            enterLoop =0;
+            doneM1=1;
+            startM1 =0;
         }
-        sendPWM = error * SLOPE;
+        sendPWM = error * SLOPE; // calculate the speed signal, get rid of floating point math
         sendPWM = sendPWM/100;
 
-        if (sendPWM < 0){
+        if (sendPWM < 0){ // convert sendPWM to a posotive signal with a direction (dir1)
             sendPWM = sendPWM*-1;
             dir1 = 0; // ccw
         }
@@ -95,27 +101,29 @@ void updateTimer(){
                    sendPWM = MAX_VELOCITY;
         }
 
-        if (dir1 == 1)
+        if (dir1 == 1) // send motor the speed signal based on direction
             mddCW(sendPWM);
         else
             mddCCW(sendPWM);
     }
 
+
         //------------------------ M2 -----------------------
-    if (enterLoop2 == 1){
+    if (startM2 == 1){
 
-        angJ2Current = (posCount2) * DEG_PER_PUL;
-        error2 = (angJ2Desired) - angJ2Current;
-        if (error2 < 2  && error2 > -2) // uncertainty.
-        {
+   //     angJ2Current = (posCount2) * DEG_PER_PUL;// find the current angle
+   //     error2 = (angJ2Desired) - angJ2Current;// find the error
+        scaraState.scaraArm.theta2 = (posCount2) * DEG_PER_PUL; // find the current angle
+        error2 = (angJ2Desired) - scaraState.scaraArm.theta2;// find the error
+        if (error2 < 2  && error2 > -2){ // uncertainty
             error2 = 0;
-            enterLoop2 =0;
-
+            doneM2=1;
+            startM2 =0;
         }
-        sendPWM = error2 * SLOPE;
+        sendPWM = error2 * SLOPE;// calculate the speed signal, get rid of floating point math
         sendPWM = sendPWM/100;
 
-        if (sendPWM < 0){
+        if (sendPWM < 0){// convert sendPWM to a posotive signal with a direction (dir1)
             sendPWM = sendPWM*-1;
             dir2 = 0; // ccw
         }
@@ -130,11 +138,12 @@ void updateTimer(){
                    sendPWM = MAX_VELOCITY;
         }
 
-        if (dir2 == 1)
+        if (dir2 == 1) // send the motor speed signal based on direction
             mddCW2(sendPWM);
         else
             mddCCW2(sendPWM);
     }
+
 }
 
 #pragma vector = TIMER0_B1_VECTOR

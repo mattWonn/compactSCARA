@@ -8,6 +8,7 @@
 #include "quadEncDec.h"
 #include "updateTimerB.h"
 #include "UcsControl.h"
+#include "movement.h"
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -119,25 +120,58 @@ int main(void) {
            angJ2Desired =0;
            posCount = 0;
            posCount2 = 0;
-           enterLoop = 0;
-           enterLoop2 = 0;
+           startM1 = 0;
+           startM2 = 0;
+           doneM1 =0;
+           doneM2 =0;
 
-    while (1){
+
+        /* paste this to send a value to the console
+         *     volatile char posPrint[25]; // Uart
+               volatile int ret;
+        __disable_interrupt();
+        sprintf(posPrint, "Error1 = %d \n\r", error); // insert the number of characters into the display string
+        ret = ucsiA1UartTxString(&posPrint); // print the string
+        __enable_interrupt();
+         */
+
+           volatile unsigned int waiting=2;
+
+           scaraState.scaraArm.theta1 =0;
+           scaraState.scaraArm.theta2 =0;
+           scaraState.scaraArm.xPos =30;
+           scaraState.scaraArm.yPos =0;
+           scaraState.scaraArm.armSol =1; //(LHS)
+
+
+    while (1){// main loop
 
       char rxGetString[BUFFLEN] = {0};   // reset getString buffer
 
-      angJ1Desired = 180; // update desired angle
-      enterLoop =1;
-      __delay_cycles(2000000);
-      angJ2Desired = 180;
-      enterLoop2 = 1;
-      __delay_cycles(45000000);
-      angJ1Desired = -180; // update desired angle
-      enterLoop =1;
-      __delay_cycles(2000000);
-      angJ2Desired = -180;
-      enterLoop2 = 1;
-      __delay_cycles(45000000);
+      angJ1Desired = 90; // update desired angle
+      angJ2Desired = 90;
+      startM1 =1;
+      startM2 =1;
+      while (doneM1 != 1){}
+      doneM1=0;
+      while (doneM2 !=1){}
+      doneM2=0;
+
+      __delay_cycles(20000);
+   //  __delay_cycles(25000000);
+   /*   angJ1Desired = -90; // update desired angle
+      angJ2Desired = -90;
+      startM1 =1;
+      startM2 =1;
+      while (doneM1 != 1){}
+      doneM1=0;
+      while (doneM2 !=1){}
+      doneM2=0;*/
+
+   //  waiting = scaraFk((scaraState.scaraArm.theta1), (scaraState.scaraArm.theta2), &(scaraState.scaraArm.xPos), &(scaraState.scaraArm.yPos));
+   //   waiting = scaraIk(&(scaraState.scaraArm.theta1), &(scaraState.scaraArm.theta2), (scaraState.scaraArm.xPos), (scaraState.scaraArm.yPos), scaraState.scaraArm.armSol);
+
+
 
  //     while(enterLoop != 0){};
  //     while(enterLoop2 != 0){};

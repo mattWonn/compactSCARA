@@ -24,8 +24,6 @@ void quadEncInit(){
  __interrupt void Port2_ISR1 (void) // Port 2 interrupt service routine
 {
 
-     counting1++;
-  //   if(P2IFG & 0xC0){ // check if interrupt is for M2, otherwise it is M1
      if (currentState2 != CURRSTATE2){
          currentState2 = (P2IN & 0xC0);
          currB2 = (currentState2 & 0x40)>>6; // /64
@@ -43,7 +41,6 @@ void quadEncInit(){
          P2IFG &= ( ~BIT6 & ~BIT7); // flags are cleared when exiting routine
      }
      else if (currentState != CURRSTATE1){
-         counting2++;
      currentState = (P2IN &0x30);
      currA = (currentState & 0x20)>>5; // /32
      currB = (currentState & 0x10)>>4; // /16

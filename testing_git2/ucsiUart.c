@@ -53,10 +53,19 @@ void ucsiA1UartInit(){
     UCA1BR0 = LOWBYTE;   // low byte of N = 0x0003 = 0x03
     UCA1MCTL =  UCOS16 + UCBRS_1 + UCBRF_6;*/   // oversampling mode enabled first and second stage modulation
   //           +  UCBRF    // First modulation stage select.  number of BITCLK16 clocks after last falling BITCLK edge
-  ///           +  UCBRS;   // Second mod stage sel.  where m is placed
-    UCA1BR1 = 0x00;    // high byte of N   =  54.6/16  = 3.41   -> 3  -> 0x0003  = 0x00
-    UCA1BR0 = 0x41;   // low byte of N = 0x0003 = 0x03
-    UCA1MCTL =  UCOS16 + UCBRS_0 + UCBRF_6;   // oversampling mode enabled first and second stage modulation
+  ///          +  UCBRS;   // Second mod stage sel.  where m is placed
+
+
+/*19200 baud    UCA1BR1 = 0x00;    // high byte of N   =  0
+    UCA1BR0 = 0x41;   // low byte of 65 -> 0x41
+    UCA1MCTL =  UCOS16 + UCBRS_0 + UCBRF_2;   // oversampling mode enabled first and second stage modulation
+*/
+
+    // 115200 baud
+   UCA1BR1 = 0x00;    // high byte of N   =  0
+    UCA1BR0 = 0x0A;   // low byte of 65 -> 0x41
+    UCA1MCTL =  UCOS16 + UCBRS_0 + UCBRF_14;   // oversampling mode enabled first and second stage modulation
+
 
     UCA1CTL1    &= ~UCSWRST;        //  configured. take state machine out of reset.
 	}
