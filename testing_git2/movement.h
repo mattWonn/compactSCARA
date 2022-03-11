@@ -22,16 +22,18 @@
 #define MIN_ABS_X 0      // min x value
 #define MIN_ABS_Y -30       // min y value
 
-#define W_MAX 180 // deg/s
-#define A_MAX 1080 //deg/s^2
+#define PUL_PER_DEG_N70 9.48866 // 3415.92pul/360deg
+#define T_UPDATE 0.01
+#define W_MAX 360 // deg/s
+#define A_MAX 1130 //deg/s^2
+
+#define MAX_ARRAY 100
 
 
 typedef struct PARABOLIC_PROFILE{
      volatile unsigned int controlJoint;
      volatile double timeMove;
-     volatile double aMaxCTRLJoint;
-     volatile double vMaxCTRLJoint;
-     volatile double aMaxSlowJoint;
+
 }PARABOLIC_PROFILE;
 
 // definition of a point
@@ -80,6 +82,12 @@ typedef struct SCARA_ROBOT{
 
  double DegToRad(double);  // returns angle in radians from input angle in degrees
  double RadToDeg(double);  // returns angle in degrees from input angle in radians
+
+ volatile signed int velArray1 [MAX_ARRAY];
+ volatile signed int posArray1 [MAX_ARRAY];
+ volatile signed int velArray2 [MAX_ARRAY];
+ volatile signed int posArray2 [MAX_ARRAY];
+
 
 unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2);
 unsigned int scaraFk(signed int ang1, signed int ang2, double* toolX, double* toolY);

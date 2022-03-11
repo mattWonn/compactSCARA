@@ -34,9 +34,9 @@ void updateTimerBInit(){
              & ~CCIFG  // clr flags
              & ~COV;
 
-    TB0EX0 &= 0x004;     // bits 000  divide by 5
+    TB0EX0 &= 0x000;     // bits 000  divide by 5
 
-    TB0CTL = (TBSSEL_2 | ID_3 | MC_1 | TBCLR); // Timer_B0 control register, SMCLK, ID_1 SMCLK/ , up mode
+    TB0CTL = (TBSSEL_2 | ID_2 | MC_1 | TBCLR); // Timer_B0 control register, SMCLK, ID_1 SMCLK/ , up mode
 
 }
 /**************************************

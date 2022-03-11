@@ -148,19 +148,8 @@ int main(void) {
 
       char rxGetString[BUFFLEN] = {0};   // reset getString buffer
 
-      angJ1Desired = 90; // update desired angle
+   /*   angJ1Desired = 90; // update desired angle
       angJ2Desired = 90;
-      startM1 =1;
-      startM2 =1;
-      while (doneM1 != 1){}
-      doneM1=0;
-      while (doneM2 !=1){}
-      doneM2=0;
-
-      __delay_cycles(20000);
-   //  __delay_cycles(25000000);
-   /*   angJ1Desired = -90; // update desired angle
-      angJ2Desired = -90;
       startM1 =1;
       startM2 =1;
       while (doneM1 != 1){}
@@ -168,9 +157,21 @@ int main(void) {
       while (doneM2 !=1){}
       doneM2=0;*/
 
+   //   __delay_cycles(20000);
+  /*   __delay_cycles(25000000);
+      angJ1Desired = -90; // update desired angle
+      angJ2Desired = -90;
+      startM1 =1;
+      startM2 =1;
+      while (doneM1 != 1){}
+      doneM1=0;
+      while (doneM2 !=1){}
+      doneM2=0;
+      __delay_cycles(25000000);*/
+
    //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
    //   waiting = scaraIk(&(scaraStateEnd.scaraArm.theta1), &(scaraStateEnd.scaraArm.theta2), (scaraStateEnd.scaraArm.xPos), (scaraStateEnd.scaraArm.yPos), &(scaraStateEnd.scaraArm.armSol));
-
+       waiting = moveJ(0,90,0,45);
 
 
  //     while(enterLoop != 0){};

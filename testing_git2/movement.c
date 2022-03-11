@@ -32,6 +32,17 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
     volatile double aMaxMove2;
     volatile unsigned int masterJoint;
 
+    //----------------------------
+    volatile unsigned int tInc = 0;
+    volatile double velocityDegPerSec;
+    volatile double positionDeg;
+    volatile double velocityDegPerSec2;
+    volatile double positionDeg2;
+    volatile double w = 0;
+
+      volatile char posPrint[45]; // Uart
+      volatile int ret;
+
 
     if (endAng1 <= MAX_ABS_THETA1 && endAng1 >= -MAX_ABS_THETA1){ // check range
         if (endAng2 <= MAX_ABS_THETA2 && endAng2 >= -MAX_ABS_THETA2){ // check range
@@ -49,36 +60,83 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                 deltaD2 = displacement1;
             }
 
-            timeForMove = sqrt((6*deltaD)/A_MAX); // calc T for parabolic profile
-            vMaxMove = (A_MAX*timeForMove)/4; // calc the Vmax for the move
+            timeForMove = sqrt((deltaD*2*PI)/A_MAX); // calc T for parabolic profile
+            w = (2*PI)/timeForMove;
+
+            vMaxMove = (2*A_MAX)/w; // calc the Vmax for the move
 
             if (vMaxMove > W_MAX){// check within the limit of the motor, otherwise you have to recalculate everything
                 vMaxMove = W_MAX;
-                timeForMove = (3*deltaD)/(2*vMaxMove);
-                aMaxMove = (6*deltaD)/(pow(timeForMove,2));
-
-                aMaxMove2 = (6*deltaD2)/(pow(timeForMove,2));
-                // no need to calc vMaxMove2 because it will be under limit guarenteed
+                timeForMove = (2*deltaD)/(W_MAX);
+                aMaxMove = (deltaD*w)/(timeForMove);
+                aMaxMove2 = (deltaD2*w)/(timeForMove);
             }
             else{ // if the velocity is within the limit
-                aMaxMove = (6*deltaD)/(pow(timeForMove,2));
-                aMaxMove2 = (6*deltaD2)/(pow(timeForMove,2));
+                aMaxMove = A_MAX;
+                aMaxMove2 = ((deltaD2*w)/timeForMove);
             }
 
             // assign variables
-            if (masterJoint == 1){
+            if (masterJoint == 1){ // arm one moves further
                 scaraStateSet.scaraVel.controlJoint =1;
                 scaraStateSet.scaraVel.timeMove =timeForMove;
-                scaraStateSet.scaraVel.aMaxCTRLJoint =aMaxMove;
-                scaraStateSet.scaraVel.vMaxCTRLJoint =vMaxMove;
-                scaraStateSet.scaraVel.aMaxSlowJoint =aMaxMove2;
+
+                w = (2*PI)/timeForMove;
+
+                for(tInc; tInc<100; tInc++){
+
+                    velocityDegPerSec = RadToDeg(DegToRad(aMaxMove)/w)  -  RadToDeg(DegToRad(aMaxMove)*(cos(w*(tInc*T_UPDATE)))/w);
+                    velocityDegPerSec2 = RadToDeg(DegToRad(aMaxMove2)/w)  -  RadToDeg(DegToRad(aMaxMove2)*(cos(w*(tInc*T_UPDATE)))/w);
+
+                    positionDeg = RadToDeg((DegToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2));
+                    positionDeg2 = RadToDeg((DegToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2));
+
+                    __disable_interrupt();
+                     sprintf(posPrint, "Velocity1 = %0.1lf,   Position1 = %0.1lf \n\r", velocityDegPerSec, positionDeg); // insert the number of characters into the display string
+                     ret = ucsiA1UartTxString(&posPrint); // print the string
+               //      sprintf(posPrint, "Velocity2 = %0.2lf,   Position2 = %0.2lf \n\n\r", velocityDegPerSec2, positionDeg2); // insert the number of characters into the display string
+               //      ret = ucsiA1UartTxString(&posPrint); // print the string
+                     __enable_interrupt();
+
+                    velArray1[tInc] = round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+                    posArray1[tInc] = round(positionDeg*PUL_PER_DEG_N70);
+
+                    velArray2[tInc] = round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1));
+                    posArray2[tInc] = round(positionDeg*PUL_PER_DEG_N70);
+
+
+
+                }
+
+
             }
-            else if (masterJoint == 2){
+            else if (masterJoint == 2){ // arm two moves further
                 scaraStateSet.scaraVel.controlJoint =2;
                 scaraStateSet.scaraVel.timeMove =timeForMove;
-                scaraStateSet.scaraVel.aMaxCTRLJoint =aMaxMove;
-                scaraStateSet.scaraVel.vMaxCTRLJoint =vMaxMove;
-                scaraStateSet.scaraVel.aMaxSlowJoint =aMaxMove2;
+
+                w = (2*PI)/timeForMove;
+
+                for(tInc; tInc<100; tInc++){
+
+                    velocityDegPerSec = (aMaxMove/w)-((aMaxMove*RadToDeg(cos(w*tInc)))/w);
+                    positionDeg = ((aMaxMove*tInc)/w)-(aMaxMove*RadToDeg(sin(w*tInc))/w);
+                    velocityDegPerSec2 = (aMaxMove2/w)-((aMaxMove2*RadToDeg(cos(w*tInc)))/w);
+                    positionDeg2 = ((aMaxMove2*tInc)/w)-(aMaxMove2*RadToDeg(sin(w*tInc))/w);
+
+                    velArray2[tInc] = velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1); // in units pulses per update
+                    posArray2[tInc] = positionDeg*PUL_PER_DEG_N70;
+
+                    velArray1[tInc] = velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1);
+                    posArray1[tInc] = positionDeg*PUL_PER_DEG_N70;
+
+                   __disable_interrupt();
+                   sprintf(posPrint, "Velocity1 = %d,   Position1 = %d \n\r", velArray1[tInc], posArray1[tInc]); // insert the number of characters into the display string
+                   ret = ucsiA1UartTxString(&posPrint); // print the string
+                   sprintf(posPrint, "Velocity2 = %lf,   Position2 = %d \n\n\r", velArray2[tInc], posArray2[tInc]); // insert the number of characters into the display string
+                   ret = ucsiA1UartTxString(&posPrint); // print the string
+                   __enable_interrupt();
+                }
+
             }
 
 
