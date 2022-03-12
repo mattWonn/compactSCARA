@@ -87,7 +87,7 @@ int executeCmd(CMD *cmdList, int cmdIndex);
 //------- loop and position variables---------
 
 #define MAX_PWM 90
-#define MAX_VELOCITY 50
+#define MAX_VELOCITY 99
 #define MIN_VELOCITY 12
 
 
@@ -96,15 +96,23 @@ int executeCmd(CMD *cmdList, int cmdIndex);
 #define DEG_PER_PUL 0.105388//N = 71.165, 3415.92 countable events on O/P shaft
 
 
+volatile signed int velCount; // units pulses/updatetime
+volatile signed int updateIndex;
+
 volatile signed int angJ1Desired;
 volatile signed int angJ2Desired;
 volatile int startM1;
 volatile int startM2;
+volatile int startMoveJ;
+
+volatile signed int prevPosCount;
+
+volatile double kProportional;
+volatile double kIntegral;
+volatile double velocityConst;
 
 volatile int doneM1;
 volatile int doneM2;
-
-
 
 //------- PWM conditions-----------------------------
 

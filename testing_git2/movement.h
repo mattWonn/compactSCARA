@@ -16,7 +16,7 @@
 #define L1 15       // inner arm length
 #define L2 15       // outer arm length
 #define MAX_ABS_THETA1 90.0       // max angle of  arm 1
-#define MAX_ABS_THETA2 90.0       // max angle of outer arm relative to x axis
+#define MAX_ABS_THETA2 270.0       // max angle of outer arm relative to x axis
 #define MAX_ABS_X 30      // max x value
 #define MAX_ABS_Y 30       // max y value
 #define MIN_ABS_X 0      // min x value
@@ -27,7 +27,7 @@
 #define W_MAX 360 // deg/s
 #define A_MAX 1130 //deg/s^2
 
-#define MAX_ARRAY 100
+#define MAX_ARRAY 101
 
 
 typedef struct PARABOLIC_PROFILE{
@@ -75,7 +75,6 @@ typedef struct SCARA_ROBOT{
  }SCARA_ROBOT;
 
 
-
  SCARA_ROBOT scaraStateEnd;
  SCARA_ROBOT scaraStateSet;
 
@@ -87,6 +86,7 @@ typedef struct SCARA_ROBOT{
  volatile signed int posArray1 [MAX_ARRAY];
  volatile signed int velArray2 [MAX_ARRAY];
  volatile signed int posArray2 [MAX_ARRAY];
+ volatile unsigned int arrayLength ;
 
 
 unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2);

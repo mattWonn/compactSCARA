@@ -58,7 +58,9 @@ void updateTimer(){
     volatile signed int voutM1;
     volatile signed int sendPWM;
     volatile int dir1 = 1;
-
+    volatile signed int prevPosCountHold;
+    volatile signed int velError;
+    volatile signed int posError;
 
     volatile signed int error2;
     volatile signed int angJ2Current;
@@ -66,8 +68,56 @@ void updateTimer(){
     volatile signed int sendPWM2;
     volatile int dir2 =1;
 
-  //  volatile char posPrint[25]; // Uart
-  //  volatile int ret;
+    volatile char posPrint[50]; // Uart
+    volatile int ret;
+
+    if (startMoveJ == 1){
+        updateIndex++;
+        prevPosCountHold = posCount2;
+        velCount = posCount2 - prevPosCount;
+
+        posError = posCount2 - posArray2[updateIndex];
+        velError = velCount - velArray2[updateIndex];
+
+        sendPWM = round(velocityConst*(velArray2[updateIndex] - kIntegral*posError - kProportional*velError));
+      //  sendPWM = round(velocityConst*velArray2[updateIndex]);
+
+        if (updateIndex >= arrayLength-1) // uncertainty.
+        {
+            doneM2=1;
+            startMoveJ =0;
+            prevPosCount =0;
+            updateIndex=0;
+            sendPWM =0;
+        }
+
+          sprintf(posPrint, "sendPWM = %d, velE = %d, posE = %d \n\r", sendPWM, velError, posError); // insert the number of characters into the display string
+          ret = ucsiA1UartTxString(&posPrint); // print the string
+
+
+        if (sendPWM < 0){ // convert sendPWM to a posotive signal with a direction (dir1)
+            sendPWM = sendPWM*-1;
+            dir1 = 0; // ccw
+        }
+
+        if (sendPWM > MAX_PWM) // constrain max limits
+           sendPWM = MAX_PWM;
+
+        if (sendPWM > 0 && sendPWM <= MAX_PWM){ // min voltage condition cw
+               if (sendPWM < MIN_VELOCITY && sendPWM > 0 && error != 0) // min speed cw
+                   sendPWM  = MIN_VELOCITY;
+               else if (sendPWM >= MAX_VELOCITY) // max speed cw
+                   sendPWM = MAX_VELOCITY;
+        }
+
+        if (dir1 == 1) // send motor the speed signal based on direction
+            mddCW2(sendPWM);
+        else
+            mddCCW2(sendPWM);
+
+        prevPosCount = prevPosCountHold;
+
+    }
 
 
     if (startM1 == 1){
@@ -75,6 +125,7 @@ void updateTimer(){
         //------------------- M1 ------------------------
         angJ1Current = (posCount) * DEG_PER_PUL1; // find the current angle
         error = (angJ1Desired) - angJ1Current;// find the error
+
         if (error < 2  && error > -2) // uncertainty.
         {
             error = 0;

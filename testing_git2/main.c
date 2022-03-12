@@ -122,9 +122,14 @@ int main(void) {
            posCount2 = 0;
            startM1 = 0;
            startM2 = 0;
+           startMoveJ =0;
            doneM1 =0;
            doneM2 =0;
+           prevPosCount =0;
 
+           kProportional =1;
+           kIntegral = 1;
+           velocityConst =(100/40);
 
         /* paste this to send a value to the console
          *     volatile char posPrint[25]; // Uart
@@ -171,7 +176,12 @@ int main(void) {
 
    //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
    //   waiting = scaraIk(&(scaraStateEnd.scaraArm.theta1), &(scaraStateEnd.scaraArm.theta2), (scaraStateEnd.scaraArm.xPos), (scaraStateEnd.scaraArm.yPos), &(scaraStateEnd.scaraArm.armSol));
-       waiting = moveJ(0,90,0,45);
+       waiting = moveJ(0,0,0,180);
+       startMoveJ = 1;
+       while (doneM2 != 1){}
+       doneM2=0;
+       while (startMoveJ == 0){};
+
 
 
  //     while(enterLoop != 0){};

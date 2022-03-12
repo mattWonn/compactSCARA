@@ -23,8 +23,10 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
     volatile unsigned int displacement1;
     volatile unsigned int displacement2;
-    volatile unsigned int deltaD;
-    volatile unsigned int deltaD2;
+    volatile signed int direction1 = 0; // 0 is negative, 1 is positive direction
+    volatile signed int direction2 = 0; // 0 is negative, 1 is positive direction
+    volatile signed int deltaD;
+    volatile signed int deltaD2;
     volatile double timeForMove;
     volatile double vMaxMove;
     volatile double aMaxMove;
@@ -35,10 +37,16 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
     //----------------------------
     volatile unsigned int tInc = 0;
     volatile double velocityDegPerSec;
+    volatile signed int velocityCountPerUpdate;
     volatile double positionDeg;
+    volatile signed int positionCounts;
+
     volatile double velocityDegPerSec2;
+    volatile signed int velocityCountPerUpdate2;
     volatile double positionDeg2;
+    volatile signed int positionCounts2;
     volatile double w = 0;
+
 
       volatile char posPrint[45]; // Uart
       volatile int ret;
@@ -51,14 +59,19 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
             if (displacement1 >= displacement2){ // determine which joint has to move the farthest and base calculations on that
                 masterJoint =1;
-                deltaD = displacement1;
-                deltaD2 = displacement2;
+                deltaD = (endAng1 - startAng1);
+                deltaD2 = (endAng2 - startAng2);
             }
             else{
                 masterJoint =2;
-                deltaD = displacement2;
-                deltaD2 = displacement1;
+                deltaD = (endAng2 - startAng2);
+                deltaD2 = (endAng1 - startAng1);
             }
+
+            if (endAng1 > startAng1)
+                direction1=1;
+            if (endAng2 > startAng2)
+                direction2=1;
 
             timeForMove = sqrt((deltaD*2*PI)/A_MAX); // calc T for parabolic profile
             w = (2*PI)/timeForMove;
@@ -83,32 +96,32 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
                 w = (2*PI)/timeForMove;
 
-                for(tInc; tInc<100; tInc++){
+                arrayLength = (timeForMove/T_UPDATE)+1;
+                for(tInc; tInc<arrayLength; tInc++){
 
                     velocityDegPerSec = RadToDeg(DegToRad(aMaxMove)/w)  -  RadToDeg(DegToRad(aMaxMove)*(cos(w*(tInc*T_UPDATE)))/w);
                     velocityDegPerSec2 = RadToDeg(DegToRad(aMaxMove2)/w)  -  RadToDeg(DegToRad(aMaxMove2)*(cos(w*(tInc*T_UPDATE)))/w);
+                    positionDeg = RadToDeg((DegToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
+                    positionDeg2 = RadToDeg((DegToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
 
-                    positionDeg = RadToDeg((DegToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2));
-                    positionDeg2 = RadToDeg((DegToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2));
+                    velocityCountPerUpdate = round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+                    velocityCountPerUpdate2 = round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+                    positionCounts = round(positionDeg*PUL_PER_DEG_N70);
+                    positionCounts2 = round(positionDeg2*PUL_PER_DEG_N70);
 
-                    __disable_interrupt();
-                     sprintf(posPrint, "Velocity1 = %0.1lf,   Position1 = %0.1lf \n\r", velocityDegPerSec, positionDeg); // insert the number of characters into the display string
+
+                    velArray1[tInc] = velocityCountPerUpdate;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+                    posArray1[tInc] = positionCounts;//round(positionDeg*PUL_PER_DEG_N70);
+                    velArray2[tInc] = velocityCountPerUpdate2;//round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1));
+                    posArray2[tInc] = positionCounts2;//round(positionDeg2*PUL_PER_DEG_N70);
+
+                 /*   __disable_interrupt();
+                     sprintf(posPrint, "Velocity1 = %d,   Position1 = %d \n\r", velArray1[tInc], posArray1[tInc]); // insert the number of characters into the display string
                      ret = ucsiA1UartTxString(&posPrint); // print the string
-               //      sprintf(posPrint, "Velocity2 = %0.2lf,   Position2 = %0.2lf \n\n\r", velocityDegPerSec2, positionDeg2); // insert the number of characters into the display string
-               //      ret = ucsiA1UartTxString(&posPrint); // print the string
-                     __enable_interrupt();
-
-                    velArray1[tInc] = round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
-                    posArray1[tInc] = round(positionDeg*PUL_PER_DEG_N70);
-
-                    velArray2[tInc] = round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1));
-                    posArray2[tInc] = round(positionDeg*PUL_PER_DEG_N70);
-
-
-
+                     sprintf(posPrint, "Velocity2 = %d,   Position2 = %d \n\n\r", velArray2[tInc], posArray2[tInc]); // insert the number of characters into the display string
+                     ret = ucsiA1UartTxString(&posPrint); // print the string
+                     __enable_interrupt();*/
                 }
-
-
             }
             else if (masterJoint == 2){ // arm two moves further
                 scaraStateSet.scaraVel.controlJoint =2;
@@ -116,34 +129,35 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
                 w = (2*PI)/timeForMove;
 
-                for(tInc; tInc<100; tInc++){
+                arrayLength = (timeForMove/T_UPDATE)+1;
+                for(tInc; tInc<arrayLength; tInc++){
 
-                    velocityDegPerSec = (aMaxMove/w)-((aMaxMove*RadToDeg(cos(w*tInc)))/w);
-                    positionDeg = ((aMaxMove*tInc)/w)-(aMaxMove*RadToDeg(sin(w*tInc))/w);
-                    velocityDegPerSec2 = (aMaxMove2/w)-((aMaxMove2*RadToDeg(cos(w*tInc)))/w);
-                    positionDeg2 = ((aMaxMove2*tInc)/w)-(aMaxMove2*RadToDeg(sin(w*tInc))/w);
+                    velocityDegPerSec = RadToDeg(DegToRad(aMaxMove)/w)  -  RadToDeg(DegToRad(aMaxMove)*(cos(w*(tInc*T_UPDATE)))/w);
+                    velocityDegPerSec2 = RadToDeg(DegToRad(aMaxMove2)/w)  -  RadToDeg(DegToRad(aMaxMove2)*(cos(w*(tInc*T_UPDATE)))/w);
+                    positionDeg = RadToDeg((DegToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
+                    positionDeg2 = RadToDeg((DegToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
 
-                    velArray2[tInc] = velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1); // in units pulses per update
-                    posArray2[tInc] = positionDeg*PUL_PER_DEG_N70;
+                    velocityCountPerUpdate = round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+                    velocityCountPerUpdate2 = round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+                    positionCounts = round(positionDeg*PUL_PER_DEG_N70);
+                    positionCounts2 = round(positionDeg2*PUL_PER_DEG_N70);
 
-                    velArray1[tInc] = velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1);
-                    posArray1[tInc] = positionDeg*PUL_PER_DEG_N70;
 
-                   __disable_interrupt();
-                   sprintf(posPrint, "Velocity1 = %d,   Position1 = %d \n\r", velArray1[tInc], posArray1[tInc]); // insert the number of characters into the display string
-                   ret = ucsiA1UartTxString(&posPrint); // print the string
-                   sprintf(posPrint, "Velocity2 = %lf,   Position2 = %d \n\n\r", velArray2[tInc], posArray2[tInc]); // insert the number of characters into the display string
-                   ret = ucsiA1UartTxString(&posPrint); // print the string
-                   __enable_interrupt();
+                    velArray2[tInc] = velocityCountPerUpdate;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+                    posArray2[tInc] = positionCounts;//round(positionDeg*PUL_PER_DEG_N70);
+                    velArray1[tInc] = velocityCountPerUpdate2;//round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1));
+                    posArray1[tInc] = positionCounts2;//round(positionDeg2*PUL_PER_DEG_N70);
+
+              /*      __disable_interrupt();
+                      sprintf(posPrint, "Velocity1 = %d,   Position1 = %d \n\r", velArray1[tInc], posArray1[tInc]); // insert the number of characters into the display string
+                      ret = ucsiA1UartTxString(&posPrint); // print the string
+                      sprintf(posPrint, "Velocity2 = %d,   Position2 = %d \n\n\r", velArray2[tInc], posArray2[tInc]); // insert the number of characters into the display string
+                      ret = ucsiA1UartTxString(&posPrint); // print the string
+                      __enable_interrupt();*/
                 }
-
             }
-
-
-        }
+       }
     }
-
-
     return (exit);
 }
 
