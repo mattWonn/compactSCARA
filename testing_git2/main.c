@@ -176,10 +176,9 @@ int main(void) {
 
    //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
    //   waiting = scaraIk(&(scaraStateEnd.scaraArm.theta1), &(scaraStateEnd.scaraArm.theta2), (scaraStateEnd.scaraArm.xPos), (scaraStateEnd.scaraArm.yPos), &(scaraStateEnd.scaraArm.armSol));
-       waiting = moveJ(0,0,0,180);
+       waiting = moveJ(0,90,0,90);
        startMoveJ = 1;
-       while (doneM2 != 1){}
-       doneM2=0;
+       while (startMoveJ == 1){}
        while (startMoveJ == 0){};
 
 

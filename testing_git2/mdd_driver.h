@@ -96,20 +96,23 @@ int executeCmd(CMD *cmdList, int cmdIndex);
 #define DEG_PER_PUL 0.105388//N = 71.165, 3415.92 countable events on O/P shaft
 
 
-volatile signed int velCount; // units pulses/updatetime
-volatile signed int updateIndex;
-
 volatile signed int angJ1Desired;
 volatile signed int angJ2Desired;
 volatile int startM1;
 volatile int startM2;
+
+volatile signed int updateIndex;
 volatile int startMoveJ;
 
+volatile signed int velCount; // units pulses/updatetime
+volatile signed int velCount2; // units pulses/updatetime
 volatile signed int prevPosCount;
+volatile signed int prevPosCount2;
 
 volatile double kProportional;
 volatile double kIntegral;
 volatile double velocityConst;
+
 
 volatile int doneM1;
 volatile int doneM2;

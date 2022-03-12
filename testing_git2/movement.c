@@ -73,14 +73,15 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
             if (endAng2 > startAng2)
                 direction2=1;
 
-            timeForMove = sqrt((deltaD*2*PI)/A_MAX); // calc T for parabolic profile
+            timeForMove = sqrt((abs(deltaD)*2*PI)/A_MAX); // calc T for parabolic profile
             w = (2*PI)/timeForMove;
+
 
             vMaxMove = (2*A_MAX)/w; // calc the Vmax for the move
 
             if (vMaxMove > W_MAX){// check within the limit of the motor, otherwise you have to recalculate everything
                 vMaxMove = W_MAX;
-                timeForMove = (2*deltaD)/(W_MAX);
+                timeForMove = (2*abs(deltaD))/(W_MAX);
                 aMaxMove = (deltaD*w)/(timeForMove);
                 aMaxMove2 = (deltaD2*w)/(timeForMove);
             }
@@ -97,6 +98,13 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                 w = (2*PI)/timeForMove;
 
                 arrayLength = (timeForMove/T_UPDATE)+1;
+
+                if (direction1 == 0)
+                    aMaxMove = -1*aMaxMove;
+                if (direction2 == 0)
+                    aMaxMove2 = -1*aMaxMove2;
+
+
                 for(tInc; tInc<arrayLength; tInc++){
 
                     velocityDegPerSec = RadToDeg(DegToRad(aMaxMove)/w)  -  RadToDeg(DegToRad(aMaxMove)*(cos(w*(tInc*T_UPDATE)))/w);
@@ -129,6 +137,11 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
                 w = (2*PI)/timeForMove;
 
+                if (direction1 == 0)
+                    aMaxMove = -1*aMaxMove;
+                if (direction2 == 0)
+                    aMaxMove2 = -1*aMaxMove2;
+
                 arrayLength = (timeForMove/T_UPDATE)+1;
                 for(tInc; tInc<arrayLength; tInc++){
 
@@ -156,6 +169,10 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                       __enable_interrupt();*/
                 }
             }
+            velArray2[arrayLength] = 0;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+            posArray2[arrayLength] =  posArray2[arrayLength];//round(positionDeg*PUL_PER_DEG_N70);
+            velArray1[arrayLength] = 0;//round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1));
+            posArray1[arrayLength] = posArray1[arrayLength];//round(positionDeg2*PUL_PER_DEG_N70);
        }
     }
     return (exit);

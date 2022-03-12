@@ -59,65 +59,113 @@ void updateTimer(){
     volatile signed int sendPWM;
     volatile int dir1 = 1;
     volatile signed int prevPosCountHold;
-    volatile signed int velError;
-    volatile signed int posError;
+    volatile signed int velError1;
+    volatile signed int posError1;
 
     volatile signed int error2;
     volatile signed int angJ2Current;
     volatile signed int voutM2;
     volatile signed int sendPWM2;
     volatile int dir2 =1;
+    volatile signed int prevPosCountHold2;
+    volatile signed int velError2;
+    volatile signed int posError2;
+
 
     volatile char posPrint[50]; // Uart
     volatile int ret;
 
     if (startMoveJ == 1){
         updateIndex++;
-        prevPosCountHold = posCount2;
-        velCount = posCount2 - prevPosCount;
 
-        posError = posCount2 - posArray2[updateIndex];
-        velError = velCount - velArray2[updateIndex];
+        prevPosCountHold = posCount;
+        velCount = posCount - prevPosCount;
+        posError1 = posCount - posArray1[updateIndex];
+        velError1 = velCount - velArray1[updateIndex];
 
-        sendPWM = round(velocityConst*(velArray2[updateIndex] - kIntegral*posError - kProportional*velError));
-      //  sendPWM = round(velocityConst*velArray2[updateIndex]);
+        sendPWM = (0.3*(velArray1[updateIndex] - 1*posError1 - 1*velError1));
 
-        if (updateIndex >= arrayLength-1) // uncertainty.
+        if (updateIndex == arrayLength-1) // uncertainty.
         {
+            doneM1=1;
             doneM2=1;
             startMoveJ =0;
             prevPosCount =0;
+            prevPosCount =2;
             updateIndex=0;
             sendPWM =0;
+            sendPWM2 =0;
         }
-
-          sprintf(posPrint, "sendPWM = %d, velE = %d, posE = %d \n\r", sendPWM, velError, posError); // insert the number of characters into the display string
-          ret = ucsiA1UartTxString(&posPrint); // print the string
-
 
         if (sendPWM < 0){ // convert sendPWM to a posotive signal with a direction (dir1)
             sendPWM = sendPWM*-1;
             dir1 = 0; // ccw
         }
-
         if (sendPWM > MAX_PWM) // constrain max limits
            sendPWM = MAX_PWM;
-
-        if (sendPWM > 0 && sendPWM <= MAX_PWM){ // min voltage condition cw
-               if (sendPWM < MIN_VELOCITY && sendPWM > 0 && error != 0) // min speed cw
+        if (sendPWM> 0 && sendPWM <= MAX_PWM){ // min voltage condition cw
+               if (sendPWM < MIN_VELOCITY && sendPWM > 0) // min speed cw
                    sendPWM  = MIN_VELOCITY;
                else if (sendPWM >= MAX_VELOCITY) // max speed cw
                    sendPWM = MAX_VELOCITY;
         }
 
         if (dir1 == 1) // send motor the speed signal based on direction
-            mddCW2(sendPWM);
+            mddCW(sendPWM);
         else
-            mddCCW2(sendPWM);
-
+            mddCCW(sendPWM);
         prevPosCount = prevPosCountHold;
+        //----------------------------------------------
+
+        prevPosCountHold2 = posCount2;
+        velCount2 = posCount2 - prevPosCount2;
+
+        posError2 = posCount2 - posArray2[updateIndex];
+        velError2 = velCount2 - velArray2[updateIndex];
+
+        sendPWM2 = (velocityConst*(velArray2[updateIndex] - kIntegral*posError2 - kProportional*velError2));
+      //  sendPWM = round(velocityConst*velArray2[updateIndex]);
+
+        if (updateIndex == arrayLength-1) // uncertainty.
+        {
+            doneM1=1;
+            doneM2=1;
+            startMoveJ =0;
+            prevPosCount =0;
+            prevPosCount =2;
+            updateIndex=0;
+            sendPWM =0;
+            sendPWM2 =0;
+        }
+
+      //    sprintf(posPrint, "sendPWM = %d, velE = %d, posE = %d \n\r", sendPWM2, velError2, posError2); // insert the number of characters into the display string
+      //    ret = ucsiA1UartTxString(&posPrint); // print the string
+
+        if (sendPWM2 < 0){ // convert sendPWM to a posotive signal with a direction (dir1)
+            sendPWM2 = sendPWM2*-1;
+            dir2 = 0; // ccw
+        }
+
+
+        if (sendPWM2 > MAX_PWM) // constrain max limits
+           sendPWM2 = MAX_PWM;
+        if (sendPWM2 > 0 && sendPWM2 <= MAX_PWM){ // min voltage condition cw
+               if (sendPWM2 < MIN_VELOCITY && sendPWM2 > 0) // min speed cw
+                   sendPWM2  = MIN_VELOCITY;
+               else if (sendPWM2 >= MAX_VELOCITY) // max speed cw
+                   sendPWM2 = MAX_VELOCITY;
+        }
+
+        if (dir2 == 1) // send motor the speed signal based on direction
+            mddCW2(sendPWM2);
+        else
+            mddCCW2(sendPWM2);
+
+        prevPosCount2 = prevPosCountHold2;
 
     }
+
+
 
 
     if (startM1 == 1){
