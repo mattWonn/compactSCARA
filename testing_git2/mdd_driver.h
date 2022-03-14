@@ -126,7 +126,7 @@ volatile int doneM2;
 #define DUTYCYCLEMIN 0
 #define DUTYCYCLEMAX 90
 #define DUTY_INC 100
-#define DUTY_RAMP_MIN 60
+#define DUTY_RAMP_MIN 99
 
 //---- CW and CCW / brake global variabless--------------
 

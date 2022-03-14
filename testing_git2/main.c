@@ -35,10 +35,8 @@ int main(void) {
 
     P4OUT = 0x00;
     P6OUT = 0x00;
-
       _disable_interrupts();
       unsigned char oscFail = 1; // clock set
-
       /*********Set clock frequency*********************************************/
       unsigned char testPass = 1;
       ucsSelSource(1,1,1,1);
@@ -46,6 +44,8 @@ int main(void) {
       if (oscFail)
           return 1;
       /***End***Set clock frequency*********************************************/
+
+
 
     //-----------UART CONTROL ------------------------
     ucsiA1UartInit();
@@ -59,6 +59,8 @@ int main(void) {
 
     UCA1IE |= UCRXIE;         // Receive interrupt en
    __enable_interrupt();
+
+
 
    //------------motor control--------------
        volatile unsigned char counter = 0;
@@ -88,15 +90,14 @@ int main(void) {
        P3OUT |= 0x00;
        P3DIR |= (BIT0 + BIT1 +BIT2 +BIT3 + BIT4 +BIT5); // pins set as output direction
        P3OUT &= (~BIT0 & ~BIT1 & ~BIT2 & ~BIT3 & ~BIT4 & ~BIT5); // P3out set to 0 (led's off)
-   //--------------------------------------
+
        cwRet = mddCW(dutyPrev);
        cwRet2 = mddCW2(dutyPrev2);
+
+
+
    //------------- Encoder-----------------
-
-
-            //volatile char posPrint[MAX_STRING_LEN] = {0}; // Uart
-            //volatile int ret;
-            volatile signed int holdCount;
+           volatile signed int holdCount;
 
            quadEncInit();
            ucsiA1UartInit();
@@ -116,6 +117,10 @@ int main(void) {
        //    P2IE &= ~0xFF;       // disable posCount
            __enable_interrupt();
 
+
+
+   //--------------- Update Loop ----------------
+
            angJ1Desired =0;
            angJ2Desired =0;
            posCount = 0;
@@ -127,19 +132,12 @@ int main(void) {
            doneM2 =0;
            prevPosCount =0;
 
-           kProportional =1;
-           kIntegral = 1;
+           kProportional =1.6;//1.6
+           kIntegral = 1.8; //1.8
            velocityConst =(100/40);
 
-        /* paste this to send a value to the console
-         *     volatile char posPrint[25]; // Uart
-               volatile int ret;
-        __disable_interrupt();
-        sprintf(posPrint, "Error1 = %d \n\r", error); // insert the number of characters into the display string
-        ret = ucsiA1UartTxString(&posPrint); // print the string
-        __enable_interrupt();
-         */
 
+   //----------- Structured Commands -------------------
            volatile unsigned int waiting=2;
 
            scaraStateEnd.scaraArm.theta1 =0;
@@ -149,55 +147,74 @@ int main(void) {
            scaraStateEnd.scaraArm.armSol =1; //(LHS)
 
 
-    while (1){// main loop
+           /*----------------- paste this to send a value to the console--------------------------------
+            *
+                  volatile char posPrint[25]; // Uart
+                  volatile int ret;
 
-      char rxGetString[BUFFLEN] = {0};   // reset getString buffer
+                 sprintf(posPrint, "Error1 = %d \n\r", error); // insert the number of characters into the display string
+                 ret = ucsiA1UartTxString(&posPrint); // print the string
 
-   /*   angJ1Desired = 90; // update desired angle
-      angJ2Desired = 90;
-      startM1 =1;
-      startM2 =1;
-      while (doneM1 != 1){}
-      doneM1=0;
-      while (doneM2 !=1){}
-      doneM2=0;*/
+           */
 
-   //   __delay_cycles(20000);
-  /*   __delay_cycles(25000000);
-      angJ1Desired = -90; // update desired angle
-      angJ2Desired = -90;
-      startM1 =1;
-      startM2 =1;
-      while (doneM1 != 1){}
-      doneM1=0;
-      while (doneM2 !=1){}
-      doneM2=0;
-      __delay_cycles(25000000);*/
+           /*--------------- paste this in the main loop to access the command interpereter------------------
+                 returned = usciA1UartGets(&rxGetString);  // get a string from the console
+
+                 if (returned != 0){
+                    parseRet = parseCmd(mddCmds, rxGetString); // send string to motor control
+                    if (parseRet == -1)
+                        numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
+                 }
+                 else
+                    numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
+           */
+
+
+
+    while (1){//--------------- main loop-------------------
+
+    //  char rxGetString[BUFFLEN] = {0};   // reset getString buffer
+
 
    //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
-   //   waiting = scaraIk(&(scaraStateEnd.scaraArm.theta1), &(scaraStateEnd.scaraArm.theta2), (scaraStateEnd.scaraArm.xPos), (scaraStateEnd.scaraArm.yPos), &(scaraStateEnd.scaraArm.armSol));
-       waiting = moveJ(0,90,0,90);
+   //  waiting = scaraIk(&(scaraStateEnd.scaraArm.theta1), &(scaraStateEnd.scaraArm.theta2), (scaraStateEnd.scaraArm.xPos), (scaraStateEnd.scaraArm.yPos), &(scaraStateEnd.scaraArm.armSol));
+
+        waiting = moveJ(0,50,0,90);
+    //    __delay_cycles(100000);
+        startMoveJ = 1;
+        while (startMoveJ == 1){}
+        startMoveJ =0;
+        __delay_cycles(10000000);
+
+
+        waiting = moveJ(50,40,90,80);
+   //    __delay_cycles(100000);
        startMoveJ = 1;
        while (startMoveJ == 1){}
-       while (startMoveJ == 0){};
+       startMoveJ =0;
+       __delay_cycles(10000000);
+
+       waiting = moveJ(40,50,80,45);
+       startMoveJ = 1;
+       while (startMoveJ == 1){}
+       startMoveJ =0;
+       __delay_cycles(10000000);
+
+       waiting = moveJ(45,20,45,20);
+       startMoveJ = 1;
+       while (startMoveJ == 1){}
+       startMoveJ =0;
+       __delay_cycles(10000000);
+
+       waiting = moveJ(20,0,20,0);
+       startMoveJ = 1;
+       while (startMoveJ == 1){}
+       startMoveJ =0;
+       __delay_cycles(10000000);
 
 
-
- //     while(enterLoop != 0){};
- //     while(enterLoop2 != 0){};
-   /*   mddBrake();
-      mddBrake2();
-      __delay_cycles(25000000);
-      angJ1Desired = 0; // update desired angle
-      angJ2Desired = 0;
-      enterLoop =1;
-      enterLoop2 = 1;
-      while(enterLoop != 0){};
-      while(enterLoop2 != 0){};
-      mddBrake();
-      mddBrake2();
-      __delay_cycles(25000000);*/
-
+       while (startMoveJ == 0){}
+       while (startMoveJ == 0){}
 
 
     /*  mddCW(10);
@@ -225,19 +242,8 @@ int main(void) {
     //  __delay_cycles(30000000);
 
 
-     // command interpreter input: This should be in its own function
-   /*   returned = usciA1UartGets(&rxGetString);  // get a string from the console
-
-      if (returned != 0){
-         parseRet = parseCmd(mddCmds, rxGetString); // send string to motor control
-         if (parseRet == -1)
-             numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-      }
-      else
-         numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-*/
+    */
     }
-
 
     return 0;
 }

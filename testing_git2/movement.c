@@ -21,6 +21,7 @@
 unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2){
     volatile unsigned int exit =0;
 
+    volatile unsigned int x=0;
     volatile unsigned int displacement1;
     volatile unsigned int displacement2;
     volatile signed int direction1 = 0; // 0 is negative, 1 is positive direction
@@ -48,8 +49,8 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
     volatile double w = 0;
 
 
-      volatile char posPrint[45]; // Uart
-      volatile int ret;
+ //     volatile char posPrint[45]; // Uart
+//      volatile int ret;
 
 
     if (endAng1 <= MAX_ABS_THETA1 && endAng1 >= -MAX_ABS_THETA1){ // check range
@@ -82,12 +83,12 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
             if (vMaxMove > W_MAX){// check within the limit of the motor, otherwise you have to recalculate everything
                 vMaxMove = W_MAX;
                 timeForMove = (2*abs(deltaD))/(W_MAX);
-                aMaxMove = (deltaD*w)/(timeForMove);
-                aMaxMove2 = (deltaD2*w)/(timeForMove);
+                aMaxMove = (abs(deltaD)*w)/(timeForMove);
+                aMaxMove2 = (abs(deltaD2)*w)/(timeForMove);
             }
             else{ // if the velocity is within the limit
                 aMaxMove = A_MAX;
-                aMaxMove2 = ((deltaD2*w)/timeForMove);
+                aMaxMove2 = ((abs(deltaD2)*w)/timeForMove);
             }
 
             // assign variables
@@ -112,9 +113,9 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                     positionDeg = RadToDeg((DegToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
                     positionDeg2 = RadToDeg((DegToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
 
-                    velocityCountPerUpdate = round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+                    velocityCountPerUpdate = round(velocityDegPerSec*(7.7778037)*(T_UPDATE/1)); // in units pulses per update
                     velocityCountPerUpdate2 = round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
-                    positionCounts = round(positionDeg*PUL_PER_DEG_N70);
+                    positionCounts = round(positionDeg*7.7778037);
                     positionCounts2 = round(positionDeg2*PUL_PER_DEG_N70);
 
 
@@ -169,11 +170,15 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                       __enable_interrupt();*/
                 }
             }
-            velArray2[arrayLength] = 0;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
-            posArray2[arrayLength] =  posArray2[arrayLength];//round(positionDeg*PUL_PER_DEG_N70);
-            velArray1[arrayLength] = 0;//round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1));
-            posArray1[arrayLength] = posArray1[arrayLength];//round(positionDeg2*PUL_PER_DEG_N70);
-       }
+
+            x = arrayLength-1;
+            for(x;x<201;x++){
+            velArray2[x] = 0;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+            posArray2[x] = posArray2[arrayLength-1];//round(positionDeg*PUL_PER_DEG_N70);
+            velArray1[x] = 0;//round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1));
+            posArray1[x] = posArray1[arrayLength-1];//round(positionDeg2*PUL_PER_DEG_N70);
+            }
+        }
     }
     return (exit);
 }

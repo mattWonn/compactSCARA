@@ -15,8 +15,8 @@
 #define RIGHT_ARM_SOLUTION 0           // index that can be used to indicate right arm
 #define L1 15       // inner arm length
 #define L2 15       // outer arm length
-#define MAX_ABS_THETA1 90.0       // max angle of  arm 1
-#define MAX_ABS_THETA2 270.0       // max angle of outer arm relative to x axis
+#define MAX_ABS_THETA1 180.0       // max angle of  arm 1
+#define MAX_ABS_THETA2 180.0       // max angle of outer arm relative to x axis
 #define MAX_ABS_X 30      // max x value
 #define MAX_ABS_Y 30       // max y value
 #define MIN_ABS_X 0      // min x value
@@ -24,10 +24,10 @@
 
 #define PUL_PER_DEG_N70 9.48866 // 3415.92pul/360deg
 #define T_UPDATE 0.01
-#define W_MAX 360 // deg/s
-#define A_MAX 1130 //deg/s^2
+#define W_MAX 180 // deg/s
+#define A_MAX 566 //deg/s^2
 
-#define MAX_ARRAY 101
+#define MAX_ARRAY 201
 
 
 typedef struct PARABOLIC_PROFILE{

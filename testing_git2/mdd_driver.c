@@ -108,24 +108,15 @@ char mddCW(unsigned char dutyCycle)
     clkWise =1;              // what the user is requesting
     countClkWise=0;          // change the old direction
 
-    if (prevClkCountNot == 0){ // brake process if a change of direction is requested
-        dutyPrev = dutyCycle;
-        mddBrake();
-
-    }
-    else      // same direction requested
-    {
-        dutyRet = timerA0DutyCycleSet(dutyCycle); // send the previously pressed dutyCycle
-
-        if (dutyRet ==0){    // if the duty was changed successfully
-            inputRet = mddInputCtrl(CTRLCW); // send cntrl values to the port
-            if (inputRet == -1)
-                result = -1;
-        }
-        else{
+    if (dutyRet ==0){    // if the duty was changed successfully
+        inputRet = mddInputCtrl(CTRLCW); // send cntrl values to the port
+        if (inputRet == -1)
             result = -1;
-        }
     }
+    else{
+        result = -1;
+    }
+    dutyRet = timerA0DutyCycleSet(dutyCycle); // send the previously pressed dutyCycle
 
     return result;
 }
@@ -139,24 +130,16 @@ char mddCW2(unsigned char dutyCycle)
     clkWise2 =1;              // what the user is requesting
     countClkWise2=0;          // change the old direction
 
-    if (prevClkCountNot2 == 0){ // brake process if a change of direction is requested
-        dutyPrev2 = dutyCycle;
-        mddBrake2();
 
-    }
-    else      // same direction requested
-    {
-        dutyRet = timerA0DutyCycleSet2(dutyCycle); // send the previously pressed dutyCycle
-
-        if (dutyRet ==0){    // if the duty was changed successfully
-            inputRet = mddInputCtrl2(CTRLCW2); // send cntrl values to the port
-            if (inputRet == -1)
-                result = -1;
-        }
-        else{
+    if (dutyRet ==0){    // if the duty was changed successfully
+        inputRet = mddInputCtrl2(CTRLCW2); // send cntrl values to the port
+        if (inputRet == -1)
             result = -1;
-        }
     }
+    else{
+        result = -1;
+    }
+    dutyRet = timerA0DutyCycleSet2(dutyCycle); // send the previously pressed dutyCycle
 
     return result;
 }
@@ -178,25 +161,17 @@ char mddCCW(unsigned char dutyCycle)
         countClkWise = 1;   // what the user is requesting
         clkWise =0;         // change the old direction
 
-        if (prevClkCountNot == 1){   // brake process if a change of direction is requested
-                dutyPrev = dutyCycle;
-                mddBrake();
-
+        if (dutyRet ==0){   // if the duty was changed successfully
+            inputRet = mddInputCtrl(CTRLCCW);   // send cntrl values to the port
+           if (inputRet == -1)
+              result = -1;
         }
-        else   // same direction requested
-        {
-            dutyRet = timerA0DutyCycleSet(dutyCycle);  // send the previously pressed dutyCycle
 
-            if (dutyRet ==0){   // if the duty was changed successfully
-                inputRet = mddInputCtrl(CTRLCCW);   // send cntrl values to the port
-               if (inputRet == -1)
-                  result = -1;
-            }
-
-            else{
-                result = -1;
-            }
+        else{
+            result = -1;
         }
+        dutyRet = timerA0DutyCycleSet(dutyCycle);  // send the previously pressed dutyCycle
+
 
    return result;
 }
@@ -210,25 +185,16 @@ char mddCCW2(unsigned char dutyCycle)
         countClkWise2 = 1;   // what the user is requesting
         clkWise2 =0;         // change the old direction
 
-        if (prevClkCountNot2 == 1){   // brake process if a change of direction is requested
-                dutyPrev2 = dutyCycle;
-                mddBrake2();
+        if (dutyRet ==0){   // if the duty was changed successfully
+             inputRet = mddInputCtrl2(CTRLCCW2);   // send cntrl values to the port
+            if (inputRet == -1)
+               result = -1;
+         }
 
-        }
-        else   // same direction requested
-        {
-            dutyRet = timerA0DutyCycleSet2(dutyCycle);  // send the previously pressed dutyCycle
-
-            if (dutyRet ==0){   // if the duty was changed successfully
-                inputRet = mddInputCtrl2(CTRLCCW2);   // send cntrl values to the port
-               if (inputRet == -1)
-                  result = -1;
-            }
-
-            else{
-                result = -1;
-            }
-        }
+         else{
+             result = -1;
+         }
+        dutyRet = timerA0DutyCycleSet2(dutyCycle);  // send the previously pressed dutyCycle
 
    return result;
 }
@@ -271,7 +237,7 @@ char mddBrake()
                 if (inputRet == -1)
                       result = -1;
         }
-        else if (prevClkCountNot == 0 && clkWise == 1){  // ramp back up to the previous dutyCycle
+/*        else if (prevClkCountNot == 0 && clkWise == 1){  // ramp back up to the previous dutyCycle
                   inputRet = mddInputCtrl(CTRLCW); // send ctrl values to output
                       if (inputRet != -1){
                           dutyRet = timerA0DutyCycleSet(dutyEnd); // set dutyCycle as it was previously
@@ -295,7 +261,7 @@ char mddBrake()
                       else
                          result = -1;
 
-        }
+        }*/
         else
             result =-1;
     }
@@ -333,7 +299,7 @@ char mddBrake2()
                 if (inputRet == -1)
                       result = -1;
         }
-        else if (prevClkCountNot2 == 0 && clkWise2 == 1){  // ramp back up to the previous dutyCycle
+      /*  else if (prevClkCountNot2 == 0 && clkWise2 == 1){  // ramp back up to the previous dutyCycle
                   inputRet = mddInputCtrl2(CTRLCW2); // send ctrl values to output
                       if (inputRet != -1){
                           dutyRet = timerA0DutyCycleSet2(dutyEnd); // set dutyCycle as it was previously
@@ -357,7 +323,7 @@ char mddBrake2()
                       else
                          result = -1;
 
-        }
+        }*/
         else
             result =-1;
     }
