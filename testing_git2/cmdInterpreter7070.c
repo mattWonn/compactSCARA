@@ -60,6 +60,9 @@ void motorCmdInit(CMD *vnhCmdList){
     vnhCmdList[10].name = CMD10;
     vnhCmdList[10].nArgs = CMD10_NARGS;
 
+    vnhCmdList[11].name = CMD11;
+    vnhCmdList[11].nArgs = CMD11_NARGS;
+
 
 }
 /***********************************
@@ -218,6 +221,40 @@ int parseCmd(CMD * cmdList, char * cmdLine){
             value = executeCmd(cmdList, index); // send index and command to execute
         }
 
+    }//------------------- moveJ cmd11 ---------------------
+    else if (index == 11){
+        while (token != NULL){            // while token is not the last character in the buffer
+
+            token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
+
+        if (n == 1){  // first argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+                token = NULL;  // this is the last argument for the command
+            }
+            else if (n == 1){  // second argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+                token = NULL;  // this is the last argument for the command
+            }
+            else if (n == 1){  // third argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+                token = NULL;  // this is the last argument for the command
+            }
+            else if (n == 1){  // fourth argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+                token = NULL;  // this is the last argument for the command
+        }
+        n++;
+        }
+        if (nArgs > cmdList[index].nArgs || nArgs < cmdList[index].nArgs){ // too many arguments in command
+             value = -1;  // parseCmd exits with invalid data
+        }
+        if (value == 0){
+            value = executeCmd(cmdList, index); // send index and command to execute
+        }
     }
     else
         value = -1;
@@ -380,6 +417,13 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         posCount2 =0;
         displayPos2();
         break;
+    case 11://-------------moveJ--------------------
+        __disable_interrupt();
+        result = moveJ(cmdList[11].args[0],cmdList[11].args[1],cmdList[11].args[2],cmdList[11].args[3]);
+        __enable_interrupt();
+        startMoveJ = 1;
+        while (startMoveJ == 1){}
+        startMoveJ =0;
     }//---------------------------------
 
  return result;

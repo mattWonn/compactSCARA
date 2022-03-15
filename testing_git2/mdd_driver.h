@@ -52,7 +52,7 @@ unsigned int counting2;
 #define CMD2_NARGS 0
 #define CMD3 "displayPosM1"
 #define CMD3_NARGS 0
-#define CMD4 "moveJM1"
+#define CMD4 "movePosM1"
 #define CMD4_NARGS 1
 #define CMD5 "resetCountM1"
 #define CMD5_NARGS 0
@@ -63,10 +63,13 @@ unsigned int counting2;
 #define CMD7_NARGS 0
 #define CMD8 "displayPosM2"
 #define CMD8_NARGS 0
-#define CMD9 "moveJM2"
+#define CMD9 "movePosM2"
 #define CMD9_NARGS 1
 #define CMD10 "resetCountM2"
 #define CMD10_NARGS 0
+
+#define CMD11 "moveJ"
+#define CMD11_NARGS 4
 
 volatile unsigned char data;
 volatile unsigned char x;
@@ -121,7 +124,7 @@ volatile int doneM2;
 
 #define PWMFREQMAX 20000     //18.935?  20kHz?
 #define PWMFREQMIN 100       // 18.9 Hz
-#define PWMFREQ 1000 // current pwm frequency
+#define PWMFREQ 10000 // current pwm frequency
 
 #define DUTYCYCLEMIN 0
 #define DUTYCYCLEMAX 90

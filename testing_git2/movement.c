@@ -62,17 +62,22 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                 masterJoint =1;
                 deltaD = (endAng1 - startAng1);
                 deltaD2 = (endAng2 - startAng2);
+                if (endAng1 >= startAng1)
+                    direction1=1;
+                if (endAng2 >= startAng2)
+                    direction2=1;
             }
             else{
                 masterJoint =2;
                 deltaD = (endAng2 - startAng2);
                 deltaD2 = (endAng1 - startAng1);
+                if (endAng1 >= startAng1)
+                    direction2=1;
+                if (endAng2 >= startAng2)
+                    direction1=1;
             }
 
-            if (endAng1 > startAng1)
-                direction1=1;
-            if (endAng2 > startAng2)
-                direction2=1;
+
 
             timeForMove = sqrt((abs(deltaD)*2*PI)/A_MAX); // calc T for parabolic profile
             w = (2*PI)/timeForMove;
@@ -87,7 +92,7 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                 aMaxMove2 = (abs(deltaD2)*w)/(timeForMove);
             }
             else{ // if the velocity is within the limit
-                aMaxMove = A_MAX;
+                aMaxMove = abs(A_MAX);
                 aMaxMove2 = ((abs(deltaD2)*w)/timeForMove);
             }
 
@@ -100,7 +105,8 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
                 arrayLength = (timeForMove/T_UPDATE)+1;
 
-                if (direction1 == 0)
+
+                if (direction1 == 0) // relative to which joint moves the furthest
                     aMaxMove = -1*aMaxMove;
                 if (direction2 == 0)
                     aMaxMove2 = -1*aMaxMove2;
@@ -113,10 +119,10 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                     positionDeg = RadToDeg((DegToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
                     positionDeg2 = RadToDeg((DegToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
 
-                    velocityCountPerUpdate = round(velocityDegPerSec*(7.7778037)*(T_UPDATE/1)); // in units pulses per update
-                    velocityCountPerUpdate2 = round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
-                    positionCounts = round(positionDeg*7.7778037);
-                    positionCounts2 = round(positionDeg2*PUL_PER_DEG_N70);
+                    velocityCountPerUpdate = round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
+                    velocityCountPerUpdate2 = round(velocityDegPerSec2*(7.7778037)*(T_UPDATE/1)); // in units pulses per update
+                    positionCounts = round(positionDeg*PUL_PER_DEG_N70);
+                    positionCounts2 = round(positionDeg2*7.7778037);
 
 
                     velArray1[tInc] = velocityCountPerUpdate;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
@@ -171,13 +177,13 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                 }
             }
 
-            x = arrayLength-1;
+       /*     x = arrayLength-1;
             for(x;x<201;x++){
             velArray2[x] = 0;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
             posArray2[x] = posArray2[arrayLength-1];//round(positionDeg*PUL_PER_DEG_N70);
             velArray1[x] = 0;//round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1));
             posArray1[x] = posArray1[arrayLength-1];//round(positionDeg2*PUL_PER_DEG_N70);
-            }
+            }*/
         }
     }
     return (exit);

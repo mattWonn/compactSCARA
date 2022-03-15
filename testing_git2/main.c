@@ -58,7 +58,7 @@ int main(void) {
     CMD mddCmds[MAX_CMDS]; // array of mddCmds of type CMD
 
     UCA1IE |= UCRXIE;         // Receive interrupt en
-   __enable_interrupt();
+  // __enable_interrupt();
 
 
 
@@ -115,7 +115,7 @@ int main(void) {
            P2IFG &= 0x00; // flags are cleared
        //    TA0CCTL1 &= ~CCIFG;
        //    P2IE &= ~0xFF;       // disable posCount
-           __enable_interrupt();
+      //     __enable_interrupt();
 
 
 
@@ -131,9 +131,11 @@ int main(void) {
            doneM1 =0;
            doneM2 =0;
            prevPosCount =0;
+           prevPosCount2 =0;
 
-           kProportional =1.6;//1.6
-           kIntegral = 1.8; //1.8
+
+           kProportional =1;//1.6
+           kIntegral = 1; //1.8
            velocityConst =(100/40);
 
 
@@ -168,7 +170,58 @@ int main(void) {
                  else
                     numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
            */
+       /*    __disable_interrupt();
+           waiting = moveJ(0,90,0,0);
+           __enable_interrupt();
+           startMoveJ = 1;
+           while (startMoveJ == 1){}
+           startMoveJ =0;*/
+ /*           mddCW2(50);
+          //  mddCW2(50);
+            __delay_cycles(55000000);
+            mddCCW2(0);
+          //  mddCCW2(0);
+            __delay_cycles(35000000);
+            mddCCW2(50);
+          //  mddCCW2(50);
+            __delay_cycles(55000000);
+            mddCCW2(0);
+          //  mddCCW2(0);
+            __delay_cycles(35000000);*/
 
+           __disable_interrupt();
+           waiting = moveJ(0,0,0,90);
+           __enable_interrupt();
+           startMoveJ = 1;
+           while (startMoveJ == 1){}
+           startMoveJ =0;
+           __delay_cycles(10000000);
+
+           __disable_interrupt();
+           waiting = moveJ(0,0,90,0);
+           __enable_interrupt();
+           startMoveJ = 1;
+           while (startMoveJ == 1){}
+           startMoveJ =0;
+           __delay_cycles(10000000);
+
+           __disable_interrupt();
+           waiting = moveJ(0,0,0,-90);
+           __enable_interrupt();
+           startMoveJ = 1;
+           while (startMoveJ == 1){}
+           startMoveJ =0;
+           __delay_cycles(10000000);
+           return 0;
+
+       /*    __disable_interrupt();
+           waiting = moveJ(0,90,0,90);
+           __enable_interrupt();
+       //    __delay_cycles(100000);
+           startMoveJ = 1;
+           while (startMoveJ == 1){}
+           startMoveJ =0;
+           __delay_cycles(10000000);
 
 
     while (1){//--------------- main loop-------------------
@@ -179,7 +232,7 @@ int main(void) {
    //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
    //  waiting = scaraIk(&(scaraStateEnd.scaraArm.theta1), &(scaraStateEnd.scaraArm.theta2), (scaraStateEnd.scaraArm.xPos), (scaraStateEnd.scaraArm.yPos), &(scaraStateEnd.scaraArm.armSol));
 
-        waiting = moveJ(0,50,0,90);
+  /*      waiting = moveJ(0,90,0,90);
     //    __delay_cycles(100000);
         startMoveJ = 1;
         while (startMoveJ == 1){}
@@ -187,7 +240,7 @@ int main(void) {
         __delay_cycles(10000000);
 
 
-        waiting = moveJ(50,40,90,80);
+    /*    waiting = moveJ(50,40,90,80);
    //    __delay_cycles(100000);
        startMoveJ = 1;
        while (startMoveJ == 1){}
@@ -210,11 +263,11 @@ int main(void) {
        startMoveJ = 1;
        while (startMoveJ == 1){}
        startMoveJ =0;
-       __delay_cycles(10000000);
+       __delay_cycles(10000000);*/
 
 
-       while (startMoveJ == 0){}
-       while (startMoveJ == 0){}
+//       while (startMoveJ == 0){}
+//       while (startMoveJ == 0){}
 
 
     /*  mddCW(10);
@@ -242,8 +295,8 @@ int main(void) {
     //  __delay_cycles(30000000);
 
 
-    */
-    }
+
+    }*/
 
     return 0;
 }
