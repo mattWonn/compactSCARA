@@ -35,6 +35,7 @@ int main(void) {
 
     P4OUT = 0x00;
     P6OUT = 0x00;
+
       _disable_interrupts();
       unsigned char oscFail = 1; // clock set
       /*********Set clock frequency*********************************************/
@@ -169,24 +170,33 @@ int main(void) {
                  else
                     numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
            */
-       /*    __disable_interrupt();
-           waiting = moveJ(0,90,0,0);
+    /*       __disable_interrupt();
+           waiting = moveJ(0,-90,0,90);
+           __enable_interrupt();
+           startMoveJ = 1;
+           while (startMoveJ == 1){}
+           startMoveJ =0;
+
+           __disable_interrupt();
+           waiting = moveJ(-90,-60,90,-45);
+           __enable_interrupt();
+           startMoveJ = 1;
+           while (startMoveJ == 1){}
+           startMoveJ =0;
+
+           __disable_interrupt();
+           waiting = moveJ(-60,-50,-45,-20);
+           __enable_interrupt();
+           startMoveJ = 1;
+           while (startMoveJ == 1){}
+           startMoveJ =0;
+
+           __disable_interrupt();
+           waiting = moveJ(-50,-40,-20,0);
            __enable_interrupt();
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;*/
- /*           mddCW2(50);
-          //  mddCW2(50);
-            __delay_cycles(55000000);
-            mddCCW2(0);
-          //  mddCCW2(0);
-            __delay_cycles(35000000);
-            mddCCW2(50);
-          //  mddCCW2(50);
-            __delay_cycles(55000000);
-            mddCCW2(0);
-          //  mddCCW2(0);
-            __delay_cycles(35000000);*/
 
     /*       __disable_interrupt();
            waiting = moveJ(0,90,0,90);
@@ -229,7 +239,7 @@ int main(void) {
       }
       else
          numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-    }
+
 
    //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
    //  waiting = scaraIk(&(scaraStateEnd.scaraArm.theta1), &(scaraStateEnd.scaraArm.theta2), (scaraStateEnd.scaraArm.xPos), (scaraStateEnd.scaraArm.yPos), &(scaraStateEnd.scaraArm.armSol));
@@ -240,36 +250,6 @@ int main(void) {
         while (startMoveJ == 1){}
         startMoveJ =0;
         __delay_cycles(10000000);
-
-
-    /*    waiting = moveJ(50,40,90,80);
-   //    __delay_cycles(100000);
-       startMoveJ = 1;
-       while (startMoveJ == 1){}
-       startMoveJ =0;
-       __delay_cycles(10000000);
-
-       waiting = moveJ(40,50,80,45);
-       startMoveJ = 1;
-       while (startMoveJ == 1){}
-       startMoveJ =0;
-       __delay_cycles(10000000);
-
-       waiting = moveJ(45,20,45,20);
-       startMoveJ = 1;
-       while (startMoveJ == 1){}
-       startMoveJ =0;
-       __delay_cycles(10000000);
-
-       waiting = moveJ(20,0,20,0);
-       startMoveJ = 1;
-       while (startMoveJ == 1){}
-       startMoveJ =0;
-       __delay_cycles(10000000);*/
-
-
-//       while (startMoveJ == 0){}
-//       while (startMoveJ == 0){}
 
 
     /*  mddCW(10);
@@ -284,21 +264,9 @@ int main(void) {
       mddBrake();
       mddBrake2();
       __delay_cycles(35000000);
+*/
 
-  /*    mddCCW(30);
-      mddCCW2(30);
-      __delay_cycles(10000000);
-      mddBrake();
-      mddBrake2();
-    //  mddCCW(10);
-   //   __delay_cycles(50000000);
-   //   mddBrake2();
-   //   mddCCW2(10);
-    //  __delay_cycles(30000000);
-
-
-
-    }*/
+    }
 
     return 0;
 }

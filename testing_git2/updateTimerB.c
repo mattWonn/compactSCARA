@@ -87,11 +87,13 @@ void updateTimer(){
         if (updateIndex >= arrayLength-1) // uncertainty.
         {
             startMoveJ =0;
-            __disable_interrupt();
-            sendPWM =0;
+           // __disable_interrupt();
+           /* sendPWM =0;
             sendPWM2 =0;
             mddCW(sendPWM);
-            mddCW2(sendPWM2);
+            mddCW2(sendPWM2);*/
+            TA0CCR1 =0;
+            TA1CCR1 = 0;
             prevPosCount = 0;
           //  posCount = posArray1[arrayLength-1];
             prevPosCount2 = 0;
@@ -163,7 +165,7 @@ void updateTimer(){
 
 //        sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM2, velError2, posError2); // insert the number of characters into the display string
 //        ret = ucsiA1UartTxString(&posPrint); // print the string
-        pwmArray[updateIndex] = sendPWM2;
+       // pwmArray[updateIndex] = sendPWM2;
 
         if (dir2 == 1) // send motor the speed signal based on direction
             mddCW2(sendPWM2);

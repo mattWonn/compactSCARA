@@ -129,10 +129,10 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                     positionDeg = RadToDeg((DegToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
                     positionDeg2 = RadToDeg((DegToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
 
-                    velocityCountPerUpdate = round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
-                    velocityCountPerUpdate2 = round(velocityDegPerSec2*(7.7778037)*(T_UPDATE/1)); // in units pulses per update
-                    positionCounts = round(positionDeg*PUL_PER_DEG_N70);
-                    positionCounts2 = round(positionDeg2*7.7778037);
+                    velocityCountPerUpdate = round(velocityDegPerSec*(7.7778037)*(T_UPDATE/1)); // in units pulses per update
+                    velocityCountPerUpdate2 = round(velocityDegPerSec2*(9)*(T_UPDATE/1)); // in units pulses per update
+                    positionCounts = round(positionDeg*7.7778037);
+                    positionCounts2 = round(positionDeg2*9);
 
 
                     velArray1[tInc] = velocityCountPerUpdate;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
@@ -167,10 +167,10 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                     positionDeg = RadToDeg((DegToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
                     positionDeg2 = RadToDeg((DegToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
 
-                    velocityCountPerUpdate = round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
-                    velocityCountPerUpdate2 = round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
-                    positionCounts = round(positionDeg*PUL_PER_DEG_N70);
-                    positionCounts2 = round(positionDeg2*PUL_PER_DEG_N70);
+                    velocityCountPerUpdate = round(velocityDegPerSec*(9)*(T_UPDATE/1)); // in units pulses per update
+                    velocityCountPerUpdate2 = round(velocityDegPerSec2*(7.7)*(T_UPDATE/1)); // in units pulses per update
+                    positionCounts = round(positionDeg*9);
+                    positionCounts2 = round(positionDeg2*7.7);
 
 
                     velArray2[tInc] = velocityCountPerUpdate;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
