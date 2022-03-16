@@ -87,6 +87,8 @@ typedef struct SCARA_ROBOT{
  volatile signed int velArray2 [MAX_ARRAY];
  volatile signed int posArray2 [MAX_ARRAY];
  volatile unsigned int arrayLength ;
+ volatile unsigned int noMove1;
+ volatile unsigned int noMove2;
 
 
 unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2);

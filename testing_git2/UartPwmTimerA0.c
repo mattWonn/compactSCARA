@@ -81,7 +81,7 @@ char timerA0PwmFreqSet(unsigned int pwmFreq)
  ****************************************/
 char timerA0DutyCycleSet(unsigned char dutyCycle)
 {
-    volatile signed char value =0;
+   volatile signed char value =0;
    volatile unsigned char num = 0;
    volatile unsigned char start = 0;
    volatile double percentDuty =0; // duty cycle as a percent

@@ -83,8 +83,6 @@ void updateTimer(){
 
     if (startMoveJ == 1){
         updateIndex++;
-        if (updateIndex >= arrayLength-2)
-            doneM1 =2;
 
         if (updateIndex >= arrayLength-1) // uncertainty.
         {
@@ -102,17 +100,16 @@ void updateTimer(){
 
         }
         else{
+          if (noMove1 == 0){
 
-  /*      prevPosCountHold = posCount;
+        prevPosCountHold = posCount;
         velCount = posCount - prevPosCount;
         posError1 = posCount - posArray1[updateIndex];
         velError1 = velCount - velArray1[updateIndex];
 
-        sendPWM = round((100/40)*(velArray1[updateIndex] - 1*posError1 - 1*velError1));
+        sendPWM = round((100/35)*(velArray1[updateIndex] - 1*posError1 - 1*velError1));
        // sendPWM = (100/40)*velArray1[updateIndex];
         // WHEN CHANGING MOTORS, ALSO NEED TO CHANGE PUL_PER_DEG in movement.c
-
-
 
         if (sendPWM < 0){ // convert sendPWM to a posotive signal with a direction (dir1)
             sendPWM = sendPWM*-1;
@@ -137,8 +134,10 @@ void updateTimer(){
             mddCCW(sendPWM);
         }
 
-        prevPosCount = prevPosCountHold;*/
-        //----------------------------------------------
+        prevPosCount = prevPosCountHold;
+        }
+        //-------------------------------------
+        if(noMove2 ==0){
 
         prevPosCountHold2 = posCount2;
         velCount2 = posCount2 - prevPosCount2;
@@ -146,7 +145,7 @@ void updateTimer(){
         posError2 = posCount2 - posArray2[updateIndex];
         velError2 = velCount2 - velArray2[updateIndex];
 
-        sendPWM2 = ((100/49)*(velArray2[updateIndex] - kIntegral*posError2 - kProportional*velError2));
+        sendPWM2 = ((100/47)*(velArray2[updateIndex] - kIntegral*posError2 - kProportional*velError2));
       //  sendPWM = round(velocityConst*velArray2[updateIndex]);
 
 
@@ -162,8 +161,9 @@ void updateTimer(){
                    sendPWM2 = MAX_VELOCITY;
         }
 
-        sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM2, velError2, posError2); // insert the number of characters into the display string
-        ret = ucsiA1UartTxString(&posPrint); // print the string
+//        sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM2, velError2, posError2); // insert the number of characters into the display string
+//        ret = ucsiA1UartTxString(&posPrint); // print the string
+        pwmArray[updateIndex] = sendPWM2;
 
         if (dir2 == 1) // send motor the speed signal based on direction
             mddCW2(sendPWM2);
@@ -173,6 +173,7 @@ void updateTimer(){
 
 
         prevPosCount2 = prevPosCountHold2;
+        }
         }
 
     }

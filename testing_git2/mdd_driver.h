@@ -40,7 +40,6 @@ unsigned int counting2;
 
 #define NULLNUM 0x00
 #define MAX_ARGS 2
-#define MAX_CMDS 11
 
 #define BUFFLEN 60
 
@@ -70,6 +69,7 @@ unsigned int counting2;
 
 #define CMD11 "moveJ"
 #define CMD11_NARGS 4
+#define MAX_CMDS 12
 
 volatile unsigned char data;
 volatile unsigned char x;
@@ -99,11 +99,6 @@ int executeCmd(CMD *cmdList, int cmdIndex);
 #define DEG_PER_PUL 0.105388//N = 71.165, 3415.92 countable events on O/P shaft
 
 
-volatile signed int angJ1Desired;
-volatile signed int angJ2Desired;
-volatile int startM1;
-volatile int startM2;
-
 volatile signed int updateIndex;
 volatile int startMoveJ;
 
@@ -116,10 +111,7 @@ volatile double kProportional;
 volatile double kIntegral;
 volatile double velocityConst;
 
-
-volatile int doneM1;
-volatile int doneM2;
-
+volatile signed int pwmArray[201];
 //------- PWM conditions-----------------------------
 
 #define PWMFREQMAX 20000     //18.935?  20kHz?

@@ -10,6 +10,7 @@
 #include <UartPwmTimerA0.h>
 #include <mdd_driver.h>
 #include <quadEncDec.h>
+#include <movement.h>
 
 /************************************************
  * Function motorCmdInit
@@ -227,22 +228,19 @@ int parseCmd(CMD * cmdList, char * cmdLine){
 
             token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
 
-        if (n == 1){  // first argument
+        if (n == 0){  // first argument
                 cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
                 nArgs++;       // inc argument count
-                token = NULL;  // this is the last argument for the command
             }
             else if (n == 1){  // second argument
                 cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
                 nArgs++;       // inc argument count
-                token = NULL;  // this is the last argument for the command
             }
-            else if (n == 1){  // third argument
+            else if (n == 2){  // third argument
                 cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
                 nArgs++;       // inc argument count
-                token = NULL;  // this is the last argument for the command
             }
-            else if (n == 1){  // fourth argument
+            else if (n == 3){  // fourth argument
                 cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
                 nArgs++;       // inc argument count
                 token = NULL;  // this is the last argument for the command
@@ -334,7 +332,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
 
         break;
     case 1://---------------move (cw/ccw) (dutyCycle)--------
-        startM1 = 0;
+   /*     startM1 = 0;
         if (cmdList[1].args[0] == 0){             //  CCW command
             dutySend = cmdList[1].args[1];        //  dutyCycle request
             if (dutySend >= DUTYCYCLEMIN && dutySend <= DUTYCYCLEMAX){  // if dutyCycle is valid
@@ -357,9 +355,9 @@ int executeCmd(CMD *cmdList, int cmdIndex){
             result = -1;
         }
 
-        break;
+        break;*/
     case 2://----------------brake()-------------
-        startM1 = 0;
+   //     startM1 = 0;
         dutySend = 0;
         result = mddBrake(); // send brake signal
         break;
@@ -367,16 +365,16 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         displayPos();
         break;
     case 4://--------------moveJ---------------------
-        angJ1Desired = cmdList[4].args[0]; // update desired angle
-        startM1 = 1;
+      //  angJ1Desired = cmdList[4].args[0]; // update desired angle
+      //  startM1 = 1;
         break;
     case 5://--------------resetCount--------------
-        startM1 = 0;
+      //  startM1 = 0;
         posCount =0;
         displayPos();
         break;
     case 6://---------------move (cw/ccw) (dutyCycle)--------
-        startM2 = 0;
+    /*    startM2 = 0;
         if (cmdList[6].args[0] == 0){             //  CCW command
             dutySend2 = cmdList[6].args[1];        //  dutyCycle request
             if (dutySend2 >= DUTYCYCLEMIN && dutySend2 <= DUTYCYCLEMAX){  // if dutyCycle is valid
@@ -398,10 +396,10 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         else{
             result = -1;
         }
-
+*/
         break;
     case 7://----------------vnhBrake()-------------
-        startM2 = 0;
+    //    startM2 = 0;
         dutySend2 = 0;
         result = mddBrake2(); // send brake signal
         break;
@@ -409,11 +407,11 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         displayPos2();
         break;
     case 9://--------------moveJ---------------------
-        angJ2Desired = cmdList[9].args[0]; // update desired angle
-        startM2 = 1;
+        //angJ2Desired = cmdList[9].args[0]; // update desired angle
+     //   startM2 = 1;
         break;
     case 10://--------------resetCount--------------
-        startM2 = 0;
+    //    startM2 = 0;
         posCount2 =0;
         displayPos2();
         break;

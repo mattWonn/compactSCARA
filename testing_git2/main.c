@@ -121,17 +121,16 @@ int main(void) {
 
    //--------------- Update Loop ----------------
 
-           angJ1Desired =0;
-           angJ2Desired =0;
+
            posCount = 0;
            posCount2 = 0;
-           startM1 = 0;
-           startM2 = 0;
            startMoveJ =0;
-           doneM1 =0;
-           doneM2 =0;
            prevPosCount =0;
            prevPosCount2 =0;
+           noMove1 =0;
+           noMove2 =0;
+
+
 
 
            kProportional =1;//1.6
@@ -189,8 +188,8 @@ int main(void) {
           //  mddCCW2(0);
             __delay_cycles(35000000);*/
 
-           __disable_interrupt();
-           waiting = moveJ(0,0,0,90);
+    /*       __disable_interrupt();
+           waiting = moveJ(0,90,0,90);
            __enable_interrupt();
            startMoveJ = 1;
            while (startMoveJ == 1){}
@@ -198,21 +197,14 @@ int main(void) {
            __delay_cycles(10000000);
 
            __disable_interrupt();
-           waiting = moveJ(0,0,90,0);
+           waiting = moveJ(90,0,90,0);
            __enable_interrupt();
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
-           __delay_cycles(10000000);
+           __delay_cycles(10000000);*/
 
-           __disable_interrupt();
-           waiting = moveJ(0,0,0,-90);
-           __enable_interrupt();
-           startMoveJ = 1;
-           while (startMoveJ == 1){}
-           startMoveJ =0;
-           __delay_cycles(10000000);
-           return 0;
+          // return 0;
 
        /*    __disable_interrupt();
            waiting = moveJ(0,90,0,90);
@@ -221,13 +213,23 @@ int main(void) {
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
-           __delay_cycles(10000000);
+           __delay_cycles(10000000);*/
 
 
     while (1){//--------------- main loop-------------------
 
-    //  char rxGetString[BUFFLEN] = {0};   // reset getString buffer
+      char rxGetString[BUFFLEN] = {0};   // reset getString buffer
 
+      returned = usciA1UartGets(&rxGetString);  // get a string from the console
+
+      if (returned != 0){
+         parseRet = parseCmd(mddCmds, rxGetString); // send string to motor control
+         if (parseRet == -1)
+             numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
+      }
+      else
+         numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
+    }
 
    //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
    //  waiting = scaraIk(&(scaraStateEnd.scaraArm.theta1), &(scaraStateEnd.scaraArm.theta2), (scaraStateEnd.scaraArm.xPos), (scaraStateEnd.scaraArm.yPos), &(scaraStateEnd.scaraArm.armSol));

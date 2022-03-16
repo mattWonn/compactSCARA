@@ -58,6 +58,15 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
             displacement1 = abs(endAng1 - startAng1);
             displacement2 = abs(endAng2 - startAng2);
 
+            if (endAng1 == startAng1)
+                noMove1 =1;
+            else
+                noMove1 =0;
+            if (endAng2 == startAng2)
+                noMove2 = 1;
+            else
+                noMove2 =0;
+
             if (displacement1 >= displacement2){ // determine which joint has to move the farthest and base calculations on that
                 masterJoint =1;
                 deltaD = (endAng1 - startAng1);
@@ -76,6 +85,7 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                 if (endAng2 >= startAng2)
                     direction1=1;
             }
+
 
 
 
