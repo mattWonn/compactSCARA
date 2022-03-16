@@ -109,7 +109,7 @@ void updateTimer(){
         posError1 = posCount - posArray1[updateIndex];
         velError1 = velCount - velArray1[updateIndex];
 
-        sendPWM = round((100/35)*(velArray1[updateIndex] - 1*posError1 - 1*velError1));
+        sendPWM = round((100/30)*(velArray1[updateIndex] - 1*posError1 - 1*velError1));
        // sendPWM = (100/40)*velArray1[updateIndex];
         // WHEN CHANGING MOTORS, ALSO NEED TO CHANGE PUL_PER_DEG in movement.c
 
@@ -163,8 +163,8 @@ void updateTimer(){
                    sendPWM2 = MAX_VELOCITY;
         }
 
-        sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM2, velError2, posError2); // insert the number of characters into the display string
-        ret = ucsiA1UartTxString(&posPrint); // print the string
+   //     sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM2, velError2, posError2); // insert the number of characters into the display string
+  //      ret = ucsiA1UartTxString(&posPrint); // print the string
        // pwmArray[updateIndex] = sendPWM2;
 
         if (dir2 == 1) // send motor the speed signal based on direction

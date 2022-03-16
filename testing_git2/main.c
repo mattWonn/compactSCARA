@@ -174,23 +174,36 @@ int main(void) {
 //           waiting = moveJ(0,90,0,25);
  //          waiting = moveJ(90,-90,25,0);
    //        waiting = moveJ(-90,90,0,-45);
-
            __disable_interrupt();
-           waiting = moveJ(0,90,0,25);
+           waiting = moveJ(0,90,0,180);
            __enable_interrupt();
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
 
            __disable_interrupt();
-           waiting = moveJ(90,-90,25,0);
+           waiting = moveJ(90,-90,180,90);
            __enable_interrupt();
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
 
            __disable_interrupt();
-           waiting = moveJ(-90,90,0,-45);
+           waiting = moveJ(-90,-45,90,0);
+           __enable_interrupt();
+           startMoveJ = 1;
+           while (startMoveJ == 1){}
+           startMoveJ =0;
+
+           __disable_interrupt();
+           waiting = moveJ(-45,45,0,-90);
+           __enable_interrupt();
+           startMoveJ = 1;
+           while (startMoveJ == 1){}
+           startMoveJ =0;
+
+           __disable_interrupt();
+           waiting = moveJ(45,0,-90,0);
            __enable_interrupt();
            startMoveJ = 1;
            while (startMoveJ == 1){}
