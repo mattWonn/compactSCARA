@@ -78,7 +78,7 @@ void updateTimer(){
     volatile signed int posErrortest;
 
 
-    volatile char posPrint[25]; // Uart
+   volatile char posPrint[25]; // Uart
    volatile int ret;
 
     if (startMoveJ == 1){
@@ -109,7 +109,7 @@ void updateTimer(){
         posError1 = posCount - posArray1[updateIndex];
         velError1 = velCount - velArray1[updateIndex];
 
-        sendPWM = round((100/30)*(velArray1[updateIndex] - 1*posError1 - 1*velError1));
+        sendPWM = round((100/50)*(velArray1[updateIndex] - 1*posError1 - 1*velError1));
        // sendPWM = (100/40)*velArray1[updateIndex];
         // WHEN CHANGING MOTORS, ALSO NEED TO CHANGE PUL_PER_DEG in movement.c
 
@@ -147,9 +147,9 @@ void updateTimer(){
         posError2 = posCount2 - posArray2[updateIndex];
         velError2 = velCount2 - velArray2[updateIndex];
 
-        sendPWM2 = ((100/47)*(velArray2[updateIndex] - kIntegral*posError2 - kProportional*velError2));
+        sendPWM2 = ((100/65)*(velArray2[updateIndex] - kIntegral*posError2 - kProportional*velError2));
       //  sendPWM = round(velocityConst*velArray2[updateIndex]);
-
+     //   pwmArray[updateIndex] = sendPWM2;
 
         if (sendPWM2 < 0){ // convert sendPWM to a posotive signal with a direction (dir1)
             sendPWM2 = sendPWM2*-1;
@@ -159,13 +159,15 @@ void updateTimer(){
         if (sendPWM2 > MAX_PWM) // constrain max limits
            sendPWM2 = MAX_PWM;
         if (sendPWM2 > 0 && sendPWM2 <= MAX_PWM){ // min voltage condition cw
-               if (sendPWM2 >= MAX_VELOCITY) // max speed cw
+           // if (sendPWM2 <12 && sendPWM2 >0) // min speed cw
+           //     sendPWM2  = 12;
+             if (sendPWM2 >= MAX_VELOCITY) // max speed cw
                    sendPWM2 = MAX_VELOCITY;
         }
 
-   //     sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM2, velError2, posError2); // insert the number of characters into the display string
-  //      ret = ucsiA1UartTxString(&posPrint); // print the string
-       // pwmArray[updateIndex] = sendPWM2;
+        sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM2, velError2, posError2); // insert the number of characters into the display string
+        ret = ucsiA1UartTxString(&posPrint); // print the string
+  //      pwmArray[updateIndex] = sendPWM2;
 
         if (dir2 == 1) // send motor the speed signal based on direction
             mddCW2(sendPWM2);

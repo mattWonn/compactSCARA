@@ -260,15 +260,19 @@ char mddBrake()
 
         // decide if normal braking or if braking was used to change directions
         if (prevClkCountNot == 1 && clkWise == 1){ // same direction braking to stop
+    //    if (clkWise ==1){
             inputRet = mddInputCtrl(CTRLCW); // send ctrl values to output to keep the same direction to CW
+            prevClkCountNot = 1; // set new direction
                 if (inputRet == -1)
                      result = -1;
         }
         else if (prevClkCountNot == 0 && countClkWise == 1){ // same direction braking to stop
+   //     else if (countClkWise == 1){
             inputRet = mddInputCtrl(CTRLCCW); // send ctrl values to output to keep the same direction to CCW
+            prevClkCountNot = 0; // set new direction
                 if (inputRet == -1)
                       result = -1;
-        }///*
+        }//
         else if (prevClkCountNot == 0 && clkWise == 1){  // ramp back up to the previous dutyCycle
                   inputRet = mddInputCtrl(CTRLCW); // send ctrl values to output
                       if (inputRet != -1){
@@ -293,7 +297,7 @@ char mddBrake()
                       else
                          result = -1;
 
-        }//*/
+        }//
         else
             result =-1;
     }
@@ -322,11 +326,13 @@ char mddBrake2()
 
         // decide if normal braking or if braking was used to change directions
         if (prevClkCountNot2 == 1 && clkWise2 == 1){ // same direction braking to stop
+        //if (clkWise2 == 1){
             inputRet = mddInputCtrl2(CTRLCW2); // send ctrl values to output to keep the same direction to CW
                 if (inputRet == -1)
                      result = -1;
         }
         else if (prevClkCountNot2 == 0 && countClkWise2 == 1){ // same direction braking to stop
+     //   else if (countClkWise2 == 1){
             inputRet = mddInputCtrl2(CTRLCCW2); // send ctrl values to output to keep the same direction to CCW
                 if (inputRet == -1)
                       result = -1;

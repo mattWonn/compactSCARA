@@ -175,65 +175,45 @@ int main(void) {
  //          waiting = moveJ(90,-90,25,0);
    //        waiting = moveJ(-90,90,0,-45);
            __disable_interrupt();
-           waiting = moveJ(0,90,0,180);
+           waiting = moveJ(0,90,0,100);
            __enable_interrupt();
+           __delay_cycles(10000);
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
 
            __disable_interrupt();
-           waiting = moveJ(90,-90,180,90);
+           waiting = moveJ(90,0,100,145);
            __enable_interrupt();
+           __delay_cycles(100000);
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
 
            __disable_interrupt();
-           waiting = moveJ(-90,-45,90,0);
+           waiting = moveJ(0,-180,145,0);
            __enable_interrupt();
+           __delay_cycles(100000);
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
 
            __disable_interrupt();
-           waiting = moveJ(-45,45,0,-90);
+           waiting = moveJ(-180,-45,0,-90);
            __enable_interrupt();
+           __delay_cycles(100000);
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
 
            __disable_interrupt();
-           waiting = moveJ(45,0,-90,0);
+           waiting = moveJ(-45,0,-90,0);
            __enable_interrupt();
+           __delay_cycles(100000);
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
-    /*       __disable_interrupt();
-           waiting = moveJ(0,90,0,90);
-           __enable_interrupt();
-           startMoveJ = 1;
-           while (startMoveJ == 1){}
-           startMoveJ =0;
-           __delay_cycles(10000000);
 
-           __disable_interrupt();
-           waiting = moveJ(90,0,90,0);
-           __enable_interrupt();
-           startMoveJ = 1;
-           while (startMoveJ == 1){}
-           startMoveJ =0;
-           __delay_cycles(10000000);*/
-
-          // return 0;
-
-       /*    __disable_interrupt();
-           waiting = moveJ(0,90,0,90);
-           __enable_interrupt();
-       //    __delay_cycles(100000);
-           startMoveJ = 1;
-           while (startMoveJ == 1){}
-           startMoveJ =0;
-           __delay_cycles(10000000);*/
 
 
     while (1){//--------------- main loop-------------------
