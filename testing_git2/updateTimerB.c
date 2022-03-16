@@ -95,9 +95,9 @@ void updateTimer(){
             TA0CCR1 =0;
             TA1CCR1 = 0;
             prevPosCount = 0;
-          //  posCount = posArray1[arrayLength-1];
+            posCount = posArray1[arrayLength-1];
             prevPosCount2 = 0;
-          //  posCount2 = posArray2[arrayLength-1];
+            posCount2 = posArray2[arrayLength-1];
             updateIndex=0;
 
         }
@@ -163,8 +163,8 @@ void updateTimer(){
                    sendPWM2 = MAX_VELOCITY;
         }
 
-//        sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM2, velError2, posError2); // insert the number of characters into the display string
-//        ret = ucsiA1UartTxString(&posPrint); // print the string
+        sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM2, velError2, posError2); // insert the number of characters into the display string
+        ret = ucsiA1UartTxString(&posPrint); // print the string
        // pwmArray[updateIndex] = sendPWM2;
 
         if (dir2 == 1) // send motor the speed signal based on direction

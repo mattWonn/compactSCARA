@@ -24,8 +24,8 @@
 
 #define PUL_PER_DEG_N70 9.48866 // 3415.92pul/360deg
 #define T_UPDATE 0.01
-#define W_MAX 180 // deg/s
-#define A_MAX 566 //deg/s^2
+#define W_MAX 708//360//708 // deg/s
+#define A_MAX 354//180//354 //deg/s^2
 
 #define MAX_ARRAY 201
 

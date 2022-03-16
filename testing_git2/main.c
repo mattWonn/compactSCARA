@@ -134,7 +134,7 @@ int main(void) {
 
 
 
-           kProportional =1;//1.6
+           kProportional =1.6;//1.6
            kIntegral = 1; //1.8
            velocityConst =(100/40);
 
@@ -170,34 +170,31 @@ int main(void) {
                  else
                     numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
            */
-    /*       __disable_interrupt();
-           waiting = moveJ(0,-90,0,90);
+
+//           waiting = moveJ(0,90,0,25);
+ //          waiting = moveJ(90,-90,25,0);
+   //        waiting = moveJ(-90,90,0,-45);
+
+           __disable_interrupt();
+           waiting = moveJ(0,90,0,25);
            __enable_interrupt();
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
 
            __disable_interrupt();
-           waiting = moveJ(-90,-60,90,-45);
+           waiting = moveJ(90,-90,25,0);
            __enable_interrupt();
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
 
            __disable_interrupt();
-           waiting = moveJ(-60,-50,-45,-20);
+           waiting = moveJ(-90,90,0,-45);
            __enable_interrupt();
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
-
-           __disable_interrupt();
-           waiting = moveJ(-50,-40,-20,0);
-           __enable_interrupt();
-           startMoveJ = 1;
-           while (startMoveJ == 1){}
-           startMoveJ =0;*/
-
     /*       __disable_interrupt();
            waiting = moveJ(0,90,0,90);
            __enable_interrupt();
@@ -228,7 +225,7 @@ int main(void) {
 
     while (1){//--------------- main loop-------------------
 
-      char rxGetString[BUFFLEN] = {0};   // reset getString buffer
+  /*    char rxGetString[BUFFLEN] = {0};   // reset getString buffer
 
       returned = usciA1UartGets(&rxGetString);  // get a string from the console
 
@@ -238,7 +235,7 @@ int main(void) {
              numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
       }
       else
-         numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
+         numChars = ucsiA1UartTxString(&getsInvalidString); // print error message*/
 
 
    //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
