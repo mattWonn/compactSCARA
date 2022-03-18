@@ -122,6 +122,7 @@ int main(void) {
 
    //--------------- Update Loop ----------------
 
+           volatile unsigned int waiting=2;
 
            posCount = 0;
            posCount2 = 0;
@@ -131,21 +132,17 @@ int main(void) {
            noMove1 =0;
            noMove2 =0;
 
-
-
-
            kProportional =1.6;//1.6
            kIntegral = 1; //1.8
            velocityConst =(100/40);
 
 
    //----------- Structured Commands -------------------
-           volatile unsigned int waiting=2;
 
            scaraStateEnd.scaraArm.theta1 =0;
            scaraStateEnd.scaraArm.theta2 =0;
-           scaraStateEnd.scaraArm.xPos =15;
-           scaraStateEnd.scaraArm.yPos =0;
+           scaraStateEnd.scaraArm.x =15;
+           scaraStateEnd.scaraArm.y =0;
            scaraStateEnd.scaraArm.armSol =1; //(LHS)
 
 
