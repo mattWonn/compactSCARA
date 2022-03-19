@@ -19,8 +19,8 @@
 #include <math.h>
 
 unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2){
-    volatile unsigned int exit =0;
 
+    volatile unsigned int exit =0;
     volatile unsigned int x=0;
     volatile unsigned int displacement1;
     volatile unsigned int displacement2;
@@ -104,8 +104,8 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
             //-------------- assign variables-------------------
             if (masterJoint == 1){ // arm one moves further
-                scaraStateSet.scaraVel.controlJoint =1;
-                scaraStateSet.scaraVel.timeMove =timeForMove;
+            //    scaraStateSet.scaraVel.controlJoint =1;
+           //     scaraStateSet.scaraVel.timeMove =timeForMove;
                 w = (2*PI)/timeForMove;
                 arrayLength = (timeForMove/T_UPDATE)+1;
 
@@ -135,8 +135,8 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                 }
             }
             else if (masterJoint == 2){ // arm two moves further
-                scaraStateSet.scaraVel.controlJoint =2;
-                scaraStateSet.scaraVel.timeMove =timeForMove;
+          //      scaraStateSet.scaraVel.controlJoint =2;
+          //      scaraStateSet.scaraVel.timeMove =timeForMove;
 
                 w = (2*PI)/timeForMove;
 
@@ -167,7 +167,12 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                 }
            }
         }
+        else
+            exit = 1;
     }
+    else
+        exit = 1;
+
     return (exit);
 }
 
@@ -183,88 +188,78 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 * created by: Matthew Wonneberg, Jamie Boyd
 * Date: March 17 2022
 ************************************************************/
-/*int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine)
-{
+int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
+
+    volatile int value=0;
+    volatile unsigned int returned =0;
+
     volatile double deltaX;
     volatile double deltaY;
+    volatile unsigned int deltaD;
     volatile unsigned int arraySize;
-    volatiel unsigned int value=0;
     volatile unsigned int pathPlanError;
-    volatile unsigned int j = 0;
-    volatile unsigned int t = 0;
-    volatile unsigned int r = 0;
+    volatile unsigned int armSolution;
 
-    volatile unsigned int previousArmSol;
-    double yPrev=0;
-    double xPrev=0; // previous point's x and y coordinates
+    volatile double timeForMove;
+    volatile double w = 0;
+    volatile double d = 0;
+    volatile double xHold =0;
+    volatile double yHold =0;
+    volatile unsigned int attemptedArmSolution;
+    volatile signed int holdPosition1 = 0;
+    volatile signed int holdPosition2 = 0;
+    volatile double aMaxMove;
 
+    volatile unsigned int tInc = 0;
 
-    deltaX = newLine.pA.x - newLine.pB.x;
-    deltaY = newLine.pA.y - newLine.pB.y;
-    arraySize = (sqrt(pow(deltaX, 2) + pow(deltaY, 2))) / newLine.numPts; // calculates the number of points in the line
+    volatile unsigned int startingQuadrent = 0;
+    volatile unsigned int endingQuadrent = 0;
 
+    if ((newLine.pA.x < 0 && newLine.pA.y < 0) || (newLine.pB.x < 0 && newLine.pB.y < 0))
+        scaraState->scaraPos.armSol = LEFT_ARM_SOLUTION;//quad 3
+    else if ((newLine.pA.x < 0 && newLine.pA.y > 0) || (newLine.pB.x < 0 && newLine.pB.y > 0))
+        scaraState->scaraPos.armSol = RIGHT_ARM_SOLUTION;// quad 2
+    else if ((newLine.pA.x < 0 && newLine.pA.y > 0) && (newLine.pB.x < 0 && newLine.pB.y < 0))
+        value = 1;
+    else if ((newLine.pA.x < 0 && newLine.pA.y < 0) && (newLine.pB.x < 0 && newLine.pB.y > 0))
+        value = 1;
 
-    // state1 is the first point that the robot goes to with the pen up to make sure its in the right spot
-    SCARA_ROBOT state1 = scaraInitState(newLine.pA.x, newLine.pA.y, scaraState->scaraArm.armSol, TOOL_UP);
+    // else arm solution stays the same as it was assigned
 
-    pathPlanning(&state1); // determines arm solution for initial point
-    value = moveScaraJ(&state1); // moves robot to first position with pen up
+    deltaX = newLine.pB.x - newLine.pA.x;
+    deltaY = newLine.pB.y - newLine.pA.y;
+    deltaD = (sqrt(pow(deltaX, 2) + pow(deltaY, 2))); // pythagreom theorum for line distance in x,y
 
-    if (value == 0){ // if it is possible to reach to the first point then the calculation continues
+    timeForMove = sqrt((abs(deltaD)*2*PI)/A_MAX_LINEAR); // calc T for sinusoidal profile
+    w = (2*PI)/timeForMove;
 
-        SCARA_ROBOT* line; // *line points to the first position in the points array
-        line = (SCARA_ROBOT*)malloc(arraySize * sizeof(SCARA_ROBOT)); // allocates memory based on the number of points (arraySize)
+    arrayLength = (timeForMove/T_UPDATE)+1;
+    aMaxMove = A_MAX_LINEAR;
 
-        if (line){ // if the memory allocation works, the rest of the code is run
-            for (j; j < arraySize; j++){ // fill scaraRobot line with x and y = 0, penPos,
-                line[j] = scaraInitState(0, 0, scaraState->scaraArm.armSol, scaraState->scaraTool.penPos);
-            }
-            j=0;
-            for (j; j < arraySize; j++){ // fill scaraRobot with x and y values and color
-                line[j].scaraArm.x = newLine.pA.x + ((newLine.pB.x - newLine.pA.x) / (arraySize - 1)) * j;
-                line[j].scaraArm.y = newLine.pA.y + ((newLine.pB.y - newLine.pA.y) / (arraySize - 1)) * j;
-            }
-            for (t; t < arraySize; t++){ // finds armSoloution for each point
-                pathPlanning(&line[t]);
-            }
+    for(tInc; tInc<arrayLength; tInc++){ // calculate linear array in terms of d(t) and then fill X and Y positions
+        d = (((aMaxMove)*(tInc*T_UPDATE))/w)  -  ((aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2));
+        xHold = newLine.pA.x + (d*(deltaX)/deltaD);
+        yHold = newLine.pA.y + (d*(deltaY)/deltaD);
+        returned = scaraIk(&(posArray1[tInc]), &(posArray2[tInc]), xHold, yHold, scaraState);
 
-            previousArmSol = line[0].scaraArm.armSol; // the previous armsolution is saved
-            yPrev = 0;
-            xPrev = 0; // previous point's x and y coordinates
+        if (returned == 0){
+            posArray1[tInc] = round(posArray1[tInc]*7.778); // calculate position in terms of pulses
+            posArray2[tInc] = round(posArray2[tInc]*PUL_PER_DEG_N70);
 
-            for (r; r < arraySize; r++){
-                if (line[r].scaraArm.armSol == 2) // if there is no arm solution, raise error
-                    value = -1;
-                else{
-                   if (previousArmSol != line[r].scaraArm.armSol){ // if armSol is switched, a new point is created with pen up and same coordinates to switch
-                           SCARA_ROBOT copy = scaraInitState(x1, y1, line[r].scaraArm.armSol, TOOL_UP);
-                           SCARA_ROBOT next = scaraInitState(line[r].scaraArm.x, line[r].scaraArm.y, line[r].scaraArm.armSol, TOOL_DOWN);
-                           value = moveScaraJ(&copy);
-                           value = moveScaraJ(&next);
+            velArray1[tInc] = posArray1[tInc]-holdPosition1; // calculate velocity in terms of pulses per update time
+            velArray2[tInc] = posArray2[tInc]-holdPosition2;
 
-                   }
-                   else if (previousArmSol == line[r].scaraArm.armSol){ // if the armSolutions are the same then
-                       //line[r].scaraTool.penPos = TOOL_DOWN;
-                       value = moveScaraJ(&line[r]);
-                   }
-                   if (r == arraySize - 1){ // dispays info on the last run
-                       display = 1;
-                       scaraState->scaraArm.armSol = previousArmSol;
-                       value = moveScaraJ(&line[r]);
-                   }
-                   previousArmSol = line[r].scaraArm.armSol;
-                    xPrev = line[r].scaraArm.x; // x1 and y1 are set as the previous x and y coordinates
-                    yPrev = line[r].scaraArm.y;
-                }
-
-           }
-      }
-
-   }
-
+            holdPosition1 = posArray1[tInc]; // store previous position
+            holdPosition2 = posArray2[tInc];
+        }
+        else{
+            value = 1; // exit calculations if the move is not possible
+            tInc = arrayLength;
+        }
+    }
 
     return (value);
-}*/
+}
 
 /***********************************************************
 * Name: void pathPlanning
@@ -310,7 +305,7 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
     }
     // if both solutions work then do nothing , armSol is already defined
 
-}
+}*/
 /***********************************************************
 * Name: unsigned int scaraFk
 * function: provides the calculations to control the robot with forward kinematics
@@ -364,42 +359,35 @@ unsigned int scaraFk(signed int ang1, signed int ang2, double* toolX, double* to
 * created by: Matthew Wonneberg, Jamie Boyd
 * Date: March 5 2022
 ************************************************************/
-unsigned int scaraIk(signed int *ang1, signed int *ang2, double toolX, double toolY, int *armSolution){
+unsigned int scaraIk(signed int *ang1, signed int *ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1){
 
     volatile unsigned int exit = 0;
-
     volatile signed int angJ1;
     volatile signed int angJ2;
-
     volatile double B;     // length from origin to x,y
     volatile double beta;  // cosine law angle
     volatile double alpha; // angle of x,y
-
 
     B = sqrt(pow(toolX, 2) + pow(toolY, 2)); // straight line distance from origin to (x,y) point
     alpha = RadToDeg(atan2(toolY, toolX)); // angle of B from origin to (x,y) point
     beta = RadToDeg(acos((pow(L2, 2) - pow(B, 2) - pow(L1, 2)) / (-2 * B * L1))); // cosine law to find beta
 
-    if (*armSolution == 1) { // left hand solution
+    if (scaraState1->scaraPos.armSol == LEFT_ARM_SOLUTION) { // left hand solution
         angJ1 = alpha + beta;
-        if (angJ1 >= MAX_ABS_THETA1 || angJ1 <= -MAX_ABS_THETA1) { // switch solutions if the selected solution was impossible
+        if (angJ1 > MAX_ABS_THETA1 || angJ1 < -MAX_ABS_THETA1){  // switch solutions if the selected solution was impossible
             angJ1 = alpha - beta;
-            *armSolution =0; // changed to Right hand solution
-            if (angJ1 > MAX_ABS_THETA1 || angJ1 <= -MAX_ABS_THETA1)
-                exit = 1;       // error if both solutions do not work
-           // else
-               // printf("\nYour solution was changed to Right Hand\n");
+            scaraState1->scaraPos.armSol = 0; // changed to Right hand solution
+            if (angJ1 > MAX_ABS_THETA1 || angJ1 < -MAX_ABS_THETA1)
+                exit =1;
         }
     }
-    if (*armSolution == 0) { // right hand solution
+    else if (scaraState1->scaraPos.armSol == RIGHT_ARM_SOLUTION) { // right hand solution
         angJ1 = alpha - beta;
-        if (angJ1 <= -MAX_ABS_THETA1 || angJ1 >= MAX_ABS_THETA1) { // switch solutions if the selected solution was not possible
+        if (angJ1 < -MAX_ABS_THETA1 || angJ1 > MAX_ABS_THETA1){  // switch solutions if the selected solution was not possible
             angJ1 = alpha + beta;
-            *armSolution =1; // changed to left hand solution
-            if (angJ1 <= -MAX_ABS_THETA1 || angJ1 >= MAX_ABS_THETA1)
-                exit = 1;        // error if both solutions do not work
-           // else
-                //printf("\nYour solution was changed to Left Hand\n");
+            scaraState1->scaraPos.armSol = 1; // changed to left hand solution
+            if (angJ1 < -MAX_ABS_THETA1 || angJ1 > MAX_ABS_THETA1)
+                exit =1;
         }
     }
 
@@ -411,8 +399,6 @@ unsigned int scaraIk(signed int *ang1, signed int *ang2, double toolX, double to
         *ang1 = round(angJ1);
         *ang2 = round(angJ2);
     }
-  //  else if (exit == 1)
-       // printf("\nERROR detected!\n"); // print error message if something went wrong
 
     return (exit);
 }
@@ -431,7 +417,7 @@ unsigned int scaraIk(signed int *ang1, signed int *ang2, double toolX, double to
 * created by: Matthew Wonneberg, Jamie Boyd
 * Date: March 17 2022
 ************************************************************/
-/*LINE_DATA initLine(double xB, double yB, double xA, double yA, int numPts)
+LINE_DATA initLine(double xB, double yB, double xA, double yA, int numPts)
 {
     LINE_DATA lineInit;
 
@@ -459,21 +445,21 @@ unsigned int scaraIk(signed int *ang1, signed int *ang2, double toolX, double to
 * created by: Matthew Wonneberg, Jamie Boyd
 * Date: March 17
 ************************************************************/
-/*SCARA_ROBOT scaraInitState(double x, double y, int armSol,char penState, char mtrSpeed)
+SCARA_ROBOT scaraInitState(double x, double y, int armSol,char penState)
 {
     SCARA_ROBOT Init;
 
 
-    Init.scaraArm.x = x; // whatever the user enters for x and y position
-    Init.scaraArm.y = y;
-    Init.scaraArm.theta1 = 0;  // theta 1  and 2 are set to 0 because they are yet to be calculated
-    Init.scaraArm.theta2 = 0;
-    Init.scaraArm.armSol = armSol;     // armSol and penState and mtrSpeed are defined
+    Init.scaraPos.x = x; // whatever the user enters for x and y position
+    Init.scaraPos.y = y;
+    Init.scaraPos.theta1 = 0;  // theta 1  and 2 are set to 0 because they are yet to be calculated
+    Init.scaraPos.theta2 = 0;
+    Init.scaraPos.armSol = armSol;     // armSol and penState and mtrSpeed are defined
     Init.scaraTool.penPos = penState;
 
     return Init;
 }
-//---------------------------------------------------------------------------------------*/
+//---------------------------------------------------------------------------------------
 // Returns angle in radians from input angle in degrees
 double DegToRad(double angDeg)
 {

@@ -15,8 +15,8 @@
 #define RIGHT_ARM_SOLUTION 0           // index that can be used to indicate right arm
 #define L1 15       // inner arm length
 #define L2 15       // outer arm length
-#define MAX_ABS_THETA1 180.0       // max angle of  arm 1
-#define MAX_ABS_THETA2 180.0       // max angle of outer arm relative to x axis
+#define MAX_ABS_THETA1 90.0       // max angle of  arm 1
+#define MAX_ABS_THETA2 175.0       // max angle of outer arm relative to x axis
 #define MAX_ABS_X 30      // max x value
 #define MAX_ABS_Y 30       // max y value
 #define MIN_ABS_X 0      // min x value
@@ -29,12 +29,16 @@
 #define W_MAX 708//360//708 // deg/s
 #define A_MAX 354//180//354 //deg/s^2
 
+#define A_MAX_LINEAR 94 // mm/s^2
+#define V_MAX_LINEAR 188 // mm/s
+
 #define MAX_ARRAY 201
 
 
 typedef struct PARABOLIC_PROFILE{
      volatile unsigned int controlJoint;
-     volatile double timeMove;
+     volatile unsigned int positionJ1;
+     volatile unsigned int positionJ2;
 
 }PARABOLIC_PROFILE;
 
@@ -60,11 +64,9 @@ typedef struct SCARA_TOOL {
 
 // using above structures, define he SCARA ROBOT
 typedef struct SCARA_ROBOT{
-     PARABOLIC_PROFILE scaraVel;
-     SCARA_POS scaraArm;
+     PARABOLIC_PROFILE scaraProfile;
+     SCARA_POS scaraPos;
      SCARA_TOOL scaraTool;
-     volatile int motorSpeed1;
-     volatile int motorSpeed2;
  }SCARA_ROBOT;
 
  // info needed to draw a line
@@ -95,8 +97,8 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);
 void pathPlanning(SCARA_ROBOT* line);
 unsigned int scaraFk(signed int ang1, signed int ang2, double* toolX, double* toolY);
-unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, int *armSolution);
-SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState, char mtrSpeed);
+unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
+SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState);
 LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 double DegToRad(double);  // returns angle in radians from input angle in degrees
 double RadToDeg(double);  // returns angle in degrees from input angle in radians

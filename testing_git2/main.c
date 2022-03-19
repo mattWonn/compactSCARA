@@ -139,11 +139,11 @@ int main(void) {
 
    //----------- Structured Commands -------------------
 
-           scaraStateEnd.scaraArm.theta1 =0;
-           scaraStateEnd.scaraArm.theta2 =0;
-           scaraStateEnd.scaraArm.x =15;
-           scaraStateEnd.scaraArm.y =0;
-           scaraStateEnd.scaraArm.armSol =1; //(LHS)
+           scaraStateEnd.scaraPos.theta1 =0;
+           scaraStateEnd.scaraPos.theta2 =0;
+           scaraStateEnd.scaraPos.x =15;
+           scaraStateEnd.scaraPos.y =0;
+           scaraStateEnd.scaraPos.armSol =1; //(LHS)
 
 
            /*----------------- paste this to send a value to the console--------------------------------
@@ -168,54 +168,82 @@ int main(void) {
                     numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
            */
 
+
+           LINE_DATA testLine = initLine(-5, -15, 15, 15, 0);//xb yb xa ya npts
+           SCARA_ROBOT testRobot = scaraInitState(30, 0, LEFT_ARM_SOLUTION, TOOL_UP); // x y armSol penPos
+
+           // tool command
+           __disable_interrupt();
+           waiting = moveScaraL(&testRobot, testLine);
+           if (waiting == 0){
+               __enable_interrupt();
+               __delay_cycles(10000);
+               startMoveJ=1;
+               while (startMoveJ == 1){}
+               startMoveJ =0;
+           }
+
+
+
+
 //           waiting = moveJ(0,90,0,25);
  //          waiting = moveJ(90,-90,25,0);
    //        waiting = moveJ(-90,90,0,-45);
-           __disable_interrupt();
+   /*        __disable_interrupt();
            waiting = moveJ(0,90,0,100);
+           if (waiting == 0){
            __enable_interrupt();
            __delay_cycles(10000);
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
+           }
 
            __disable_interrupt();
            waiting = moveJ(90,0,100,145);
+           if (waiting == 0){
            __enable_interrupt();
-           __delay_cycles(100000);
+           __delay_cycles(10000);
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
+           }
 
            __disable_interrupt();
            waiting = moveJ(0,-180,145,0);
+           if (waiting == 0){
            __enable_interrupt();
-           __delay_cycles(100000);
+           __delay_cycles(10000);
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
+           }
 
            __disable_interrupt();
            waiting = moveJ(-180,-45,0,-90);
+           if (waiting == 0){
            __enable_interrupt();
-           __delay_cycles(100000);
+           __delay_cycles(10000);
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
+           }
 
            __disable_interrupt();
            waiting = moveJ(-45,0,-90,0);
+           if (waiting == 0){
            __enable_interrupt();
-           __delay_cycles(100000);
+           __delay_cycles(10000);
            startMoveJ = 1;
            while (startMoveJ == 1){}
            startMoveJ =0;
+           }*/
 
 
 
     while (1){//--------------- main loop-------------------
 
-  /*    char rxGetString[BUFFLEN] = {0};   // reset getString buffer
+      char rxGetString[BUFFLEN] = {0};   // reset getString buffer
 
       returned = usciA1UartGets(&rxGetString);  // get a string from the console
 
@@ -225,7 +253,7 @@ int main(void) {
              numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
       }
       else
-         numChars = ucsiA1UartTxString(&getsInvalidString); // print error message*/
+         numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
 
 
    //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
