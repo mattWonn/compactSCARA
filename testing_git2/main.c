@@ -123,6 +123,7 @@ int main(void) {
    //--------------- Update Loop ----------------
 
            volatile unsigned int waiting=2;
+           volatile unsigned int attemptedArmSolution;
 
            posCount = 0;
            posCount2 = 0;
@@ -131,6 +132,8 @@ int main(void) {
            prevPosCount2 =0;
            noMove1 =0;
            noMove2 =0;
+           armSolChange = 0;
+
 
            kProportional =1.6;//1.6
            kIntegral = 1; //1.8
@@ -144,6 +147,7 @@ int main(void) {
            scaraStateEnd.scaraPos.x =15;
            scaraStateEnd.scaraPos.y =0;
            scaraStateEnd.scaraPos.armSol =1; //(LHS)
+
 
 
            /*----------------- paste this to send a value to the console--------------------------------
@@ -169,17 +173,43 @@ int main(void) {
            */
 
 
+
            LINE_DATA testLine = initLine(-5, -15, 15, 15, 0);//xb yb xa ya npts
            SCARA_ROBOT testRobot = scaraInitState(30, 0, LEFT_ARM_SOLUTION, TOOL_UP); // x y armSol penPos
+           attemptedArmSolution = testRobot.scaraPos.armSol;
 
-           // tool command
+
            __disable_interrupt();
            waiting = moveScaraL(&testRobot, testLine);
+           //tool command
            if (waiting == 0){
                __enable_interrupt();
                __delay_cycles(10000);
                startMoveJ=1;
                while (startMoveJ == 1){}
+               if (armSwitchSol == 1){ // after the first line has finished and an armChange is needed,
+                   __disable_interrupt();
+                   armSwitchSol =0;
+                   scaraStateSet.scaraPos.theta1 = posArray1[moveJIndex]*DEG_PER_PUL_N70; // start spot, old solution
+                   scaraStateEnd.scaraPos.theta1 = posArray2[moveJIndex]*DEG_PER_PUL_N70;
+                   testRobot.scaraPos.armSol = attemptedArmSolution;
+                   returned = scaraIk(&(posArray1[moveJIndex]), &(posArray2[moveJIndex]), testLine.pA.x, testLine.pA.y, &testRobot); // only changing the solution
+                   scaraStateSet.scaraPos.theta2 = posArray1[moveJIndex]*DEG_PER_PUL_N70; // same spot, new solution
+                   scaraStateEnd.scaraPos.theta2 = posArray2[moveJIndex]*DEG_PER_PUL_N70;
+
+                   waiting = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
+                   if (waiting == 0){
+                       LINE_DATA sendLine = initLine(armChangeEnd.x, armChangeEnd.y, armChangeStart.x, armChangeStart.y, 0);//xb yb xa ya npts
+                       waiting = moveScaraL(&testRobot, sendLine);
+                       if(waiting == 0){
+                           __enable_interrupt();
+                           __delay_cycles(10000);
+                           startMoveJ=1;
+                           while (startMoveJ == 1){}
+                           startMoveJ =0;
+                       }
+                   }
+               }
                startMoveJ =0;
            }
 

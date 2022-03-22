@@ -25,6 +25,7 @@
 #define TOOL_DOWN 1
 
 #define PUL_PER_DEG_N70 9.48866 // 3415.92pul/360deg
+#define DEG_PER_PUL_N70 0.10538896
 #define T_UPDATE 0.01
 #define W_MAX 708//360//708 // deg/s
 #define A_MAX 354//180//354 //deg/s^2
@@ -84,15 +85,27 @@ typedef struct SCARA_ROBOT{
 // SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState, char mtrSpeed);
 // LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 
+
  volatile signed int velArray1 [MAX_ARRAY];
  volatile signed int posArray1 [MAX_ARRAY];
  volatile signed int velArray2 [MAX_ARRAY];
  volatile signed int posArray2 [MAX_ARRAY];
- volatile unsigned int arrayLength ;
+ volatile unsigned int arrayLength;
+ volatile unsigned int armSolChange;
+ volatile unsigned int armSwitchSol;
+ volatile unsigned int armSwitchSol2;
+ volatile unsigned int moveJIndex;
+ volatile unsigned int solutionMoveJ1;
+ volatile unsigned int solutionMoveJ2;
+ volatile double xHold;
+ volatile double yHold;
+ POINT_2D armChangeStart;
+ POINT_2D armChangeEnd;
  volatile unsigned int noMove1;
  volatile unsigned int noMove2;
 
 //int moveScaraJ(SCARA_ROBOT* scaraState);
+unsigned int sendMoveJ(SCARA_ROBOT scaraStateM1, SCARA_ROBOT scaraStateM2);
 unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2);
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);
 void pathPlanning(SCARA_ROBOT* line);
