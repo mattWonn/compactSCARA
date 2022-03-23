@@ -262,9 +262,6 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
     arrayLength = (timeForMove/T_UPDATE)+1;
     aMaxMove = A_MAX_LINEAR;
 
-    if (armSwitchSol2 == 1){
-        tInc = moveJIndex; // if the arm solution was changed, start where the previous move left off
-    }
 
     for(tInc; tInc<arrayLength; tInc++){ // calculate linear array in terms of d(t) and then fill X and Y positions
         d = (((aMaxMove)*(tInc*T_UPDATE))/w)  -  ((aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2));
@@ -292,23 +289,24 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
                 scaraStateEnd.scaraPos.theta2 = angleJ2;
                 value = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
                 if (value == 0){
-                    value = moveScaraL(scaraState, newLine); // now after changing solutions, recalculate the line with the current solution
+//                    value = moveScaraL(scaraState, newLine); // now after changing solutions, recalculate the line with the current solution
+                    return(2);
                 }
             }
-            if (armSolChange == 1 && armSwitchSol == 1){ // if a second arm change is needed, then split the line into two lines
+            if (armSolChange == 1 && armSwitchSol == 1 && solutionMoveJ2 == 0){ // if a second arm change is needed, then split the line into two lines
                 armChangeStart.x = xHoldPrev;
                 armChangeStart.y = yHoldPrev;
                 armChangeEnd.x = newLine.pB.x;
                 armChangeEnd.y = newLine.pB.y;
-                LINE_DATA sendLine = initLine(xHoldPrev, yHoldPrev, newLine.pA.x, newLine.pA.y, 0);//xb yb xa ya npts
-                if (attemptedArmSolution == LEFT_ARM_SOLUTION)
-                    scaraState->scaraPos.armSol = RIGHT_ARM_SOLUTION;//return arm solution
-                else
-                    scaraState->scaraPos.armSol = LEFT_ARM_SOLUTION;//return arm solution
+                holdLine = initLine(xHoldPrev, yHoldPrev, newLine.pA.x, newLine.pA.y, 0);//xb yb xa ya npts
+                endLine = initLine(newLine.pB.x, newLine.pB.y, armChangeStart.x, armChangeStart.y, 0);
+
+                scaraState->scaraPos.armSol = attemptedArmSolution;
                 armSolChange =0;
                 armSwitchSol =0;
                 solutionMoveJ2 =1; // set second solution change
-                value = moveScaraL(scaraState, sendLine); // re calculate this time using a shorter line up to the changing point, this line will be successful and stop at the arm solution change point
+           //     value = moveScaraL(scaraState, sendLine); // re calculate this time using a shorter line up to the changing point, this line will be successful and stop at the arm solution change point
+                return(3);
             }
             xHoldPrev = xHold;
             yHoldPrev = yHold;

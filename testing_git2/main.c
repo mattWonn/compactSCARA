@@ -123,7 +123,7 @@ int main(void) {
    //--------------- Update Loop ----------------
 
            volatile unsigned int waiting=2;
-           volatile unsigned int attemptedArmSolution;
+           volatile unsigned int originalArmSolution;
 
            posCount = 0;
            posCount2 = 0;
@@ -147,6 +147,9 @@ int main(void) {
            scaraStateEnd.scaraPos.x =15;
            scaraStateEnd.scaraPos.y =0;
            scaraStateEnd.scaraPos.armSol =1; //(LHS)
+
+           volatile signed int angleJ1;
+           volatile signed int angleJ2;
 
 
 
@@ -175,11 +178,12 @@ int main(void) {
 
 
            LINE_DATA testLine = initLine(-5, -15, 15, 15, 0);//xb yb xa ya npts
+           holdLine = testLine;
            SCARA_ROBOT testRobot = scaraInitState(30, 0, LEFT_ARM_SOLUTION, TOOL_UP); // x y armSol penPos
-           attemptedArmSolution = testRobot.scaraPos.armSol;
+           originalArmSolution = testRobot.scaraPos.armSol;
 
 
-           __disable_interrupt();
+   /*        __disable_interrupt();
            waiting = moveScaraL(&testRobot, testLine);
            //tool command
            if (waiting == 0){
@@ -187,7 +191,7 @@ int main(void) {
                __delay_cycles(10000);
                startMoveJ=1;
                while (startMoveJ == 1){}
-               if (armSwitchSol == 1){ // after the first line has finished and an armChange is needed,
+               if (solutionMoveJ2 == 1){ // after the first line has finished and an armChange is needed,
                    __disable_interrupt();
                    armSwitchSol =0;
                    scaraStateSet.scaraPos.theta1 = posArray1[moveJIndex]*DEG_PER_PUL_N70; // start spot, old solution
@@ -212,9 +216,71 @@ int main(void) {
                }
                startMoveJ =0;
            }
+*/
+
+           __disable_interrupt();
+           waiting = moveScaraL(&testRobot, testLine);
+           if (waiting == 2){
+               waiting = moveScaraL(&testRobot, testLine); // after first arm solution was not successful, try again with the other arm solution
+               if(waiting == 3){
+                   waiting = moveScaraL(&testRobot, holdLine); // after first arm solution was not successful, try again with the other arm solution
+                   if(waiting == 0){
+                       __enable_interrupt();
+                       __delay_cycles(10000);
+                       startMoveJ=1;
+                       while (startMoveJ == 1){}
+                       startMoveJ =0;
+                   __disable_interrupt();
+                   /**********TOOLUP*************/
+                   armSwitchSol =0;
+                   waiting = scaraIk(&angleJ1, &angleJ2, holdLine.pB.x, holdLine.pB.y, &testRobot); // only changing the solution
+                   scaraStateSet.scaraPos.theta1 = angleJ1; // start spot, old solution
+                   scaraStateEnd.scaraPos.theta1 = angleJ2;
+                   testRobot.scaraPos.armSol = originalArmSolution;
+                   waiting = scaraIk(&angleJ1, &angleJ2, endLine.pA.x, endLine.pA.y, &testRobot); // only changing the solution
+                   scaraStateSet.scaraPos.theta2 = angleJ1; // same spot, new solution
+                   scaraStateEnd.scaraPos.theta2 = angleJ2;
+
+                   waiting = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
+                   if (waiting == 0){
+                       endLine = initLine(armChangeEnd.x, armChangeEnd.y, armChangeStart.x, armChangeStart.y, 0);//xb yb xa ya npts
+                       waiting = moveScaraL(&testRobot, endLine);
+                       if(waiting == 0){
+                           __enable_interrupt();
+                           __delay_cycles(10000);
+                           startMoveJ=1;
+                           while (startMoveJ == 1){}
+                           startMoveJ =0;
+                       }
+                   }
+                   }
+                   waiting = moveScaraL(&testRobot, endLine); // after first arm solution was not successful, try again with the other arm solution
+               }
+               else if(waiting == 0){
+                    __enable_interrupt();
+                    __delay_cycles(10000);
+                    startMoveJ=1;
+                    while (startMoveJ == 1){}
+                    startMoveJ =0;
+               }
+
+           }
+           else if(waiting == 0){
+               __enable_interrupt();
+               __delay_cycles(10000);
+               startMoveJ=1;
+               while (startMoveJ == 1){}
+               startMoveJ =0;
+           }
 
 
 
+               //tool command
+     /*      if (waiting == 0){
+                   __enable_interrupt();
+                   __delay_cycles(10000);
+                   startMoveJ=1;
+                   while (startMoveJ == 1){}*/
 
 //           waiting = moveJ(0,90,0,25);
  //          waiting = moveJ(90,-90,25,0);

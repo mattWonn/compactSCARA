@@ -81,6 +81,8 @@ typedef struct SCARA_ROBOT{
 
  SCARA_ROBOT scaraStateEnd;
  SCARA_ROBOT scaraStateSet;
+ LINE_DATA holdLine;
+ LINE_DATA endLine;
 
 // SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState, char mtrSpeed);
 // LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
