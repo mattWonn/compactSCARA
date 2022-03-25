@@ -78,8 +78,8 @@ void updateTimer(){
     volatile signed int posErrortest;
 
 
-//   volatile char posPrint[25]; // Uart
-//   volatile int ret;
+ //  volatile char posPrint[25]; // Uart
+ //  volatile int ret;
 
     if (startMoveJ == 1){
         updateIndex++;
@@ -87,12 +87,7 @@ void updateTimer(){
         if (updateIndex >= arrayLength-1) // uncertainty.
         {
             startMoveJ =0;
-           // __disable_interrupt();
-           /* sendPWM =0;
-            sendPWM2 =0;
-            mddCW(sendPWM);
-            mddCW2(sendPWM2);*/
-            TA0CCR1 =0;
+            TA0CCR4 =0;
             TA1CCR1 = 0;
             prevPosCount = 0;
             posCount = posArray1[arrayLength-1];
@@ -126,8 +121,8 @@ void updateTimer(){
                    sendPWM = MAX_VELOCITY;
         }
 
- //       sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM, velError1, posError1); // insert the number of characters into the display string
- //       ret = ucsiA1UartTxString(&posPrint); // print the string
+   //     sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM, velError1, posError1); // insert the number of characters into the display string
+   //     ret = ucsiA1UartTxString(&posPrint); // print the string
 
 
         if (dir1 == 1) // send motor the speed signal based on direction

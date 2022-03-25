@@ -15,8 +15,8 @@
 #define RIGHT_ARM_SOLUTION 0           // index that can be used to indicate right arm
 #define L1 15       // inner arm length
 #define L2 15       // outer arm length
-#define MAX_ABS_THETA1 90.0       // max angle of  arm 1
-#define MAX_ABS_THETA2 175.0       // max angle of outer arm relative to x axis
+#define MAX_ABS_THETA1 110.0       // max angle of  arm 1
+#define MAX_ABS_THETA2 160.0       // max angle of outer arm relative to x axis
 #define MAX_ABS_X 30      // max x value
 #define MAX_ABS_Y 30       // max y value
 #define MIN_ABS_X 0      // min x value

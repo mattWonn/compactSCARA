@@ -18,17 +18,19 @@
 #include <string.h>
 #include <math.h>
 
-unsigned int sendMoveJ(SCARA_ROBOT scaraStateM1, SCARA_ROBOT scaraStateM2){
+unsigned int sendMoveJ(SCARA_ROBOT scaraStateStart, SCARA_ROBOT scaraStateEnd){
     volatile unsigned int exit =0;
 
             __disable_interrupt();
-            exit = moveJ(scaraStateM1.scaraPos.theta1,scaraStateM1.scaraPos.theta2,scaraStateM2.scaraPos.theta1,scaraStateM2.scaraPos.theta2); // start end M1, start end M2;
+            exit = moveJ(scaraStateStart.scaraPos.theta1,scaraStateEnd.scaraPos.theta1,scaraStateStart.scaraPos.theta2,scaraStateEnd.scaraPos.theta2); // start end M1, start end M2;
             if (exit == 0){
                 __enable_interrupt();
-                __delay_cycles(10000);
+               // __delay_cycles(10000);
                 startMoveJ = 1;
                 while (startMoveJ == 1){}
+                __delay_cycles(10000);
                 startMoveJ =0;
+
             }
 
     return exit;
@@ -68,6 +70,8 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
  //     volatile char posPrint[45]; // Uart
 //      volatile int ret;
+
+
 
 
     if (endAng1 <= MAX_ABS_THETA1 && endAng1 >= -MAX_ABS_THETA1){ // check range
@@ -138,9 +142,9 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                     positionDeg = RadToDeg((DegToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
                     positionDeg2 = RadToDeg((DegToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
 
-                    velocityCountPerUpdate = round(velocityDegPerSec*(7.7778037)*(T_UPDATE/1)); // in units pulses per update
+                    velocityCountPerUpdate = round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update//7.77
                     velocityCountPerUpdate2 = round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
-                    positionCounts = round(positionDeg*7.7778037);
+                    positionCounts = round(positionDeg*PUL_PER_DEG_N70);///7.77
                     positionCounts2 = round(positionDeg2*PUL_PER_DEG_N70);
 
 
@@ -171,9 +175,9 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                     positionDeg2 = RadToDeg((DegToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToDeg(DegToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
 
                     velocityCountPerUpdate = round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
-                    velocityCountPerUpdate2 = round(velocityDegPerSec2*(7.778)*(T_UPDATE/1)); // in units pulses per update
+                    velocityCountPerUpdate2 = round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update//7.777
                     positionCounts = round(positionDeg*PUL_PER_DEG_N70);
-                    positionCounts2 = round(positionDeg2*7.778);
+                    positionCounts2 = round(positionDeg2*PUL_PER_DEG_N70);//7.777
 
 
                     velArray2[tInc] = velocityCountPerUpdate;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
@@ -220,8 +224,6 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
     volatile double timeForMove;
     volatile double w = 0;
     volatile double d = 0;
-   // volatile double xHold =0;
-  //  volatile double yHold =0;
     volatile double xHoldPrev =0;
     volatile double yHoldPrev =0;
     volatile unsigned int attemptedArmSolution;
@@ -234,103 +236,119 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
     volatile unsigned int startingQuadrent = 0;
     volatile unsigned int endingQuadrent = 0;
 
+    volatile signed int currentAngJ1;
+    volatile signed int currentAngJ2;
     volatile signed int angleJ1;
     volatile signed int angleJ2;
 
     SCARA_ROBOT scaraStateSet;
     SCARA_ROBOT scaraStateEnd;
 
-/*    if ((newLine.pA.x < 0 && newLine.pA.y < 0) || (newLine.pB.x < 0 && newLine.pB.y < 0))
-        scaraState->scaraPos.armSol = LEFT_ARM_SOLUTION;//quad 3
-    else if ((newLine.pA.x < 0 && newLine.pA.y > 0) || (newLine.pB.x < 0 && newLine.pB.y > 0))
-        scaraState->scaraPos.armSol = RIGHT_ARM_SOLUTION;// quad 2
-    else if ((newLine.pA.x < 0 && newLine.pA.y > 0) && (newLine.pB.x < 0 && newLine.pB.y < 0))
-        value = 1;
-    else if ((newLine.pA.x < 0 && newLine.pA.y < 0) && (newLine.pB.x < 0 && newLine.pB.y > 0))
-        value = 1;*/
-    attemptedArmSolution = scaraState->scaraPos.armSol;
 
-    // else arm solution stays the same as it was assigned
+    // call Ik using newLine and armPos to get the starting angles
+    // compare the starting angles with posCount
+    // if they are different, do a moveJ with the tool up
 
-    deltaX = newLine.pB.x - newLine.pA.x;
-    deltaY = newLine.pB.y - newLine.pA.y;
-    deltaD = (sqrt(pow(deltaX, 2) + pow(deltaY, 2))); // pythagreom theorum for line distance in x,y
-
-    timeForMove = sqrt((abs(deltaD)*2*PI)/A_MAX_LINEAR); // calc T for sinusoidal profile
-    w = (2*PI)/timeForMove;
-
-    arrayLength = (timeForMove/T_UPDATE)+1;
-    aMaxMove = A_MAX_LINEAR;
+    returned = scaraIk(&angleJ1, &angleJ2, newLine.pA.x, newLine.pA.y, scaraState); // checking the starting angles for the given solution
+    currentAngJ1 = posCount/PUL_PER_DEG_N70;
+    currentAngJ2 = posCount2/PUL_PER_DEG_N70;
 
 
-    for(tInc; tInc<arrayLength; tInc++){ // calculate linear array in terms of d(t) and then fill X and Y positions
-        d = (((aMaxMove)*(tInc*T_UPDATE))/w)  -  ((aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2));
-        xHold = newLine.pA.x + (d*(deltaX)/deltaD);
-        yHold = newLine.pA.y + (d*(deltaY)/deltaD);
-        returned = scaraIk(&(posArray1[tInc]), &(posArray2[tInc]), xHold, yHold, scaraState);
+    if (currentAngJ1 != angleJ1 || currentAngJ2 != angleJ2){
+        /*******TOOL_UP**************/
+        scaraStateSet.scaraPos.theta1 = currentAngJ1;
+        scaraStateSet.scaraPos.theta2 = currentAngJ2;
 
-        if (returned == 0){
-            if ((armSolChange == 1) && armSwitchSol == 0 && solutionMoveJ2 == 0){// attempt to re calculate the line using the changed armSolution
-                armSwitchSol = 1;
-                armSolChange = 0;
-                solutionMoveJ1 = 1;
-                /**********TOOLUP*************/
-                scaraState->scaraPos.armSol = attemptedArmSolution;//revert arm solution
-                returned = scaraIk(&angleJ1, &angleJ2, newLine.pA.x, newLine.pA.y, scaraState); // only changing the solution
-                scaraStateSet.scaraPos.theta1 = angleJ1; // start spot, old solution
-                scaraStateEnd.scaraPos.theta1 = angleJ2;
-                if (attemptedArmSolution == LEFT_ARM_SOLUTION)
-                    scaraState->scaraPos.armSol = RIGHT_ARM_SOLUTION;//return arm solution
-                else
-                    scaraState->scaraPos.armSol = LEFT_ARM_SOLUTION;//return arm solution
+        scaraStateEnd.scaraPos.theta1 = angleJ1;
+        scaraStateEnd.scaraPos.theta2 = angleJ2;
 
-                returned = scaraIk(&angleJ1, &angleJ2, newLine.pA.x, newLine.pA.y, scaraState); // only changing the solution
-                scaraStateSet.scaraPos.theta2 = angleJ1; // same spot, new solution
-                scaraStateEnd.scaraPos.theta2 = angleJ2;
-                value = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
-                if (value == 0){
-//                    value = moveScaraL(scaraState, newLine); // now after changing solutions, recalculate the line with the current solution
-                    return(2);
+        value = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
+    }
+
+    if (value == 0){
+        attemptedArmSolution = scaraState->scaraPos.armSol;
+
+        deltaX = newLine.pB.x - newLine.pA.x;
+        deltaY = newLine.pB.y - newLine.pA.y;
+        deltaD = (sqrt(pow(deltaX, 2) + pow(deltaY, 2))); // pythagreom theorum for line distance in x,y
+
+        timeForMove = sqrt((abs(deltaD)*2*PI)/A_MAX_LINEAR); // calc T for sinusoidal profile
+        w = (2*PI)/timeForMove;
+
+        arrayLength = (timeForMove/T_UPDATE)+1;
+        aMaxMove = A_MAX_LINEAR;
+
+        holdPosition1 = currentAngJ1 * PUL_PER_DEG_N70;
+        holdPosition2 = currentAngJ2 * PUL_PER_DEG_N70;
+
+
+        for(tInc; tInc<arrayLength; tInc++){ // calculate linear array in terms of d(t) and then fill X and Y positions
+            d = (((aMaxMove)*(tInc*T_UPDATE))/w)  -  ((aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2));
+            xHold = newLine.pA.x + (d*(deltaX)/deltaD);
+            yHold = newLine.pA.y + (d*(deltaY)/deltaD);
+
+            if (abs(xHold) <=5.5 && abs(yHold) <= 5.5){ // inner circle violated
+                value = 1;
+                tInc = arrayLength;
+            }
+            else{
+                returned = scaraIk(&(posArray1[tInc]), &(posArray2[tInc]), xHold, yHold, scaraState);
+
+                if (returned == 0){
+                    if ((armSolChange == 1) && armSwitchSol == 0 && solutionMoveJ2 == 0){// attempt to re calculate the line using the changed armSolution
+                        armSwitchSol = 1;
+                        armSolChange = 0;
+                        solutionMoveJ1 = 1;
+                        /**********TOOLUP*************/
+                        scaraState->scaraPos.armSol = attemptedArmSolution;//revert arm solution
+                        returned = scaraIk(&angleJ1, &angleJ2, newLine.pA.x, newLine.pA.y, scaraState); // only changing the solution
+                        scaraStateSet.scaraPos.theta1 = angleJ1; // start spot, old solution
+                        scaraStateSet.scaraPos.theta2 = angleJ2;
+                        if (attemptedArmSolution == LEFT_ARM_SOLUTION)
+                            scaraState->scaraPos.armSol = RIGHT_ARM_SOLUTION;//return arm solution
+                        else
+                            scaraState->scaraPos.armSol = LEFT_ARM_SOLUTION;//return arm solution
+
+                        returned = scaraIk(&angleJ1, &angleJ2, newLine.pA.x, newLine.pA.y, scaraState); // only changing the solution
+                        scaraStateEnd.scaraPos.theta1 = angleJ1; // same spot, new solution
+                        scaraStateEnd.scaraPos.theta2 = angleJ2;
+                        value = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
+                        if (value == 0){
+        //                    value = moveScaraL(scaraState, newLine); // now after changing solutions, recalculate the line with the current solution
+                            return(2);
+                        }
+                    }
+                    if (armSolChange == 1 && armSwitchSol == 1 && solutionMoveJ2 == 0){ // if a second arm change is needed, then split the line into two lines
+                        armChangeStart.x = xHoldPrev;
+                        armChangeStart.y = yHoldPrev;
+                        armChangeEnd.x = newLine.pB.x;
+                        armChangeEnd.y = newLine.pB.y;
+                        holdLine = initLine(xHoldPrev, yHoldPrev, newLine.pA.x, newLine.pA.y, 0);//xb yb xa ya npts
+                        endLine = initLine(newLine.pB.x, newLine.pB.y, armChangeStart.x, armChangeStart.y, 0);
+
+                        scaraState->scaraPos.armSol = attemptedArmSolution;
+                        armSolChange =0;
+                        armSwitchSol =0;
+                        solutionMoveJ2 =1; // set second solution change
+                        return(3);
+                    }
+                    xHoldPrev = xHold;
+                    yHoldPrev = yHold;
+
+                    posArray1[tInc] = round(posArray1[tInc]*PUL_PER_DEG_N70); // calculate position in terms of pulses
+                    posArray2[tInc] = round(posArray2[tInc]*PUL_PER_DEG_N70);
+
+                    velArray1[tInc] = posArray1[tInc]-holdPosition1; // calculate velocity in terms of pulses per update time
+                    velArray2[tInc] = posArray2[tInc]-holdPosition2;
+
+                    holdPosition1 = posArray1[tInc]; // store previous position
+                    holdPosition2 = posArray2[tInc];
+
+                }
+                else{
+                    value = 1; // exit calculations if the move is not possible
                 }
             }
-            if (armSolChange == 1 && armSwitchSol == 1 && solutionMoveJ2 == 0){ // if a second arm change is needed, then split the line into two lines
-                armChangeStart.x = xHoldPrev;
-                armChangeStart.y = yHoldPrev;
-                armChangeEnd.x = newLine.pB.x;
-                armChangeEnd.y = newLine.pB.y;
-                holdLine = initLine(xHoldPrev, yHoldPrev, newLine.pA.x, newLine.pA.y, 0);//xb yb xa ya npts
-                endLine = initLine(newLine.pB.x, newLine.pB.y, armChangeStart.x, armChangeStart.y, 0);
-
-                scaraState->scaraPos.armSol = attemptedArmSolution;
-                armSolChange =0;
-                armSwitchSol =0;
-                solutionMoveJ2 =1; // set second solution change
-           //     value = moveScaraL(scaraState, sendLine); // re calculate this time using a shorter line up to the changing point, this line will be successful and stop at the arm solution change point
-                return(3);
-            }
-            xHoldPrev = xHold;
-            yHoldPrev = yHold;
-
-            posArray1[tInc] = round(posArray1[tInc]*7.778); // calculate position in terms of pulses
-            posArray2[tInc] = round(posArray2[tInc]*PUL_PER_DEG_N70);
-
-            velArray1[tInc] = posArray1[tInc]-holdPosition1; // calculate velocity in terms of pulses per update time
-            velArray2[tInc] = posArray2[tInc]-holdPosition2;
-
-            holdPosition1 = posArray1[tInc]; // store previous position
-            holdPosition2 = posArray2[tInc];
-
-            /*if (armSolChange == 0 && armSwitchSolution == 1 && tInc == arrayLength-1){
-                armSwitchSol2 =1;
-                armSwitchSol =0;
-                LINE_DATA sendLine = initLine(armChangeEnd.x, armChangeEnd.y, armChangeStart.x, armChangeStart.y, 0);//xb yb xa ya npts
-                moveJIndex = tInc;
-                scaraState->scaraPos.armSol = ~(attemptedArmSolution);
-                value = moveScaraL(scaraState, sendLine);
-            }*/
-        }
-        else{
-            value = 1; // exit calculations if the move is not possible
         }
     }
 
