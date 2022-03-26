@@ -197,6 +197,74 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
     return (exit);
 }
 
+unsigned int sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
+
+    volatile unsigned int result =0;
+
+    volatile signed int angleJ1;
+    volatile signed int angleJ2;
+    volatile unsigned int originalArmSolution;
+
+
+    originalArmSolution = scaraStateSolution->scaraPos.armSol;
+
+    __disable_interrupt();
+    result = moveScaraL(scaraStateSolution, drawLine);
+    if(result == 3){
+        result = moveScaraL(scaraStateSolution, holdLine); // after first arm solution was not successfull, calculate part of the first line with the original arm solution
+        if(result == 0){
+            __enable_interrupt();
+            __delay_cycles(10000);
+            startMoveJ=1;
+            while (startMoveJ == 1){}
+            startMoveJ =0;
+            __disable_interrupt();
+            /**********TOOLUP************/
+            armSwitchSol =0;
+
+            result = scaraIk(&angleJ1, &angleJ2, holdLine.pB.x, holdLine.pB.y, scaraStateSolution); // only changing the solution
+            if (result == 0){
+                scaraStateSet.scaraPos.theta1 = angleJ1; // start spot, old solution
+                scaraStateSet.scaraPos.theta2 = angleJ2;
+                if (originalArmSolution == LEFT_ARM_SOLUTION)
+                    scaraStateSolution->scaraPos.armSol = RIGHT_ARM_SOLUTION;//switch arm solutions
+                else
+                    scaraStateSolution->scaraPos.armSol = LEFT_ARM_SOLUTION;//return arm solution
+
+                result = scaraIk(&angleJ1, &angleJ2, endLine.pA.x, endLine.pA.y, scaraStateSolution); // only changing the solution
+                if (result == 0){
+                    scaraStateEnd.scaraPos.theta1 = angleJ1; // same spot, new solution
+                    scaraStateEnd.scaraPos.theta2 = angleJ2;
+
+                    result = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
+                    if (result == 0){
+                        endLine = initLine(armChangeEnd.x, armChangeEnd.y, armChangeStart.x, armChangeStart.y, 0);//xb yb xa ya npts
+                        result = moveScaraL(scaraStateSolution, endLine);
+                        if(result == 0){
+                            __enable_interrupt();
+                            __delay_cycles(10000);
+                            startMoveJ=1;
+                            while (startMoveJ == 1){}
+                            startMoveJ =0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else if(result == 0){
+        __enable_interrupt();
+        __delay_cycles(10000);
+        startMoveJ=1;
+        while (startMoveJ == 1){}
+        startMoveJ =0;
+    }
+
+
+    return result;
+}
+
+
 /***********************************************************
 * Name: int moveScaraL
 * function: used to calculate a linear move with the tool by
@@ -287,7 +355,7 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
             xHold = newLine.pA.x + (d*(deltaX)/deltaD);
             yHold = newLine.pA.y + (d*(deltaY)/deltaD);
 
-            if (abs(xHold) <=5.5 && abs(yHold) <= 5.5){ // inner circle violated
+            if ((abs(xHold*10) < 53) && (abs(yHold*10) < 53)){ // inner circle violated
                 value = 1;
                 tInc = arrayLength;
             }
@@ -295,11 +363,11 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
                 returned = scaraIk(&(posArray1[tInc]), &(posArray2[tInc]), xHold, yHold, scaraState);
 
                 if (returned == 0){
-                    if ((armSolChange == 1) && armSwitchSol == 0 && solutionMoveJ2 == 0){// attempt to re calculate the line using the changed armSolution
+/*                    if ((armSolChange == 1) && armSwitchSol == 0 && solutionMoveJ2 == 0){// attempt to re calculate the line using the changed armSolution
                         armSwitchSol = 1;
                         armSolChange = 0;
                         solutionMoveJ1 = 1;
-                        /**********TOOLUP*************/
+                        /**********TOOLUP************
                         scaraState->scaraPos.armSol = attemptedArmSolution;//revert arm solution
                         returned = scaraIk(&angleJ1, &angleJ2, newLine.pA.x, newLine.pA.y, scaraState); // only changing the solution
                         scaraStateSet.scaraPos.theta1 = angleJ1; // start spot, old solution
@@ -316,9 +384,10 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
                         if (value == 0){
         //                    value = moveScaraL(scaraState, newLine); // now after changing solutions, recalculate the line with the current solution
                             return(2);
-                        }
-                    }
-                    if (armSolChange == 1 && armSwitchSol == 1 && solutionMoveJ2 == 0){ // if a second arm change is needed, then split the line into two lines
+                        }*/
+                  //  }
+             //       if (armSolChange == 1 && armSwitchSol == 1 && solutionMoveJ2 == 0){ // if a second arm change is needed, then split the line into two lines
+                    if (armSolChange == 1){
                         armChangeStart.x = xHoldPrev;
                         armChangeStart.y = yHoldPrev;
                         armChangeEnd.x = newLine.pB.x;

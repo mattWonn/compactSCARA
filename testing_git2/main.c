@@ -123,7 +123,6 @@ int main(void) {
    //--------------- Update Loop ----------------
 
            volatile unsigned int waiting=2;
-           volatile unsigned int originalArmSolution;
 
            posCount = 0;
            posCount2 = 0;
@@ -179,13 +178,14 @@ int main(void) {
            posCount2 = 0;
 
 
-           LINE_DATA testLine = initLine(-5, -15, 15, 15, 0);//xb yb xa ya npts
+           LINE_DATA testLine = initLine(-1, -20, 15, 15, 0);//xb yb xa ya npts
            holdLine = testLine;
            SCARA_ROBOT testRobot = scaraInitState(30, 0, RIGHT_ARM_SOLUTION, TOOL_UP); // x y armSol penPos
-           originalArmSolution = testRobot.scaraPos.armSol;
+
+           returned = sendMoveL(&testRobot, testLine);
 
 
-           __disable_interrupt();
+       /*    __disable_interrupt();
            waiting = moveScaraL(&testRobot, testLine);
            if (waiting == 2){
                waiting = moveScaraL(&testRobot, testLine); // after first arm solution was not successful, try again with the other arm solution
@@ -198,7 +198,7 @@ int main(void) {
                        while (startMoveJ == 1){}
                        startMoveJ =0;
                    __disable_interrupt();
-                   /**********TOOLUP************/
+                   /**********TOOLUP***********
                    armSwitchSol =0;
                    waiting = scaraIk(&angleJ1, &angleJ2, holdLine.pB.x, holdLine.pB.y, &testRobot); // only changing the solution
                    scaraStateSet.scaraPos.theta1 = angleJ1; // start spot, old solution
@@ -242,7 +242,7 @@ int main(void) {
            if (waiting == 1){
                numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
 
-           }
+           }*/
 
 
 

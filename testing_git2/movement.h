@@ -107,6 +107,7 @@ typedef struct SCARA_ROBOT{
  volatile unsigned int noMove2;
 
 //int moveScaraJ(SCARA_ROBOT* scaraState);
+unsigned int sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine);
 unsigned int sendMoveJ(SCARA_ROBOT scaraStateM1, SCARA_ROBOT scaraStateM2);
 unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2);
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);
