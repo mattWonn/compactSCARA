@@ -147,11 +147,16 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                     positionCounts = round(positionDeg*PUL_PER_DEG_N70);///7.77
                     positionCounts2 = round(positionDeg2*PUL_PER_DEG_N70);
 
-
+                    if ((positionCounts2 > (positionCounts+1375)) || (positionCounts2 < (-1375 + positionCounts))){ // on the fly max theta2 value verification
+                        exit = 1;
+                        tInc = arrayLength;
+                    }
+                    else{
                     velArray1[tInc] = velocityCountPerUpdate;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
                     posArray1[tInc] = positionCounts;//round(positionDeg*PUL_PER_DEG_N70);
                     velArray2[tInc] = velocityCountPerUpdate2;//round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1));
                     posArray2[tInc] = positionCounts2;//round(positionDeg2*PUL_PER_DEG_N70);
+                    }
 
                 }
             }
@@ -179,11 +184,16 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
                     positionCounts = round(positionDeg*PUL_PER_DEG_N70);
                     positionCounts2 = round(positionDeg2*PUL_PER_DEG_N70);//7.777
 
-
+                    if ((positionCounts2 > (positionCounts+1375)) || (positionCounts2 < (-1375 + positionCounts))){ // on the fly max theta2 value verification
+                        exit = 1;
+                        tInc = arrayLength;
+                    }
+                    else{
                     velArray2[tInc] = velocityCountPerUpdate;//round(velocityDegPerSec*(PUL_PER_DEG_N70)*(T_UPDATE/1)); // in units pulses per update
                     posArray2[tInc] = positionCounts;//round(positionDeg*PUL_PER_DEG_N70);
                     velArray1[tInc] = velocityCountPerUpdate2;//round(velocityDegPerSec2*(PUL_PER_DEG_N70)*(T_UPDATE/1));
                     posArray1[tInc] = positionCounts2;//round(positionDeg2*PUL_PER_DEG_N70);
+                    }
 
                 }
            }
@@ -200,11 +210,9 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 unsigned int sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
 
     volatile unsigned int result =0;
-
     volatile signed int angleJ1;
     volatile signed int angleJ2;
     volatile unsigned int originalArmSolution;
-
 
     originalArmSolution = scaraStateSolution->scaraPos.armSol;
 
@@ -382,7 +390,7 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
                         scaraStateEnd.scaraPos.theta2 = angleJ2;
                         value = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
                         if (value == 0){
-        //                    value = moveScaraL(scaraState, newLine); // now after changing solutions, recalculate the line with the current solution
+                            value = moveScaraL(scaraState, newLine); // now after changing solutions, recalculate the line with the current solution
                             return(2);
                         }*/
                   //  }
@@ -407,11 +415,18 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
                     posArray1[tInc] = round(posArray1[tInc]*PUL_PER_DEG_N70); // calculate position in terms of pulses
                     posArray2[tInc] = round(posArray2[tInc]*PUL_PER_DEG_N70);
 
+                    if ((posArray2[tInc] > (posArray1[tInc]+1375)) || (posArray2[tInc] < (-1375 + posArray1[tInc]))){ //  theta2 value verification
+                        value = 1;
+                        tInc = arrayLength;
+                    }
+                    else{
+
                     velArray1[tInc] = posArray1[tInc]-holdPosition1; // calculate velocity in terms of pulses per update time
                     velArray2[tInc] = posArray2[tInc]-holdPosition2;
 
                     holdPosition1 = posArray1[tInc]; // store previous position
                     holdPosition2 = posArray2[tInc];
+                    }
 
                 }
                 else{
