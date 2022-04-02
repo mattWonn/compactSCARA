@@ -174,7 +174,7 @@ int main(void) {
                     numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
            */
 
-           posCount = 0;
+       /*    posCount = 0;
            posCount2 = 0;
 
 
@@ -306,11 +306,20 @@ int main(void) {
            startMoveJ =0;
            }*/
 
+           char menu[] = "\nMODULAR SCARA MENU OPTIONS\n\r";
+           numChars = ucsiA1UartTxString(&menu);
+           __delay_cycles(10000);
+           char menu1[] = "1: moveJ stJ1 enJ1 stJ2 enJ2\n\r"; // change moveJ to start from current position
+           numChars = ucsiA1UartTxString(&menu1);
+           __delay_cycles(10000);
+           char menu2[] = "2: moveL xA,yA xB,yB, 1:L 0:R, up:1 dn:0\n\r";
+           numChars = ucsiA1UartTxString(&menu2);
+
 
 
     while (1){//--------------- main loop-------------------
 
-      char rxGetString[BUFFLEN] = {0};   // reset getString buffer
+      char rxGetString[80] = {0};   // reset getString buffer
 
       returned = usciA1UartGets(&rxGetString);  // get a string from the console
 

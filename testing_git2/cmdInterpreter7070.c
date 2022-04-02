@@ -64,6 +64,9 @@ void motorCmdInit(CMD *vnhCmdList){
     vnhCmdList[11].name = CMD11;
     vnhCmdList[11].nArgs = CMD11_NARGS;
 
+    vnhCmdList[12].name = CMD12;
+    vnhCmdList[12].nArgs = CMD12_NARGS;
+
 
 }
 /***********************************
@@ -229,21 +232,59 @@ int parseCmd(CMD * cmdList, char * cmdLine){
             token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
 
         if (n == 0){  // first argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        else if (n == 1){  // second argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        else if (n == 2){  // third argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        else if (n == 3){  // fourth argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+            token = NULL;  // this is the last argument for the command
+        }
+        n++;
+        }
+        if (nArgs > cmdList[index].nArgs || nArgs < cmdList[index].nArgs){ // too many arguments in command
+             value = -1;  // parseCmd exits with invalid data
+        }
+        if (value == 0){
+            value = executeCmd(cmdList, index); // send index and command to execute
+        }
+    }
+    else if (index == 12){
+        while (token != NULL){            // while token is not the last character in the buffer
+
+            token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
+
+        if (n == 0){  // first argument
                 cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
                 nArgs++;       // inc argument count
-            }
-            else if (n == 1){  // second argument
-                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-                nArgs++;       // inc argument count
-            }
-            else if (n == 2){  // third argument
-                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-                nArgs++;       // inc argument count
-            }
-            else if (n == 3){  // fourth argument
-                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-                nArgs++;       // inc argument count
-                token = NULL;  // this is the last argument for the command
+        }
+        else if (n == 1){  // second argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        else if (n == 2){  // third argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        else if (n == 3){  // fourth argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        else if (n == 4){  // fourth argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        else if (n == 5){  // fourth argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
         }
         n++;
         }
@@ -416,12 +457,23 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         displayPos2();
         break;
     case 11://-------------moveJ--------------------
-        __disable_interrupt();
-        result = moveJ(cmdList[11].args[0],cmdList[11].args[1],cmdList[11].args[2],cmdList[11].args[3]);
-        __enable_interrupt();
-        startMoveJ = 1;
-        while (startMoveJ == 1){}
-        startMoveJ =0;
+
+       // convert degrees into pulses
+       scaraStateSet.scaraPos.theta1 = cmdList[11].args[0]*PUL_PER_DEG_N70;
+       scaraStateEnd.scaraPos.theta1 = cmdList[11].args[1]*PUL_PER_DEG_N70;
+       scaraStateSet.scaraPos.theta2 = cmdList[11].args[2]*PUL_PER_DEG_N70;
+       scaraStateEnd.scaraPos.theta2 = cmdList[11].args[3]*PUL_PER_DEG_N70;
+
+       result = sendMoveJ(scaraStateSet, scaraStateEnd);
+       break;
+    case 12://-----------moveL-------------------
+
+        holdLine = initLine(cmdList[12].args[2], cmdList[12].args[3], cmdList[12].args[0], cmdList[12].args[1], 0);//xb yb xa ya npts
+
+        SCARA_ROBOT testRobot = scaraInitState(30, 0, cmdList[12].args[4], cmdList[12].args[5]); // x y armSol penPos
+
+        result = sendMoveL(&testRobot, holdLine);
+
     }//---------------------------------
 
  return result;

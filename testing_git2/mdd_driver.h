@@ -39,7 +39,7 @@ unsigned int counting2;
 //-------- cmdInterpreter -----------
 
 #define NULLNUM 0x00
-#define MAX_ARGS 2
+#define MAX_ARGS 6
 
 #define BUFFLEN 60
 
@@ -69,7 +69,9 @@ unsigned int counting2;
 
 #define CMD11 "moveJ"
 #define CMD11_NARGS 4
-#define MAX_CMDS 12
+#define CMD12 "moveL"
+#define CMD12_NARGS 6
+#define MAX_CMDS 13
 
 volatile unsigned char data;
 volatile unsigned char x;
