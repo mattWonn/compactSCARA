@@ -21,14 +21,14 @@
 #define MAX_ABS_THETA1_PUL 1043
 #define RELATIVE_THETA2 155 // degrees relative to arm one
 #define RELATIVE_THETA2_PUL 1471 // 155 * PUL_PER_DEG_N70
-#define MAX_ABS_THETA2 (MAX_ABS_THETA1 + RELATIVE_THETA2)       // max angle of outer arm relative to x axis
+#define MAX_ABS_THETA2 (180)       // max angle of outer arm relative to x axis
 #define MAX_ABS_THETA2_PUL (MAX_ABS_THETA2 * PUL_PER_DEG_N70)
 #define MAX_ABS_X 30      // max x value
 #define MAX_ABS_Y 30       // max y value
 #define MIN_ABS_X 0      // min x value
 #define MIN_ABS_Y -30       // min y value
 #define XY_RES_FACTOR 10
-#define INNER_CIRCLE_BOUNDS 6500 // 1000* 6.5cm // cm radius
+#define INNER_CIRCLE_BOUNDS 65 // 1000* 6.5cm // cm radius
 #define TOOL_UP 0
 #define TOOL_DOWN 1
 
