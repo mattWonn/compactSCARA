@@ -118,11 +118,12 @@ typedef struct SCARA_ROBOT{
  volatile unsigned int noMove2;
 
 //int moveScaraJ(SCARA_ROBOT* scaraState);
+unsigned int sendMoveC(SCARA_ROBOT *scaraStateSolution);
 unsigned int sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine);
-unsigned int sendMoveJ(SCARA_ROBOT scaraStateM1, SCARA_ROBOT scaraStateM2);
+void sendMoveJ(SCARA_ROBOT scaraStateM1, SCARA_ROBOT scaraStateM2);
 unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2);
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);
-void pathPlanning(SCARA_ROBOT* line);
+int moveScaraC(SCARA_ROBOT* scaraState);
 unsigned int scaraFk(signed int ang1, signed int ang2, double* toolX, double* toolY);
 unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 unsigned int scaraIkPulses(signed int *ang1, signed int * ang2, float toolX, float toolY, SCARA_ROBOT *scaraState1);

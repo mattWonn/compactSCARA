@@ -18,8 +18,8 @@
 #include <string.h>
 #include <math.h>
 
-unsigned int sendMoveJ(SCARA_ROBOT scaraStateStart, SCARA_ROBOT scaraStateEnd){
-    unsigned int exit =0;
+void sendMoveJ(SCARA_ROBOT scaraStateStart, SCARA_ROBOT scaraStateEnd){
+    unsigned int exit;
 
     __disable_interrupt();
     exit = moveJ(scaraStateStart.scaraPos.theta1,scaraStateEnd.scaraPos.theta1,scaraStateStart.scaraPos.theta2,scaraStateEnd.scaraPos.theta2); // start end M1, start end M2;
@@ -27,11 +27,19 @@ unsigned int sendMoveJ(SCARA_ROBOT scaraStateStart, SCARA_ROBOT scaraStateEnd){
         __enable_interrupt();
         startMoveJ = 1;
         while (startMoveJ == 1){}
-        __delay_cycles(10000);
+        //__delay_cycles(10000);
         startMoveJ =0;
+        TA0CCR4 = 0;
+        TA1CCR1 = 0;
+        exit = mddInputCtrl(CTRLBRAKE);
+        exit = mddInputCtrl2(CTRLBRAKE2);
+        prevPosCount = 0;
+        posCount = posArray1[arrayLength-1];
+        prevPosCount2 = 0;
+        posCount2 = posArray2[arrayLength-1];
+        updateIndex=0;
     }
 
-    return exit;
 }
 
 
@@ -157,8 +165,8 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
                     velArray2[tInc] = (RadToPul(PulToRad(aMaxMove)/w)  -  RadToPul(PulToRad(aMaxMove)*(cos(w*(tInc*T_UPDATE)))/w))*T_UPDATE;
                     velArray1[tInc] = (RadToPul(PulToRad(aMaxMove2)/w)  -  RadToPul(PulToRad(aMaxMove2)*(cos(w*(tInc*T_UPDATE)))/w))*T_UPDATE;
-                    posArray2[tInc] = RadToPul((PulToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
-                    posArray1[tInc] = RadToPul((PulToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
+                    posArray2[tInc] = RadToPul((PulToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
+                    posArray1[tInc] = RadToPul((PulToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
 
                     if ((posArray2[tInc] > (posArray1[tInc]+ RELATIVE_THETA2_PUL)) || (posArray2[tInc] < (-RELATIVE_THETA2_PUL + posArray1[tInc]))){ // on the fly max theta2 value verification
                         exit = 1;
@@ -213,7 +221,7 @@ unsigned int sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
                     scaraStateEnd.scaraPos.theta1 = angleJ1*PUL_PER_DEG_N70; // same spot, new solution
                     scaraStateEnd.scaraPos.theta2 = angleJ2*PUL_PER_DEG_N70;
 
-                    result = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
+                    sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
                     if (result == 0){
                         endLine = initLine(armChangeEnd.x, armChangeEnd.y, armChangeStart.x, armChangeStart.y, 0);//xb yb xa ya npts
                         result = moveScaraL(scaraStateSolution, endLine);
@@ -310,7 +318,7 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
         scaraStateEnd.scaraPos.theta1 = angleJ1*PUL_PER_DEG_N70;
         scaraStateEnd.scaraPos.theta2 = angleJ2*PUL_PER_DEG_N70;
 
-        value = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;  perform a moveJ to the starting point of the line
+        sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;  perform a moveJ to the starting point of the line
         /*******RETURN TOOL**********/
     }
 
@@ -395,6 +403,145 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
     return (value);
 }
 
+
+
+/*int moveScaraC(SCARA_ROBOT* scaraState){
+
+    volatile unsigned int value=0;
+    volatile unsigned int returned =0;
+
+    volatile float deltaXa;
+    volatile float deltaYa;
+    volatile float deltaD;
+    unsigned int arraySize;
+    volatile unsigned int armSolution;
+
+    float timeForMove;
+    float w = 0;
+    volatile float d = 0;
+    volatile float xHoldPrev =0;
+    volatile float yHoldPrev =0;
+    volatile unsigned int attemptedArmSolution;
+    volatile signed int holdPosition1 = 0;
+    volatile signed int holdPosition2 = 0;
+    volatile unsigned int aMaxMove;
+
+    volatile unsigned int tInc = 0;
+
+    signed int currentAngJ1;
+    signed int currentAngJ2;
+    volatile signed int angleJ1;
+    volatile signed int angleJ2;
+
+    volatile unsigned int diff;
+    volatile unsigned int diff2;
+
+    SCARA_ROBOT scaraStateSet;
+    SCARA_ROBOT scaraStateEnd;
+
+    volatile signed int thetaStart;
+    volatile signed int thetaEnd;
+    volatile unsigned int radius;
+
+    thetaStart = scaraState->scaraPos.theta1;
+    thetaEnd = scaraState->scaraPos.theta2;
+    radius = scaraState->scaraPos.armSol;
+
+
+
+    attemptedArmSolution = scaraState->scaraPos.armSol; // store the attempted arm solution
+
+    // calculate line displacements
+
+    //get current angle
+    currentAngJ1 = posCount * PUL_PER_DEG_N70;
+    currentAngJ2 = posCount2 * PUL_PER_DEG_N70;
+
+    // FK xy
+    scaraFK(currentAngJ1, currentAngJ2, scaraState->scaraPos.x, scaraState->scaraPos.y);
+
+    // delta xy a
+    deltaXa = radius*cos(degToRad(thetaStart));
+    deltaYa = radius*sin(degToRad(thetaStart));
+
+
+
+    deltaX = newLine.pB.x - newLine.pA.x;
+    deltaY = newLine.pB.y - newLine.pA.y;
+    deltaD = (sqrt(pow(deltaX, 2) + pow(deltaY, 2))); // pythagreom theorum for line distance in x,y
+
+    timeForMove = (sqrt((abs(deltaD)*2*PI)/A_MAX_LINEAR));
+    w = (2*(PI))/timeForMove;
+
+    arrayLength = (timeForMove/T_UPDATE)+1;
+
+    aMaxMove = A_MAX_LINEAR;
+
+    // hold the initial position, used for calculating velocity
+    holdPosition1 = currentAngJ1;
+    holdPosition2 = currentAngJ2;
+
+    // fill the position and velocity array targets
+    for(tInc; tInc < arrayLength; tInc++){
+        // calculate linear array in terms of d(t) and then fill X and Y positions
+        d = ((aMaxMove * (tInc*T_UPDATE))/w -  (aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2));
+        xHold = newLine.pA.x + (d*(deltaX)/deltaD);
+        yHold = newLine.pA.y + (d*(deltaY)/deltaD);
+
+        if ((abs(xHold*10) < INNER_CIRCLE_BOUNDS) && (abs(yHold*10) < INNER_CIRCLE_BOUNDS)){ // inner circle violation exit condition
+            value = 1;
+            tInc = arrayLength;
+        }
+        else{
+        returned = scaraIk(&(posArray1[tInc]), &(posArray2[tInc]), xHold, yHold, scaraState); // calculate arm angles of x,y point
+
+        if (returned == 0){
+            if (armSolChange == 1){ // determine if a armSolution change was needed
+
+                // hold values to be used for arm solution change
+                armChangeStart.x = xHoldPrev;
+                armChangeStart.y = yHoldPrev;
+                armChangeEnd.x = newLine.pB.x;
+                armChangeEnd.y = newLine.pB.y;
+                holdLine = initLine(xHoldPrev, yHoldPrev, newLine.pA.x, newLine.pA.y, 0);//xb yb xa ya npts
+                endLine = initLine(newLine.pB.x, newLine.pB.y, armChangeStart.x, armChangeStart.y, 0);
+
+                scaraState->scaraPos.armSol = attemptedArmSolution; // return to original arm solution
+                armSolChange =0;
+                //armSwitchSol =0;
+                //solutionMoveJ2 =1; // set second solution change
+                return(3);
+            }
+            posArray1[tInc] = posArray1[tInc]*PUL_PER_DEG_N70; // store position values in pulses
+            posArray2[tInc] = posArray2[tInc]*PUL_PER_DEG_N70;
+
+            xHoldPrev = xHold; // store the previous x,y values incase an arm solution change is needed
+            yHoldPrev = yHold;
+
+            if ((posArray2[tInc] > (posArray1[tInc]+RELATIVE_THETA2_PUL)) || (posArray2[tInc] < (-RELATIVE_THETA2_PUL + posArray1[tInc]))){ //  theta2 value verification
+                value = 1;
+                tInc = arrayLength;
+            }
+            else{
+
+            velArray1[tInc] = posArray1[tInc]-holdPosition1; // calculate velocity in terms of pulses per update time
+            velArray2[tInc] = posArray2[tInc]-holdPosition2;
+
+            holdPosition1 = posArray1[tInc]; // store previous position
+            holdPosition2 = posArray2[tInc];
+            }
+
+        }
+        else{
+            value = 1; // exit calculations if the move is not possible
+            tInc = arrayLength;
+        }
+        }
+    }
+
+
+    return (value);
+}
 
 /***********************************************************
 * Name: unsigned int scaraFk

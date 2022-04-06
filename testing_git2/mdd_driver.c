@@ -102,7 +102,7 @@ char mddInputCtrl2(unsigned char ctrl)
 char mddCW(unsigned char dutyCycle)
 {
     volatile signed char result =0;
-    volatile signed char inputRet =0;
+ /*   volatile signed char inputRet =0;
     volatile unsigned char dutyRet =0;
 
     clkWise =1;              // what the user is requesting
@@ -125,7 +125,7 @@ char mddCW(unsigned char dutyCycle)
             else{
                 result =-1;
             }
-        }
+        }*/
 
     return result;
 }
@@ -133,7 +133,7 @@ char mddCW(unsigned char dutyCycle)
 char mddCW2(unsigned char dutyCycle)
 {
     volatile signed char result =0;
-    volatile signed char inputRet =0;
+  /*  volatile signed char inputRet =0;
     volatile unsigned char dutyRet =0;
 
     clkWise2 =1;              // what the user is requesting
@@ -156,7 +156,7 @@ char mddCW2(unsigned char dutyCycle)
         else{
             result =-1;
         }
-    }
+    }*/
 
     return result;
 }
@@ -172,7 +172,7 @@ char mddCW2(unsigned char dutyCycle)
 char mddCCW(unsigned char dutyCycle)
 {
         volatile signed char result =0;
-        volatile signed char inputRet =0;
+     /*   volatile signed char inputRet =0;
         volatile unsigned char dutyRet =0;
 
         countClkWise = 1;   // what the user is requesting
@@ -196,14 +196,14 @@ char mddCCW(unsigned char dutyCycle)
                            result = -1;
                         }
         }
-
+*/
    return result;
 }
 
 char mddCCW2(unsigned char dutyCycle)
 {
         volatile signed char result =0;
-        volatile signed char inputRet =0;
+    /*    volatile signed char inputRet =0;
         volatile unsigned char dutyRet =0;
 
         countClkWise2 = 1;   // what the user is requesting
@@ -226,7 +226,7 @@ char mddCCW2(unsigned char dutyCycle)
             else{
                 result = -1;
             }
-        }
+        }*/
 
    return result;
 }
@@ -246,7 +246,7 @@ char mddCCW2(unsigned char dutyCycle)
 char mddBrake()
 {
     volatile signed char result =0;
-    volatile signed char inputRet =0;
+  /*  volatile signed char inputRet =0;
     volatile unsigned char dutyRet =0;
     volatile unsigned char dutyEnd;
 
@@ -304,7 +304,7 @@ char mddBrake()
     else
     {
         result = -1;
-    }
+    }*/
 
     return result;
 }
@@ -312,7 +312,7 @@ char mddBrake()
 char mddBrake2()
 {
     volatile signed char result =0;
-    volatile signed char inputRet =0;
+   /* volatile signed char inputRet =0;
     volatile unsigned char dutyRet =0;
     volatile unsigned char dutyEnd;
 
@@ -368,7 +368,7 @@ char mddBrake2()
     else
     {
         result = -1;
-    }
+    }*/
 
     return result;
 }

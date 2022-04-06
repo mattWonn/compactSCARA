@@ -104,6 +104,7 @@ int executeCmd(CMD *cmdList, int cmdIndex);
 volatile signed int updateIndex;
 volatile int startMoveJ;
 
+volatile int countinggg;
 volatile signed int velCount; // units pulses/updatetime
 volatile signed int velCount2; // units pulses/updatetime
 volatile signed int prevPosCount;
@@ -113,7 +114,6 @@ volatile double kProportional;
 volatile double kIntegral;
 volatile double velocityConst;
 
-volatile signed int pwmArray[201];
 //------- PWM conditions-----------------------------
 
 #define PWMFREQMAX 20000     //18.935?  20kHz?

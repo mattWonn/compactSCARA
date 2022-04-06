@@ -373,7 +373,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
 
         break;
     case 1://---------------move (cw/ccw) (dutyCycle)--------
-   /*     startM1 = 0;
+
         if (cmdList[1].args[0] == 0){             //  CCW command
             dutySend = cmdList[1].args[1];        //  dutyCycle request
             if (dutySend >= DUTYCYCLEMIN && dutySend <= DUTYCYCLEMAX){  // if dutyCycle is valid
@@ -396,7 +396,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
             result = -1;
         }
 
-        break;*/
+        break;
     case 2://----------------brake()-------------
    //     startM1 = 0;
         dutySend = 0;
@@ -464,7 +464,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
        scaraStateSet.scaraPos.theta2 = cmdList[11].args[2]*PUL_PER_DEG_N70;
        scaraStateEnd.scaraPos.theta2 = cmdList[11].args[3]*PUL_PER_DEG_N70;
 
-       result = sendMoveJ(scaraStateSet, scaraStateEnd);
+       sendMoveJ(scaraStateSet, scaraStateEnd);
        break;
     case 12://-----------moveL-------------------
 
