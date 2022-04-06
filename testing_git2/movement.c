@@ -184,7 +184,7 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
     return (exit);
 }
 
-unsigned int sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
+void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
 
     volatile unsigned int result =0;
     volatile signed int angleJ1;
@@ -245,8 +245,6 @@ unsigned int sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
         startMoveJ =0;
     }
 
-
-    return result;
 }
 
 
@@ -270,7 +268,6 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
     volatile float deltaX;
     volatile float deltaY;
     volatile float deltaD;
-    unsigned int arraySize;
     volatile unsigned int armSolution;
 
     float timeForMove;

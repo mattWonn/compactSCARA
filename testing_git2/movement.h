@@ -40,8 +40,8 @@
 #define A_MAX 354//180//354 //deg/s^2
 #define A_MAX_PUL 3359
 
-#define A_MAX_LINEAR 94 // mm/s^2
-#define V_MAX_LINEAR 188 // mm/s
+#define A_MAX_LINEAR 47 // mm/s^2
+#define V_MAX_LINEAR 94 // mm/s
 
 #define MAX_ARRAY 201
 
@@ -99,10 +99,10 @@ typedef struct SCARA_ROBOT{
 // LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 
 
- volatile signed int velArray1 [MAX_ARRAY];
- volatile signed int posArray1 [MAX_ARRAY];
- volatile signed int velArray2 [MAX_ARRAY];
- volatile signed int posArray2 [MAX_ARRAY];
+ volatile signed int velArray1 [401];
+ volatile signed int posArray1 [401];
+ volatile signed int velArray2 [401];
+ volatile signed int posArray2 [401];
  volatile unsigned int arrayLength;
  volatile unsigned int armSolChange;
  volatile unsigned int armSwitchSol;
@@ -119,7 +119,7 @@ typedef struct SCARA_ROBOT{
 
 //int moveScaraJ(SCARA_ROBOT* scaraState);
 unsigned int sendMoveC(SCARA_ROBOT *scaraStateSolution);
-unsigned int sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine);
+void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine);
 void sendMoveJ(SCARA_ROBOT scaraStateM1, SCARA_ROBOT scaraStateM2);
 unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2);
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);

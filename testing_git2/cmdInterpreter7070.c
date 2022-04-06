@@ -472,7 +472,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
 
         SCARA_ROBOT testRobot = scaraInitState(30, 0, cmdList[12].args[4], cmdList[12].args[5]); // x y armSol penPos
 
-        result = sendMoveL(&testRobot, holdLine);
+        sendMoveL(&testRobot, holdLine);
 
     }//---------------------------------
 
