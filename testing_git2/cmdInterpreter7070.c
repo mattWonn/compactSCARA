@@ -9,8 +9,10 @@
 #include <string.h>
 #include <UartPwmTimerA0.h>
 #include <mdd_driver.h>
+#include <cmdInterpreter7070.h>
 #include <quadEncDec.h>
 #include <movement.h>
+#include <updateTimerB.h>
 
 /************************************************
  * Function motorCmdInit
@@ -19,8 +21,8 @@
  *
  * argurments: CMD * vnhCmdList
  *
- * author mattw
- * created: Feb 18 2021
+ * author Matthew Wonneberg, Jamie Boyd
+ * date: March 18 2022
  * returns: nothing
  **************************************************/
 void motorCmdInit(CMD *vnhCmdList){
@@ -79,9 +81,8 @@ void motorCmdInit(CMD *vnhCmdList){
  *
  * argurments: CMD * cmdList, char * cmdLine
  *
- * author mattw
- * created april 2020
- * modified Feb 18 2021
+ * author Matthew Wonneberg, Jamie Boyd
+ * Date: March 8 2022
  * returns: pointer to rxString or Null if unsucessful
  **********************************/
 int parseCmd(CMD * cmdList, char * cmdLine){
@@ -164,7 +165,8 @@ int parseCmd(CMD * cmdList, char * cmdLine){
              value = -1;  // parseCmd exits with invalid data
         }
         if (value == 0){
-            value = executeCmd(cmdList, index); // send index and command to execute
+            //value = executeCmd(cmdList, index); // send index and command to execute
+            value = index;
         }
 
     }
@@ -222,7 +224,8 @@ int parseCmd(CMD * cmdList, char * cmdLine){
              value = -1;  // parseCmd exits with invalid data
         }
         if (value == 0){
-            value = executeCmd(cmdList, index); // send index and command to execute
+            //value = executeCmd(cmdList, index); // send index and command to execute
+            value = index;
         }
 
     }//------------------- moveJ cmd11 ---------------------
@@ -254,7 +257,8 @@ int parseCmd(CMD * cmdList, char * cmdLine){
              value = -1;  // parseCmd exits with invalid data
         }
         if (value == 0){
-            value = executeCmd(cmdList, index); // send index and command to execute
+            //value = executeCmd(cmdList, index); // send index and command to execute
+            value = index;
         }
     }
     else if (index == 12){
@@ -292,7 +296,8 @@ int parseCmd(CMD * cmdList, char * cmdLine){
              value = -1;  // parseCmd exits with invalid data
         }
         if (value == 0){
-            value = executeCmd(cmdList, index); // send index and command to execute
+            //value = executeCmd(cmdList, index); // send index and command to execute
+            value = index;
         }
     }
     else
@@ -332,8 +337,8 @@ int validateCmd(CMD *cmdList ,char * cmdName){
  * executes the correct motor function based on the command entered into the console
  *
  * argurments: CMD *cmdList, int cmdIndex
- * author mattw
- * created Feb 18 2021
+ * author: Matthew Wonneberg, Jamie Boyd
+ * date March 18 2022
  * returns: result
  **********************************/
 int executeCmd(CMD *cmdList, int cmdIndex){
@@ -355,16 +360,13 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         pwmFreqReq = cmdList[0].args[0];      //pwmFreqReq is the integer frequency value
 
         if (pwmFreqReq >= PWMFREQMIN && pwmFreqReq <= PWMFREQMAX){
-            dutyEnd = dutyPrev;              // after braking, the dutyCycle can be returned
-           result = mddBrake();          // brake motor
-           if (result != -1){                // if brake was successful
-               result = timerA0PwmFreqSet(pwmFreqReq); // send the new pwmFrequncy to the timer
-               if (clkWise == 1){
-                   result = mddCW(dutyEnd);// return to previous speed
-               }
-               else if (countClkWise == 1){
-                   result = mddCCW(dutyEnd);// return to previous speed
-               }
+            result = timerA0DutyCycleSet(0); // set PWM to zero percent
+            result = mddInputCtrl(CTRLBRAKE); // send brake signal
+            result = timerA0DutyCycleSet2(0); // set PWM to zero percent
+            result = mddInputCtrl2(CTRLBRAKE2); // send brake signal
+
+           if (result != -1){ // if brake was successful
+               result = timerA0PwmFreqSet(pwmFreqReq); // send the new pwmFrequency to the both signal timers
            }
         }
         else{
@@ -372,42 +374,18 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         }
 
         break;
-    case 1://---------------move (cw/ccw) (dutyCycle)--------
-
-        if (cmdList[1].args[0] == 0){             //  CCW command
-            dutySend = cmdList[1].args[1];        //  dutyCycle request
-            if (dutySend >= DUTYCYCLEMIN && dutySend <= DUTYCYCLEMAX){  // if dutyCycle is valid
-               result = mddCCW(dutySend);     // update new dutyCycle
-            }
-            else{
-                result =-1; // dutyCycle out of range
-            }
-        }
-        else if (cmdList[1].args[0] == 1){       // CW command
-            dutySend = cmdList[1].args[1];       // dutyCycle request
-            if (dutySend >= DUTYCYCLEMIN && dutySend <= DUTYCYCLEMAX){ // validate dutyCycle
-                result = mddCW(dutySend);    // update new dutycycle
-            }
-            else{
-                result =-1; // dutyCycle out of range
-            }
-        }
-        else{
-            result = -1;
-        }
-
+    case 1://---------------kP--------
+        kP = cmdList[0].args[0]/1000;
         break;
-    case 2://----------------brake()-------------
-   //     startM1 = 0;
-        dutySend = 0;
-        result = mddBrake(); // send brake signal
+    case 2://----------------brakeM1()-------------
+        result = timerA0DutyCycleSet(0); // set PWM to zero percent
+        result = mddInputCtrl(CTRLBRAKE); // send brake signal
         break;
     case 3://--------------displayPos()---------------
         displayPos();
         break;
     case 4://--------------moveJ---------------------
-      //  angJ1Desired = cmdList[4].args[0]; // update desired angle
-      //  startM1 = 1;
+
         break;
     case 5://--------------resetCount--------------
       //  startM1 = 0;
@@ -415,41 +393,16 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         displayPos();
         break;
     case 6://---------------move (cw/ccw) (dutyCycle)--------
-    /*    startM2 = 0;
-        if (cmdList[6].args[0] == 0){             //  CCW command
-            dutySend2 = cmdList[6].args[1];        //  dutyCycle request
-            if (dutySend2 >= DUTYCYCLEMIN && dutySend2 <= DUTYCYCLEMAX){  // if dutyCycle is valid
-               result = mddCCW2(dutySend2);     // update new dutyCycle
-            }
-            else{
-                result =-1; // dutyCycle out of range
-            }
-        }
-        else if (cmdList[6].args[0] == 1){       // CW command
-            dutySend2 = cmdList[6].args[1];       // dutyCycle request
-            if (dutySend2 >= DUTYCYCLEMIN && dutySend2 <= DUTYCYCLEMAX){ // validate dutyCycle
-                result = mddCW2(dutySend2);    // update new dutycycle
-            }
-            else{
-                result =-1; // dutyCycle out of range
-            }
-        }
-        else{
-            result = -1;
-        }
-*/
+
         break;
-    case 7://----------------vnhBrake()-------------
-    //    startM2 = 0;
-        dutySend2 = 0;
-        result = mddBrake2(); // send brake signal
+    case 7://----------------BrakeM2-------------
+        result = timerA0DutyCycleSet2(0); // set PWM to zero percent
+        result = mddInputCtrl2(CTRLBRAKE2); // send brake signal
         break;
     case 8://--------------displayPos()---------------
         displayPos2();
         break;
     case 9://--------------moveJ---------------------
-        //angJ2Desired = cmdList[9].args[0]; // update desired angle
-     //   startM2 = 1;
         break;
     case 10://--------------resetCount--------------
     //    startM2 = 0;

@@ -35,9 +35,9 @@
 
 #define DEG_PER_PUL_N70 0.10538896
 #define T_UPDATE 0.01
-#define W_MAX 708//360//708 // deg/s
+#define W_MAX 354//360//708 // deg/s
 #define W_MAX_PUL 6718
-#define A_MAX 354//180//354 //deg/s^2
+#define A_MAX 177//180//354 //deg/s^2
 #define A_MAX_PUL 3359
 
 #define A_MAX_LINEAR 47 // mm/s^2
@@ -99,9 +99,7 @@ typedef struct SCARA_ROBOT{
 // LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 
 
- volatile signed int velArray1 [401];
  volatile signed int posArray1 [401];
- volatile signed int velArray2 [401];
  volatile signed int posArray2 [401];
  volatile unsigned int arrayLength;
  volatile unsigned int armSolChange;

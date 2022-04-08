@@ -36,95 +36,6 @@ unsigned int counting2;
 #define CTRLBRAKE2 (CTRLMASK2 & (~INA2 & ~INB2 & ~SEL2))
 
 
-//-------- cmdInterpreter -----------
-
-#define NULLNUM 0x00
-#define MAX_ARGS 6
-
-#define BUFFLEN 60
-
-#define CMD0 "pwmFreqSet"
-#define CMD0_NARGS 1
-#define CMD1 "moveM1"
-#define CMD1_NARGS 2
-#define CMD2 "brakeM1"
-#define CMD2_NARGS 0
-#define CMD3 "displayPosM1"
-#define CMD3_NARGS 0
-#define CMD4 "movePosM1"
-#define CMD4_NARGS 1
-#define CMD5 "resetCountM1"
-#define CMD5_NARGS 0
-
-#define CMD6 "moveM2"
-#define CMD6_NARGS 2
-#define CMD7 "brakeM2"
-#define CMD7_NARGS 0
-#define CMD8 "displayPosM2"
-#define CMD8_NARGS 0
-#define CMD9 "movePosM2"
-#define CMD9_NARGS 1
-#define CMD10 "resetCountM2"
-#define CMD10_NARGS 0
-
-#define CMD11 "moveJ"
-#define CMD11_NARGS 4
-#define CMD12 "moveL"
-#define CMD12_NARGS 6
-#define MAX_CMDS 13
-
-volatile unsigned char data;
-volatile unsigned char x;
-volatile unsigned char done;
-volatile unsigned char rxBuffer[99];
-
-typedef struct CMD {
-    const char *name;   // command name
-    int nArgs;          // number of input arguments for a command
-    int args[MAX_ARGS]; // arguments
-}CMD;
-
-void motorCmdInit(CMD *vnhCmdList);
-int parseCmd(CMD * cmdList, char * cmdLine);
-int validateCmd(CMD *cmdList ,char * cmdName);
-int executeCmd(CMD *cmdList, int cmdIndex);
-
-//------- loop and position variables---------
-
-#define MAX_PWM 90
-#define MAX_VELOCITY 99
-#define MIN_VELOCITY 12
-
-
-#define SLOPE 50 // 100% conversion from 180deg to PWM is 0.55, this number is 0.25 multiplied for integer math
-#define DEG_PER_PUL1 0.128571//N = 44
-#define DEG_PER_PUL 0.105388//N = 71.165, 3415.92 countable events on O/P shaft
-
-
-volatile signed int updateIndex;
-volatile int startMoveJ;
-
-volatile int countinggg;
-volatile signed int velCount; // units pulses/updatetime
-volatile signed int velCount2; // units pulses/updatetime
-volatile signed int prevPosCount;
-volatile signed int prevPosCount2;
-
-volatile double kProportional;
-volatile double kIntegral;
-volatile double velocityConst;
-
-//------- PWM conditions-----------------------------
-
-#define PWMFREQMAX 20000     //18.935?  20kHz?
-#define PWMFREQMIN 100       // 18.9 Hz
-#define PWMFREQ 10000 // current pwm frequency
-
-#define DUTYCYCLEMIN 0
-#define DUTYCYCLEMAX 90
-#define DUTY_INC 100
-#define DUTY_RAMP_MIN 99
-
 //---- CW and CCW / brake global variabless--------------
 
 unsigned char prevClkCountNot; // 1 = clockwise, 0 = counter clockwise
@@ -141,14 +52,10 @@ unsigned int dutyPrev2; // previous dutyCycle
 
 void displayPos();
 char mddInputCtrl(unsigned char ctrl);
-char mddCW(unsigned char dutyCycle);
-char mddCCW(unsigned char dutyCycle);
-char mddBrake();
+
 
 void displayPos2();
 char mddInputCtrl2(unsigned char ctrl);
-char mddCW2(unsigned char dutyCycle);
-char mddCCW2(unsigned char dutyCycle);
-char mddBrake2();
+
 
 #endif /* MDD_DRIVER_H_ */

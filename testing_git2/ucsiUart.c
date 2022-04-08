@@ -10,6 +10,7 @@
 #include <msp430.h>
 #include "ucsiUart.h"
 #include "mdd_driver.h"
+#include <cmdInterpreter7070.h>
 #include <string.h>
 
 

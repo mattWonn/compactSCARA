@@ -140,8 +140,8 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
                 for(tInc; tInc<arrayLength; tInc++){
 
-                    velArray1[tInc] = (RadToPul(PulToRad(aMaxMove)/w)  -  RadToPul(PulToRad(aMaxMove)*(cos(w*(tInc*T_UPDATE)))/w))*T_UPDATE;
-                    velArray2[tInc] = (RadToPul(PulToRad(aMaxMove2)/w)  -  RadToPul(PulToRad(aMaxMove2)*(cos(w*(tInc*T_UPDATE)))/w))*T_UPDATE;
+                  //  velArray1[tInc] = (RadToPul(PulToRad(aMaxMove)/w)  -  RadToPul(PulToRad(aMaxMove)*(cos(w*(tInc*T_UPDATE)))/w))*T_UPDATE;
+                  //  velArray2[tInc] = (RadToPul(PulToRad(aMaxMove2)/w)  -  RadToPul(PulToRad(aMaxMove2)*(cos(w*(tInc*T_UPDATE)))/w))*T_UPDATE;
                     posArray1[tInc] = RadToPul((PulToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
                     posArray2[tInc] = RadToPul((PulToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
 
@@ -163,8 +163,8 @@ unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng
 
                 for(tInc; tInc<arrayLength; tInc++){
 
-                    velArray2[tInc] = (RadToPul(PulToRad(aMaxMove)/w)  -  RadToPul(PulToRad(aMaxMove)*(cos(w*(tInc*T_UPDATE)))/w))*T_UPDATE;
-                    velArray1[tInc] = (RadToPul(PulToRad(aMaxMove2)/w)  -  RadToPul(PulToRad(aMaxMove2)*(cos(w*(tInc*T_UPDATE)))/w))*T_UPDATE;
+                //    velArray2[tInc] = (RadToPul(PulToRad(aMaxMove)/w)  -  RadToPul(PulToRad(aMaxMove)*(cos(w*(tInc*T_UPDATE)))/w))*T_UPDATE;
+                //    velArray1[tInc] = (RadToPul(PulToRad(aMaxMove2)/w)  -  RadToPul(PulToRad(aMaxMove2)*(cos(w*(tInc*T_UPDATE)))/w))*T_UPDATE;
                     posArray2[tInc] = RadToPul((PulToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng2;
                     posArray1[tInc] = RadToPul((PulToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+startAng1;
 
@@ -379,14 +379,7 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
                     value = 1;
                     tInc = arrayLength;
                 }
-                else{
 
-                velArray1[tInc] = posArray1[tInc]-holdPosition1; // calculate velocity in terms of pulses per update time
-                velArray2[tInc] = posArray2[tInc]-holdPosition2;
-
-                holdPosition1 = posArray1[tInc]; // store previous position
-                holdPosition2 = posArray2[tInc];
-                }
 
             }
             else{
