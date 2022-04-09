@@ -117,9 +117,9 @@ int main(void) {
            posError1Sum = 0;
            posError2Sum = 0;
 
-           kP = 2.6;// map pul/UpdateTime to PWM(0:100); 1uT/0.01s * 1s/6716pul * 100%
+           kP = 2.3;// map pul/UpdateTime to PWM(0:100); 1uT/0.01s * 1s/6716pul * 100%
            kI = 0; //1.8
-           kD = 0;
+           kD = 0.2;
 
 
    //----------- Structured Commands -------------------
@@ -163,14 +163,14 @@ int main(void) {
 
 
 
-   /*        char menu[] = "\nMODULAR SCARA MENU OPTIONS\n\r";
+           char menu[] = "\nMODULAR SCARA MENU OPTIONS\n\r";
            numChars = ucsiA1UartTxString(&menu);
            __delay_cycles(10000);
-           char menu1[] = "1: moveJ stJ1 enJ1 stJ2 enJ2\n\r"; // change moveJ to start from current position
+           char menu1[] = "1: moveJ J1, J2\n\r"; // change moveJ to start from current position
            numChars = ucsiA1UartTxString(&menu1);
            __delay_cycles(10000);
-           char menu2[] = "2: moveL xA,yA xB,yB, 1:L 0:R, up:1 dn:0\n\r";
-           numChars = ucsiA1UartTxString(&menu2);*/
+           char menu2[] = "2: moveL xB, yB, 1:L 0:R, up:1 dn:0\n\r";
+           numChars = ucsiA1UartTxString(&menu2);
 
 
 

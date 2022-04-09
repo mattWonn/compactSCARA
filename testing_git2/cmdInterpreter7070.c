@@ -131,26 +131,9 @@ int parseCmd(CMD * cmdList, char * cmdLine){
                 nArgs =0;                     // zero arguments are assigned
             }
             else if (index == 1){ // move (cw/ccw) (0:90)
-
-                if (n == 0){ // first argument
-                    if (strcmp("cw", token) == 0 || strcmp("CW", token) == 0){
-                        cmdList[index].args[n] = 1; // direction CW
-                        nArgs++; // inc argument count
-                    }
-                    else if (strcmp("ccw", token) == 0 || strcmp("CCW", token) == 0){
-                        cmdList[index].args[n] = 0; // direction CCW
-                        nArgs++; // inc argument count
-                    }
-                    else{
-                        value =-1; // command is invalid
-                    }
-                }
-                else if (n == 1){  // second argument
-                    cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-                    nArgs++;       // inc argument count
-                    token = NULL;  // this is the last argument for the command
-                }
-                n++;
+                token = NULL;
+                cmdList[index].args[n] = atoi(token);
+                nArgs = 1; // inc argument count
             }
 
             else if (index == 0){ // change frequency command
@@ -165,7 +148,6 @@ int parseCmd(CMD * cmdList, char * cmdLine){
              value = -1;  // parseCmd exits with invalid data
         }
         if (value == 0){
-            //value = executeCmd(cmdList, index); // send index and command to execute
             value = index;
         }
 
@@ -224,7 +206,6 @@ int parseCmd(CMD * cmdList, char * cmdLine){
              value = -1;  // parseCmd exits with invalid data
         }
         if (value == 0){
-            //value = executeCmd(cmdList, index); // send index and command to execute
             value = index;
         }
 
@@ -241,15 +222,7 @@ int parseCmd(CMD * cmdList, char * cmdLine){
         else if (n == 1){  // second argument
             cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
             nArgs++;       // inc argument count
-        }
-        else if (n == 2){  // third argument
-            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-            nArgs++;       // inc argument count
-        }
-        else if (n == 3){  // fourth argument
-            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-            nArgs++;       // inc argument count
-            token = NULL;  // this is the last argument for the command
+            token = NULL;
         }
         n++;
         }
@@ -257,7 +230,6 @@ int parseCmd(CMD * cmdList, char * cmdLine){
              value = -1;  // parseCmd exits with invalid data
         }
         if (value == 0){
-            //value = executeCmd(cmdList, index); // send index and command to execute
             value = index;
         }
     }
@@ -281,14 +253,7 @@ int parseCmd(CMD * cmdList, char * cmdLine){
         else if (n == 3){  // fourth argument
             cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
             nArgs++;       // inc argument count
-        }
-        else if (n == 4){  // fourth argument
-            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-            nArgs++;       // inc argument count
-        }
-        else if (n == 5){  // fourth argument
-            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-            nArgs++;       // inc argument count
+
         }
         n++;
         }
@@ -296,7 +261,6 @@ int parseCmd(CMD * cmdList, char * cmdLine){
              value = -1;  // parseCmd exits with invalid data
         }
         if (value == 0){
-            //value = executeCmd(cmdList, index); // send index and command to execute
             value = index;
         }
     }
@@ -375,7 +339,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
 
         break;
     case 1://---------------kP--------
-        kP = cmdList[0].args[0]/1000;
+        kP = cmdList[0].args[0]/100;
         break;
     case 2://----------------brakeM1()-------------
         result = timerA0DutyCycleSet(0); // set PWM to zero percent
@@ -412,18 +376,17 @@ int executeCmd(CMD *cmdList, int cmdIndex){
     case 11://-------------moveJ--------------------
 
        // convert degrees into pulses
-       scaraStateSet.scaraPos.theta1 = cmdList[11].args[0]*PUL_PER_DEG_N70;
-       scaraStateEnd.scaraPos.theta1 = cmdList[11].args[1]*PUL_PER_DEG_N70;
-       scaraStateSet.scaraPos.theta2 = cmdList[11].args[2]*PUL_PER_DEG_N70;
-       scaraStateEnd.scaraPos.theta2 = cmdList[11].args[3]*PUL_PER_DEG_N70;
+       scaraStateEnd.scaraPos.theta1 = cmdList[11].args[0]*PUL_PER_DEG_N70;
+       scaraStateEnd.scaraPos.theta2 = cmdList[11].args[1]*PUL_PER_DEG_N70;
 
-       sendMoveJ(scaraStateSet, scaraStateEnd);
+
+       sendMoveJ(scaraStateEnd);
        break;
     case 12://-----------moveL-------------------
 
-        holdLine = initLine(cmdList[12].args[2], cmdList[12].args[3], cmdList[12].args[0], cmdList[12].args[1], 0);//xb yb xa ya npts
+        holdLine = initLine(cmdList[12].args[0], cmdList[12].args[1], 0, 0, 0);//xb yb xa ya npts
 
-        SCARA_ROBOT testRobot = scaraInitState(30, 0, cmdList[12].args[4], cmdList[12].args[5]); // x y armSol penPos
+        SCARA_ROBOT testRobot = scaraInitState(0, 0, cmdList[12].args[2], cmdList[12].args[3]); // x y armSol penPos
 
         sendMoveL(&testRobot, holdLine);
 

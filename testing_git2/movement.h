@@ -99,6 +99,8 @@ typedef struct SCARA_ROBOT{
 // LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 
 
+ //volatile signed int velArray1 [401];
+ //volatile signed int velArray2 [401];
  volatile signed int posArray1 [401];
  volatile signed int posArray2 [401];
  volatile unsigned int arrayLength;
@@ -118,11 +120,11 @@ typedef struct SCARA_ROBOT{
 //int moveScaraJ(SCARA_ROBOT* scaraState);
 unsigned int sendMoveC(SCARA_ROBOT *scaraStateSolution);
 void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine);
-void sendMoveJ(SCARA_ROBOT scaraStateM1, SCARA_ROBOT scaraStateM2);
-unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2);
+void sendMoveJ(SCARA_ROBOT scaraStateM2);
+unsigned int moveJ(signed int endAng1, signed int endAng2);
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);
 int moveScaraC(SCARA_ROBOT* scaraState);
-unsigned int scaraFk(signed int ang1, signed int ang2, double* toolX, double* toolY);
+unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* toolY);
 unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 unsigned int scaraIkPulses(signed int *ang1, signed int * ang2, float toolX, float toolY, SCARA_ROBOT *scaraState1);
 SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState);
