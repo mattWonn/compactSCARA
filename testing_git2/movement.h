@@ -15,23 +15,33 @@
 #define RIGHT_ARM_SOLUTION 0           // index that can be used to indicate right arm
 #define L1 15       // inner arm length
 #define L2 15       // outer arm length
-#define MAX_ABS_THETA1 110.0       // max angle of  arm 1
-#define MAX_ABS_THETA2 160.0       // max angle of outer arm relative to x axis
+
+#define PUL_PER_DEG_N70 9.48866 // 3415.92pul/360deg
+#define MAX_ABS_THETA1 110       // max angle of  arm 1
+#define MAX_ABS_THETA1_PUL 1043
+#define RELATIVE_THETA2 155 // degrees relative to arm one
+#define RELATIVE_THETA2_PUL 1471 // 155 * PUL_PER_DEG_N70
+#define MAX_ABS_THETA2 (180)       // max angle of outer arm relative to x axis
+#define MAX_ABS_THETA2_PUL (MAX_ABS_THETA2 * PUL_PER_DEG_N70)
 #define MAX_ABS_X 30      // max x value
 #define MAX_ABS_Y 30       // max y value
 #define MIN_ABS_X 0      // min x value
 #define MIN_ABS_Y -30       // min y value
+#define XY_RES_FACTOR 10
+#define INNER_CIRCLE_BOUNDS 65 // 1000* 6.5cm // cm radius
 #define TOOL_UP 0
 #define TOOL_DOWN 1
 
-#define PUL_PER_DEG_N70 9.48866 // 3415.92pul/360deg
+
 #define DEG_PER_PUL_N70 0.10538896
 #define T_UPDATE 0.01
-#define W_MAX 708//360//708 // deg/s
-#define A_MAX 354//180//354 //deg/s^2
+#define W_MAX 354//360//708 // deg/s
+#define W_MAX_PUL 6718
+#define A_MAX 177//180//354 //deg/s^2
+#define A_MAX_PUL 3359
 
-#define A_MAX_LINEAR 94 // mm/s^2
-#define V_MAX_LINEAR 188 // mm/s
+#define A_MAX_LINEAR 47 // mm/s^2
+#define V_MAX_LINEAR 94 // mm/s
 
 #define MAX_ARRAY 201
 
@@ -45,15 +55,15 @@ typedef struct PARABOLIC_PROFILE{
 
 // definition of a point
 typedef struct POINT_2D {
-    volatile double x;
-    volatile double y;
+    volatile float x;
+    volatile float y;
 }
 POINT_2D;
 
 
 // define the SCARA TCP and joint angles
 typedef struct SCARA_POS{
-    volatile double x, y;
+    volatile float x, y;
     volatile signed int theta1, theta2; // TCP coordinate and joint variables
     volatile int armSol;  // right(0) or left(1) arm solution
 }SCARA_POS;
@@ -81,6 +91,7 @@ typedef struct SCARA_ROBOT{
 
  SCARA_ROBOT scaraStateEnd;
  SCARA_ROBOT scaraStateSet;
+
  LINE_DATA holdLine;
  LINE_DATA endLine;
 
@@ -88,10 +99,10 @@ typedef struct SCARA_ROBOT{
 // LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 
 
- volatile signed int velArray1 [MAX_ARRAY];
- volatile signed int posArray1 [MAX_ARRAY];
- volatile signed int velArray2 [MAX_ARRAY];
- volatile signed int posArray2 [MAX_ARRAY];
+ //volatile signed int velArray1 [401];
+ //volatile signed int velArray2 [401];
+ volatile signed int posArray1 [401];
+ volatile signed int posArray2 [401];
  volatile unsigned int arrayLength;
  volatile unsigned int armSolChange;
  volatile unsigned int armSwitchSol;
@@ -99,25 +110,30 @@ typedef struct SCARA_ROBOT{
  volatile unsigned int moveJIndex;
  volatile unsigned int solutionMoveJ1;
  volatile unsigned int solutionMoveJ2;
- volatile double xHold;
- volatile double yHold;
+ volatile float xHold;
+ volatile float yHold;
  POINT_2D armChangeStart;
  POINT_2D armChangeEnd;
  volatile unsigned int noMove1;
  volatile unsigned int noMove2;
 
 //int moveScaraJ(SCARA_ROBOT* scaraState);
-unsigned int sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine);
-unsigned int sendMoveJ(SCARA_ROBOT scaraStateM1, SCARA_ROBOT scaraStateM2);
-unsigned int moveJ(signed int startAng1, signed int endAng1, signed int startAng2, signed int endAng2);
+unsigned int sendMoveC(SCARA_ROBOT *scaraStateSolution);
+void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine);
+void sendMoveJ(SCARA_ROBOT scaraStateM2);
+unsigned int moveJ(signed int endAng1, signed int endAng2);
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);
-void pathPlanning(SCARA_ROBOT* line);
-unsigned int scaraFk(signed int ang1, signed int ang2, double* toolX, double* toolY);
+int moveScaraC(SCARA_ROBOT* scaraState);
+unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* toolY);
 unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
+unsigned int scaraIkPulses(signed int *ang1, signed int * ang2, float toolX, float toolY, SCARA_ROBOT *scaraState1);
 SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState);
 LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 double DegToRad(double);  // returns angle in radians from input angle in degrees
 double RadToDeg(double);  // returns angle in degrees from input angle in radians
+double PulToRad(double);
+double RadToPul(double);
+
 
 
 #endif /* MOVEMENT_H_ */

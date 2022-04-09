@@ -9,6 +9,7 @@
 #include "updateTimerB.h"
 #include "UcsControl.h"
 #include "movement.h"
+#include "cmdInterpreter7070.h"
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -16,8 +17,8 @@
  * main_lab.c
  *
  *
- *  using P1.2 as PWM1
- *  using P1.3 as PWM2
+ *  using P1.5 as PWM1
+ *  using P2.0 as PWM2
  *
  *  using P3.0 as INA1
  *  using P3.1 as INB1
@@ -55,7 +56,7 @@ int main(void) {
     volatile unsigned char stringRet;
     volatile char getsInvalidString[] = "\nInvalid String entry\n\r";
     char returned =1;
-    int parseRet;
+    volatile signed int indexReturned;
     CMD mddCmds[MAX_CMDS]; // array of mddCmds of type CMD
 
     UCA1IE |= UCRXIE;         // Receive interrupt en
@@ -64,25 +65,6 @@ int main(void) {
 
 
    //------------motor control--------------
-       volatile unsigned char counter = 0;
-       volatile unsigned char dutyReturned =0;
-       volatile unsigned char cwRet =0;
-       volatile unsigned char ccwRet =0;
-
-       volatile unsigned char counter2 = 0;
-       volatile unsigned char dutyReturned2 =0;
-       volatile unsigned char cwRet2 =0;
-       volatile unsigned char ccwRet2 =0;
-
-       prevClkCountNot = 1;
-       countClkWise =0;
-       clkWise =1;
-       dutyPrev = 0;
-
-       prevClkCountNot2 = 1;
-       countClkWise2 =0;
-       clkWise2 =1;
-       dutyPrev2 = 0;
 
        timerA0Init(PWMFREQ);        // initialize TimerA0 and ports
        motorCmdInit(mddCmds); // add new commands to this function and define them in the motor driver.h file
@@ -92,13 +74,10 @@ int main(void) {
        P3DIR |= (BIT0 + BIT1 +BIT2 +BIT3 + BIT4 +BIT5); // pins set as output direction
        P3OUT &= (~BIT0 & ~BIT1 & ~BIT2 & ~BIT3 & ~BIT4 & ~BIT5); // P3out set to 0 (led's off)
 
-       cwRet = mddCW(dutyPrev);
-       cwRet2 = mddCW2(dutyPrev2);
-
 
 
    //------------- Encoder-----------------
-           volatile signed int holdCount;
+
 
            quadEncInit();
            ucsiA1UartInit();
@@ -133,19 +112,18 @@ int main(void) {
            noMove2 =0;
            armSolChange = 0;
 
+           prevError1 = 0;
+           prevError2 = 0;
+           posError1Sum = 0;
+           posError2Sum = 0;
 
-           kProportional =1.6;//1.6
-           kIntegral = 1; //1.8
-           velocityConst =(100/40);
+           kP = 2.3;// map pul/UpdateTime to PWM(0:100); 1uT/0.01s * 1s/6716pul * 100%
+           kI = 0; //1.8
+           kD = 0.2;
 
 
    //----------- Structured Commands -------------------
 
-          /* scaraStateEnd.scaraPos.theta1 =0;
-           scaraStateEnd.scaraPos.theta2 =0;
-           scaraStateEnd.scaraPos.x =15;
-           scaraStateEnd.scaraPos.y =0;
-           scaraStateEnd.scaraPos.armSol =1; //(LHS)*/
 
            volatile signed int angleJ1;
            volatile signed int angleJ2;
@@ -166,187 +144,66 @@ int main(void) {
                  returned = usciA1UartGets(&rxGetString);  // get a string from the console
 
                  if (returned != 0){
-                    parseRet = parseCmd(mddCmds, rxGetString); // send string to motor control
-                    if (parseRet == -1)
+                    indexReturned = parseCmd(mddCmds, rxGetString); // send string to motor control
+                    if (indexReturned == -1)
                         numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
                  }
                  else
                     numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
            */
 
-           posCount = 0;
-           posCount2 = 0;
+          /* scaraStateSet.scaraPos.theta1 = 0*PUL_PER_DEG_N70;
+           scaraStateEnd.scaraPos.theta1 = 45*PUL_PER_DEG_N70;
+           scaraStateSet.scaraPos.theta2 = 0*PUL_PER_DEG_N70;
+           scaraStateEnd.scaraPos.theta2 = -45*PUL_PER_DEG_N70;
 
+           returned = sendMoveJ(scaraStateSet, scaraStateEnd);
 
-           LINE_DATA testLine = initLine(-1, -20, 15, 15, 0);//xb yb xa ya npts
-           holdLine = testLine;
-           SCARA_ROBOT testRobot = scaraInitState(30, 0, RIGHT_ARM_SOLUTION, TOOL_UP); // x y armSol penPos
-
-           returned = sendMoveL(&testRobot, testLine);
-
-
-       /*    __disable_interrupt();
-           waiting = moveScaraL(&testRobot, testLine);
-           if (waiting == 2){
-               waiting = moveScaraL(&testRobot, testLine); // after first arm solution was not successful, try again with the other arm solution
-               if(waiting == 3){
-                   waiting = moveScaraL(&testRobot, holdLine); // after first arm solution was not successful, try again with the other arm solution
-                   if(waiting == 0){
-                       __enable_interrupt();
-                       __delay_cycles(10000);
-                       startMoveJ=1;
-                       while (startMoveJ == 1){}
-                       startMoveJ =0;
-                   __disable_interrupt();
-                   /**********TOOLUP***********
-                   armSwitchSol =0;
-                   waiting = scaraIk(&angleJ1, &angleJ2, holdLine.pB.x, holdLine.pB.y, &testRobot); // only changing the solution
-                   scaraStateSet.scaraPos.theta1 = angleJ1; // start spot, old solution
-                   scaraStateSet.scaraPos.theta2 = angleJ2;
-                   testRobot.scaraPos.armSol = originalArmSolution;
-                   waiting = scaraIk(&angleJ1, &angleJ2, endLine.pA.x, endLine.pA.y, &testRobot); // only changing the solution
-                   scaraStateEnd.scaraPos.theta1 = angleJ1; // same spot, new solution
-                   scaraStateEnd.scaraPos.theta2 = angleJ2;
-
-                   waiting = sendMoveJ(scaraStateSet, scaraStateEnd); // start end M1, start end M2;
-                   if (waiting == 0){
-                       endLine = initLine(armChangeEnd.x, armChangeEnd.y, armChangeStart.x, armChangeStart.y, 0);//xb yb xa ya npts
-                       waiting = moveScaraL(&testRobot, endLine);
-                       if(waiting == 0){
-                           __enable_interrupt();
-                           __delay_cycles(10000);
-                           startMoveJ=1;
-                           while (startMoveJ == 1){}
-                           startMoveJ =0;
-                       }
-                   }
-                   }
-               }
-               else if(waiting == 0){
-                    __enable_interrupt();
-                    __delay_cycles(10000);
-                    startMoveJ=1;
-                    while (startMoveJ == 1){}
-                    startMoveJ =0;
-               }
-
-           }
-           else if(waiting == 0){
-               __enable_interrupt();
-               __delay_cycles(10000);
-               startMoveJ=1;
-               while (startMoveJ == 1){}
-               startMoveJ =0;
-           }
-
-           if (waiting == 1){
-               numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-
-           }*/
+           returned = returned+1;*/
 
 
 
-               //tool command
-     /*      if (waiting == 0){
-                   __enable_interrupt();
-                   __delay_cycles(10000);
-                   startMoveJ=1;
-                   while (startMoveJ == 1){}*/
-
-//           waiting = moveJ(0,90,0,25);
- //          waiting = moveJ(90,-90,25,0);
-   //        waiting = moveJ(-90,90,0,-45);
-   /*        __disable_interrupt();
-           waiting = moveJ(0,90,0,100);
-           if (waiting == 0){
-           __enable_interrupt();
+           char menu[] = "\nMODULAR SCARA MENU OPTIONS\n\r";
+           numChars = ucsiA1UartTxString(&menu);
            __delay_cycles(10000);
-           startMoveJ = 1;
-           while (startMoveJ == 1){}
-           startMoveJ =0;
-           }
-
-           __disable_interrupt();
-           waiting = moveJ(90,0,100,145);
-           if (waiting == 0){
-           __enable_interrupt();
+           char menu1[] = "1: moveJ J1, J2\n\r"; // change moveJ to start from current position
+           numChars = ucsiA1UartTxString(&menu1);
            __delay_cycles(10000);
-           startMoveJ = 1;
-           while (startMoveJ == 1){}
-           startMoveJ =0;
-           }
-
-           __disable_interrupt();
-           waiting = moveJ(0,-180,145,0);
-           if (waiting == 0){
-           __enable_interrupt();
-           __delay_cycles(10000);
-           startMoveJ = 1;
-           while (startMoveJ == 1){}
-           startMoveJ =0;
-           }
-
-           __disable_interrupt();
-           waiting = moveJ(-180,-45,0,-90);
-           if (waiting == 0){
-           __enable_interrupt();
-           __delay_cycles(10000);
-           startMoveJ = 1;
-           while (startMoveJ == 1){}
-           startMoveJ =0;
-           }
-
-           __disable_interrupt();
-           waiting = moveJ(-45,0,-90,0);
-           if (waiting == 0){
-           __enable_interrupt();
-           __delay_cycles(10000);
-           startMoveJ = 1;
-           while (startMoveJ == 1){}
-           startMoveJ =0;
-           }*/
+           char menu2[] = "2: moveL xB, yB, 1:L 0:R, up:1 dn:0\n\r";
+           numChars = ucsiA1UartTxString(&menu2);
 
 
 
     while (1){//--------------- main loop-------------------
 
-      char rxGetString[BUFFLEN] = {0};   // reset getString buffer
+      char rxGetString[30] = {0};   // reset getString buffer
 
       returned = usciA1UartGets(&rxGetString);  // get a string from the console
 
       if (returned != 0){
-         parseRet = parseCmd(mddCmds, rxGetString); // send string to motor control
-         if (parseRet == -1)
+         indexReturned = parseCmd(mddCmds, rxGetString); // send string to motor control
+         if (indexReturned == -1)
              numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
+         else
+             indexReturned = executeCmd(mddCmds, indexReturned); // execute the command
       }
       else
          numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
 
 
-   //  waiting = scaraFk((scaraStateEnd.scaraArm.theta1), (scaraStateEnd.scaraArm.theta2), &(scaraStateEnd.scaraArm.xPos), &(scaraStateEnd.scaraArm.yPos));
-   //  waiting = scaraIk(&(scaraStateEnd.scaraArm.theta1), &(scaraStateEnd.scaraArm.theta2), (scaraStateEnd.scaraArm.xPos), (scaraStateEnd.scaraArm.yPos), &(scaraStateEnd.scaraArm.armSol));
-
-  /*      waiting = moveJ(0,90,0,90);
-    //    __delay_cycles(100000);
-        startMoveJ = 1;
-        while (startMoveJ == 1){}
-        startMoveJ =0;
-        __delay_cycles(10000000);
-
-
-    /*  mddCW(10);
-      mddCW2(10);
+    /*  mddCW(50);
+      mddCW2(50);
       __delay_cycles(55000000);
       mddBrake();
       mddBrake2();
       __delay_cycles(35000000);
-      mddCCW(10);
-      mddCCW2(10);
+      mddCCW(25);
+      mddCCW2(25);
       __delay_cycles(55000000);
       mddBrake();
       mddBrake2();
-      __delay_cycles(35000000);
-*/
+      __delay_cycles(35000000);*/
+
 
     }
 
