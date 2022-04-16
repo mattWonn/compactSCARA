@@ -366,7 +366,7 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
 }
 /***********************************************************
 * Name: void sendMoveC
-* function: used to perform the steps necessary to perform a circular move with the tool
+* function: used to perform the steps necessary send a circular move with the tool
 * arguments
 *            SCARA_ROBOT *scaraStateSolution:  pointer variable of type SCARA_ROBOT
 *
