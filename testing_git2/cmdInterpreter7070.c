@@ -1,8 +1,8 @@
 /*
  * cmdInterpreter7070.c
  *
- *  Created on: Feb. 20, 2021
- *      Author: Rinz
+ *  Created on: March, 8 2022
+ *      Author: Matthew Wonneberg, Jamie Boyd
  */
 #include <msp430.h>
 #include "ucsiUart.h"
@@ -68,6 +68,9 @@ void motorCmdInit(CMD *vnhCmdList){
 
     vnhCmdList[12].name = CMD12;
     vnhCmdList[12].nArgs = CMD12_NARGS;
+
+    vnhCmdList[13].name = CMD13;
+    vnhCmdList[13].nArgs = CMD13_NARGS;
 
 
 }
@@ -264,8 +267,42 @@ int parseCmd(CMD * cmdList, char * cmdLine){
             value = index;
         }
     }
+    else if (index == 13){ //-----------moveC-------------------
+        while (token != NULL){            // while token is not the last character in the buffer
+
+            token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
+
+        if (n == 0){  // first argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+        }
+        else if (n == 1){  // second argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        else if (n == 2){  // third argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        else if (n == 3){  // third argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        else if (n == 4){  // third argument
+            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+            nArgs++;       // inc argument count
+        }
+        n++;
+        }
+        if (nArgs > cmdList[index].nArgs || nArgs < cmdList[index].nArgs){ // too many arguments in command
+             value = -1;  // parseCmd exits with invalid data
+        }
+        if (value == 0){
+            value = index;
+        }
     else
         value = -1;
+    }
 
     return value;
 }
@@ -356,7 +393,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         posCount =0;
         displayPos();
         break;
-    case 6://---------------move (cw/ccw) (dutyCycle)--------
+    case 6://-----------------------
 
         break;
     case 7://----------------BrakeM2-------------
@@ -369,7 +406,6 @@ int executeCmd(CMD *cmdList, int cmdIndex){
     case 9://--------------moveJ---------------------
         break;
     case 10://--------------resetCount--------------
-    //    startM2 = 0;
         posCount2 =0;
         displayPos2();
         break;
@@ -379,16 +415,32 @@ int executeCmd(CMD *cmdList, int cmdIndex){
        scaraStateEnd.scaraPos.theta1 = cmdList[11].args[0]*PUL_PER_DEG_N70;
        scaraStateEnd.scaraPos.theta2 = cmdList[11].args[1]*PUL_PER_DEG_N70;
 
-
        sendMoveJ(scaraStateEnd);
        break;
     case 12://-----------moveL-------------------
 
         holdLine = initLine(cmdList[12].args[0], cmdList[12].args[1], 0, 0, 0);//xb yb xa ya npts
-
         SCARA_ROBOT testRobot = scaraInitState(0, 0, cmdList[12].args[2], cmdList[12].args[3]); // x y armSol penPos
 
         sendMoveL(&testRobot, holdLine);
+        break;
+    case 13://----------moveC--------------------
+
+        if (abs(cmdList[13].args[0]) > 360 || abs(cmdList[13].args[1]) > 360)
+            result = -1;
+        if (cmdList[13].args[2] < 1)
+            result = -1;
+        if (abs(cmdList[13].args[1] - cmdList[13].args[0]) > 361)
+            result = -1;
+        if (result == 0){
+            scaraStateSet.scaraPos.theta1 = cmdList[13].args[0]*PUL_PER_DEG_N70;
+            scaraStateEnd.scaraPos.theta1 = cmdList[13].args[1]*PUL_PER_DEG_N70;
+            scaraStateSet.scaraPos.radius = cmdList[13].args[2];
+            SCARA_ROBOT robot = scaraInitState(0, 0, cmdList[13].args[3], cmdList[13].args[4]); // x y armSol penPos
+
+            sendMoveC(&robot);
+        }
+
 
     }//---------------------------------
 

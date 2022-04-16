@@ -78,7 +78,6 @@ int main(void) {
 
    //------------- Encoder-----------------
 
-
            quadEncInit();
            ucsiA1UartInit();
            updateTimerBInit();
@@ -93,18 +92,12 @@ int main(void) {
            preA2 = (P2IN & 0x80)>>7;
 
            P2IFG &= 0x00; // flags are cleared
-       //    TA0CCTL1 &= ~CCIFG;
-       //    P2IE &= ~0xFF;       // disable posCount
-      //     __enable_interrupt();
-
 
 
    //--------------- Update Loop ----------------
 
-           volatile unsigned int waiting=2;
-
-           posCount = 0;
-           posCount2 = 0;
+           posCount = 830;
+           posCount2 = 830;
            startMoveJ =0;
            prevPosCount =0;
            prevPosCount2 =0;
@@ -152,25 +145,16 @@ int main(void) {
                     numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
            */
 
-          /* scaraStateSet.scaraPos.theta1 = 0*PUL_PER_DEG_N70;
-           scaraStateEnd.scaraPos.theta1 = 45*PUL_PER_DEG_N70;
-           scaraStateSet.scaraPos.theta2 = 0*PUL_PER_DEG_N70;
-           scaraStateEnd.scaraPos.theta2 = -45*PUL_PER_DEG_N70;
-
-           returned = sendMoveJ(scaraStateSet, scaraStateEnd);
-
-           returned = returned+1;*/
-
-
-
-           char menu[] = "\nMODULAR SCARA MENU OPTIONS\n\r";
+           char menu[] = "\n MODULAR SCARA MENU OPTIONS\n\r";
            numChars = ucsiA1UartTxString(&menu);
            __delay_cycles(10000);
-           char menu1[] = "1: moveJ J1, J2\n\r"; // change moveJ to start from current position
+           char menu1[] = " moveJ J1, J2\n\r"; // change moveJ to start from current position
            numChars = ucsiA1UartTxString(&menu1);
            __delay_cycles(10000);
-           char menu2[] = "2: moveL xB, yB, 1:L 0:R, up:1 dn:0\n\r";
+           char menu2[] = " moveL xB, yB, 1:L 0:R, up:1 dn:0\n\r";
            numChars = ucsiA1UartTxString(&menu2);
+           char menu3[] = " moveC StrAng, endAng, Radius, 1:L 0:R, up:1 dn:0\n\r";
+            numChars = ucsiA1UartTxString(&menu3);
 
 
 
@@ -189,20 +173,6 @@ int main(void) {
       }
       else
          numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-
-
-    /*  mddCW(50);
-      mddCW2(50);
-      __delay_cycles(55000000);
-      mddBrake();
-      mddBrake2();
-      __delay_cycles(35000000);
-      mddCCW(25);
-      mddCCW2(25);
-      __delay_cycles(55000000);
-      mddBrake();
-      mddBrake2();
-      __delay_cycles(35000000);*/
 
 
     }

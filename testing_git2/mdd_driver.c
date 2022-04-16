@@ -1,7 +1,7 @@
 /*
  * Uartmddhpi.c
  *
- *  Created on: Feb. 20, 2021
+ *  Created on: March 8, 2022
  *      Author: Matthew Wonneberg
  */
 
@@ -24,18 +24,12 @@
  * Date: March 14 2022
  *********************************/
 void displayPos(){
-    volatile char posPrint[BUFFLEN] = {0}; // Uart set up character array
+    volatile char posPrint[20] = {0}; // Uart set up character array
     volatile int ret;
 
-    if (clkWise == 1){ // CW
-       sprintf(posPrint, "\nCount = %d dir = CW  \n\r", posCount); // insert the number of characters into the display string
+       sprintf(posPrint, "\nCount = %d \n\r", posCount); // insert the number of characters into the display string
        ret = ucsiA1UartTxString(&posPrint); // print the string
 
-    }
-    else if (countClkWise == 1){ // CCW
-       sprintf(posPrint, "\nCount = %d dir = CCW \n\r", posCount); // insert the number of characters into the display string
-       ret = ucsiA1UartTxString(&posPrint); // print the string
-    }
 }
 
 /* ********************************
@@ -48,18 +42,12 @@ void displayPos(){
  * Date: March 14 2022
  *********************************/
 void displayPos2(){
-    volatile char posPrint[BUFFLEN] = {0}; // Uart
+    volatile char posPrint[20] = {0}; // Uart
     volatile int ret;
 
-    if (clkWise2 == 1){ // CW
-       sprintf(posPrint, "\nCount = %d dir = CW  \n\r", posCount2); // insert the number of characters into the display string
+       sprintf(posPrint, "\nCount = %d \n\r", posCount2); // insert the number of characters into the display string
        ret = ucsiA1UartTxString(&posPrint); // print the string
 
-    }
-    else if (countClkWise2 == 1){ // CCW
-       sprintf(posPrint, "\nCount = %d dir = CCW \n\r", posCount2); // insert the number of characters into the display string
-       ret = ucsiA1UartTxString(&posPrint); // print the string
-    }
 }
 
 /* ********************************

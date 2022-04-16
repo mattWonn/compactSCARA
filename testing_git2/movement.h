@@ -46,12 +46,7 @@
 #define MAX_ARRAY 201
 
 
-typedef struct PARABOLIC_PROFILE{
-     volatile unsigned int controlJoint;
-     volatile unsigned int positionJ1;
-     volatile unsigned int positionJ2;
 
-}PARABOLIC_PROFILE;
 
 // definition of a point
 typedef struct POINT_2D {
@@ -64,6 +59,7 @@ POINT_2D;
 // define the SCARA TCP and joint angles
 typedef struct SCARA_POS{
     volatile float x, y;
+    volatile float radius;
     volatile signed int theta1, theta2; // TCP coordinate and joint variables
     volatile int armSol;  // right(0) or left(1) arm solution
 }SCARA_POS;
@@ -75,7 +71,6 @@ typedef struct SCARA_TOOL {
 
 // using above structures, define he SCARA ROBOT
 typedef struct SCARA_ROBOT{
-     PARABOLIC_PROFILE scaraProfile;
      SCARA_POS scaraPos;
      SCARA_TOOL scaraTool;
  }SCARA_ROBOT;
@@ -99,8 +94,6 @@ typedef struct SCARA_ROBOT{
 // LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 
 
- //volatile signed int velArray1 [401];
- //volatile signed int velArray2 [401];
  volatile signed int posArray1 [401];
  volatile signed int posArray2 [401];
  volatile unsigned int arrayLength;
@@ -118,7 +111,7 @@ typedef struct SCARA_ROBOT{
  volatile unsigned int noMove2;
 
 //int moveScaraJ(SCARA_ROBOT* scaraState);
-unsigned int sendMoveC(SCARA_ROBOT *scaraStateSolution);
+void sendMoveC(SCARA_ROBOT *scaraStateSolution);
 void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine);
 void sendMoveJ(SCARA_ROBOT scaraStateM2);
 unsigned int moveJ(signed int endAng1, signed int endAng2);

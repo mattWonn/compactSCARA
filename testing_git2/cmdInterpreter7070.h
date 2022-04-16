@@ -2,7 +2,7 @@
  * cmdInterpreter7070.h
  *
  *  Created on: Apr. 8, 2022
- *      Author: Rinz
+ *      Author: Matthew Wonneberg, Jamie Boyd
  */
 
 #ifndef CMDINTERPRETER7070_H_
@@ -43,7 +43,9 @@
 #define CMD11_NARGS 2
 #define CMD12 "moveL"
 #define CMD12_NARGS 4
-#define MAX_CMDS 13
+#define CMD13 "moveC"
+#define CMD13_NARGS 5
+#define MAX_CMDS 14
 
 volatile unsigned char data;
 volatile unsigned char x;

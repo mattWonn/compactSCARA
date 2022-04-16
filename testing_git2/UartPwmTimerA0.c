@@ -94,7 +94,6 @@ char timerA0DutyCycleSet(unsigned char dutyCycle)
 
         percentDuty = (double)dutyCycle/(double)DUTY_INC;
         TA0CCR4 = (percentDuty*(TA0CCR0+1));
-        dutyPrev2 = dutyCycle;
 
     }
 
@@ -120,7 +119,6 @@ char timerA0DutyCycleSet2(unsigned char dutyCycle)
 
         percentDuty = (double)dutyCycle/(double)DUTY_INC;
         TA1CCR1 = (percentDuty*(TA1CCR0+1));
-        dutyPrev2 = dutyCycle;
 
     }
 

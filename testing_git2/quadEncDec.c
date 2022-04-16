@@ -24,10 +24,10 @@ void quadEncInit(){
  __interrupt void Port2_ISR1 (void) // Port 2 interrupt service routine
 {
 
-     if (currentState2 != CURRSTATE2){
+     if (currentState2 != CURRSTATE2){ // check if motor 1 or motor 2 interrupt
          currentState2 = (P2IN & 0xC0);
-         currB2 = (currentState2 & 0x40)>>6; // /64
-         currA2 = (currentState2 & 0x80)>>7; // /128
+         currB2 = (currentState2 & 0x40)>>6; // shift low bit into currB2 variable
+         currA2 = (currentState2 & 0x80)>>7; // shift high bit into currA2 variable
          P2IES = ((currentState+currentState2) & 0xF0);// edge select for both motors
              if (currB2 ^ preA2){ // CCW
                  posCount2--;

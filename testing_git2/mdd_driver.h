@@ -38,18 +38,6 @@ unsigned int counting2;
 
 //---- CW and CCW / brake global variabless--------------
 
-unsigned char prevClkCountNot; // 1 = clockwise, 0 = counter clockwise
-unsigned char countClkWise; // current direction
-unsigned char clkWise; // current direction
-unsigned char brake; // !!!!!!!!!! not used ?
-unsigned int dutyPrev; // previous dutyCycle
-
-unsigned char prevClkCountNot2; // 1 = clockwise, 0 = counter clockwise
-unsigned char countClkWise2; // current direction
-unsigned char clkWise2; // current direction
-unsigned char brake2; // !!!!!!!!!! not used ?
-unsigned int dutyPrev2; // previous dutyCycle
-
 void displayPos();
 char mddInputCtrl(unsigned char ctrl);
 
