@@ -7,7 +7,7 @@ from tkinter.ttk import *
 
 window = Tk()
 
-window.title("Welcome to LikeGeeks app")
+window.title("SCARA Controls")
 
 selected = IntVar()
 
