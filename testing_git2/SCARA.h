@@ -25,27 +25,21 @@
  */
 
 
-
-
-
-
-
-
 #ifndef SCARA_H_
 #define SCARA_H_
 
 
-extern signed int gPosCountL1;       // encoder count of L1
-extern signed int gPosCountL2;       // encoder count of L2
-extern unsigned int gPWML1;         // motor speed and direction for L1
-extern unsigned int gPWML2;         // motor speed and direction for L2
+extern volatile signed int gPosCountL1;         // encoder count of L1
+extern volatile signed int gPosCountL2;         // encoder count of L2
+extern volatile signed int gPWML1;              // motor speed and direction for L1
+extern volatile signed int gPWML2;              // motor speed and direction for L2
+extern volatile signed int gPosCountZ;           // stepper count of Z axis
+extern volatile unsigned int gToolData;         // whatever data your tool stores
+extern volatile unsigned char gIsMoving;        // set when robot is performing a move
+extern volatile unsigned char gSTOP =0;         // 0 is normal, non-zero means stopped
 
-extern unsigned char gSTOP =0;      // 0 is normal, non-zero means stopped
 
-
-extern unsigned int gToolData;      // whatever data your tool stores
-
-void SCARA_failure (void);      // blinks light if unrecoverable failure happens
+void SCARA_failure (void);      // blinks Estop light if unrecoverable failure happens
 unsigned char SCARA_getState (unsigned char * inputData, unsigned char * outputResults);
 
 #endif /* SCARA_H_ */

@@ -1,15 +1,19 @@
 /**
  * main.c
+ *
  */
 #include <msp430.h>
+#include <stdio.h>
 #include "SCARA.h"
 #include "BinaryCmdInterp.h"
 #include "eStopLimitSwitch.h"
+#include "quadEncDec.h"
+#include "MotorsPWM.h"
 
-#include <stdio.h>
+
 #include <string.h>
 #include <math.h>
-#include <MotorsPWM.h>
+
 
 #include "libUART1A.h"
 
@@ -50,10 +54,9 @@ int main(void) {
     if (oscFail)
       SCARA_failure ();
     _enable_interrupts();
+    quadEncInit();                      // set up quadrature decoding for both arms
     motorsPWMinit();                    // initialize TimerA0 and ports for PWM and motor driver direction
-    quadEncInit();                      // set up encoders
-    /*********************** Set up UART control  *********************************************/
-    usciA1UartInit();
+    usciA1UartInit();                   // Set up UART control and run binary UART commands in endless loop
     binInterp_init();
 
     binInterp_addCmd (1, &SCARA_getState);
@@ -128,11 +131,11 @@ int main(void) {
 // [0] numBytes [1]errCode, [2,3]encoder 1 counts, [4,5]encoder 2 counts, [6,7] z axis counts,
 // [8,9]motor1 PWM, [10,11]motor2 PWM, [12] tool data
 unsigned char SCARA_getState (unsigned char * inputData, unsigned char * outputResults){
-    outputResults [0] = 13;   // the number of bytes to send when sending results, including this one which is not sent
+    outputResults [0] = 13;   // the number of bytes when sending results, including this one which is not sent
     outputResults [1] = 0;   // no errors here, code for no errors
     signed int * encPtr = ((signed int *)&outputResults[2]);
-    *encPtr++ =  gPosCount1;
-    *encPtr++ = gPosCount2;
+    *encPtr++ =  gPosCountL1;
+    *encPtr++ = gPosCountL2;
     *encPtr++ = gPosCount2;
     *encPtr = gZposCount;
     outputResults [8] = gToolData;

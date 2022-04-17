@@ -25,7 +25,8 @@ L2 on CCR4 on P1.5
  **************************************/
 void motorsPWMinit(void){
     TA0CCR3 = 0;// capture compare registers for PWM initialized to 0%
-    pwmL1 = 0;
+    gPWML1 = 0;
+    gPWML2 =0;
     TA0CCR0 = 999;      // pwm based on 1000
     TA0CTL = (TASSEL__SMCLK | ID__4 | MC__UP); // Timer_A0 control register, SMCLK, SMCLK/1 , Up mode(timer counts up to CCR0
     TA0EX0 = TAIDEX_4;     // divide by 5

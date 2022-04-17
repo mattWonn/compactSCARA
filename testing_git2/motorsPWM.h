@@ -17,8 +17,6 @@
 
 
 void motorsPWMinit(void);
-void motorsPWMset (signed int pwmL1, singed int pwmL2);
+void motorsPWMset (signed int pwmL1, signed int pwmL2);
 
 #endif /* UARTPWMTIMERA0_H_ */
-
-CTRLPORT = ((CTRLMASK2 & CTRLPORT)+ctrl) ;   //send ctrl to output
