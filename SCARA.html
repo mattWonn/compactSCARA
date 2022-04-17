@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<HTML>
+<head>
+<title>Compact SCARA</title>
+<META NAME="AUTHOR" CONTENT="Jamie Boyd / Matthew Wonneberg">
+</head>
+<H2>Documentation for the Compact SCARA</H2>
+This is the documentation for the compact SCARA project. In the following, L1 refers to the "Shoulder", i.e.,the first arm segment, and L2 refers to the "fore-arm", i.e., the second arm segment. Each arm segment is driven by a separate motor, and its angular position is measured via quadrature decoding.
+<H3>MSP430 Resources</H3>
+The following is a list of the timers, pins, and interrupts used by the compact SCARA.
+
+<H4>Motors</H4>
+Pulse Width Modulation (PWM) is used to control the drive strength to the motors. Pulse width timing is done with timer A 0, using its associated interrupt<br>
+<ul>
+<li>L1 is controled by CCR3 on P1.4</li>
+<li>L2 is controlled by CCR4 on P1.5</li>
+</ul>
+Direction of movement is controlled by outputs to the selection pins on the H-bridge motor driver. When INA is high and INB is low, the connected motor turns counter-clockwise; when INA is low and INB is high, the motor turns clockwise. Be aware that the motor for L2 is mounted upside down relative to the motor for L1. In the code, the meaning of clockwise and counter-clockwise for L2 is inverted so that clockwise and counter-clockwise are always defined relative to a position above the SCARA arm. INA and INB for both motors are done using pins connected to port 3.
+<ul>
+<li>INA L1 on P3.0</li>
+<li>INB L1 on P3.1</li>
+<li>INA L2 on P3.3</li>
+<li>INB L2 o P3.4</li>
+</ul>
+
+<H4>Quadrature Decoding</H4>
+Quadrature decoding is done using pins on port2. Each motor has two quadrature channels, channel A and channel B, which are monitored on the port 2 interrupt. As for the motors, the inversion of the encoder for L2 is accounted for in the code so that, for both motors, counts become more positive with counter-clockwise rotation defined from a perspective above the SCARA arm.
+<ul>
+<li>Chan A L1 on P2.5</li>
+<li>Chan B L1 on P2.4</li>
+<li>Chan A L2 on P2.7</li>
+<li>Chan B L2 on P2.6</li>
+</ul>
+
+<H4>Z-axis Control</H4>
+The Z-axis is controlled using a steper motor with a motor driver that has STEP, DIRECTION, and ENABLE inputs. The steps are generated using Timer A 1 with the output on pin P2.0, using the Timer A 1 interrupt. The direction and enable are controlled with GPIO outputs.
+<ul>
+	<li>Z-axis STEP on P2.0</li>
+	<li>Z-axis DIRECTION on P2.2</li>
+	<li>Z-axis ENABLE on P7.4
+<pre>
+	Encoder State = 0 to 3, A = bit 1 and B = bit 0
+	A ____|--------|________|----
+	
+	B _________|--------|________
+	    0   1    2   3    0    1
+</pre>
+
+
+</body>
+</html>
