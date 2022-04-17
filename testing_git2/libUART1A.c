@@ -7,20 +7,15 @@
  *  Author: Greg Scutt
  *  Created on: March 1, 2017
  *  Modified: February 26th, 2018
- *  Modified: 2022/01/13 by Jamie Boyd
+ * Modified 2022/04/07 by Jamie Boyd/Mathew Wonneberg adjusted baud for SCARA
  **************************************************************************************************/
 
 #include <msp430.h>
 #include "libUART1A.h"
 
-char rxBuffer [RX_BUF_SZ]; // buffer that receive data from usciA1UARTgets. referenced in header so can be accessed easily
-char intBuffer [LONG_INT_DEC_PLACES + 1];
-
+//char rxBuffer [RX_BUF_SZ]; // buffer that receive data from usciA1UARTgets. referenced in header so can be accessed easily
 rxIntFunc rxIntFuncPtr = NULL;
 txIntFunc txIntFuncPtr = NULL;
-
-//unsigned char (*rxIntFuncPtr)(char) = NULL; // pointer to function to run to get a byte from RXBUFF
-//char (*txIntFuncPtr)(unsigned char*) = NULL; // pointer to function to run to transfer a byte into TXBUFF
 
 
 /************************************************************************************
@@ -32,9 +27,9 @@ txIntFunc txIntFuncPtr = NULL;
 * return: 1 if a supported Baud was requested, else 0
 * Author: Greg Scutt
 * Date: March 1st, 2017
-* Modified: 2022/01/10 by Jamie Boyd
+* Modified 2022/04/07 by Jamie Boyd/Mathew Wonneberg adjusted baud for SCARA with 20Mhz clock rate
 ************************************************************************************/
-int usciA1UartInit(unsigned int Baud){
+void usciA1UartInit(void){
     _UART_A1PSEL;                   // // macro selects special functions (TXD and RXD) for P4 pins 4 and 5 which connect to TXD, RXD jumpers
     UCA1CTL1 |= UCSWRST;            // Sets USCI A1  Software Reset Enabled bit in USC A1 CTL1 register.
 
@@ -52,40 +47,13 @@ int usciA1UartInit(unsigned int Baud){
                 &   ~UCSPB          // bit 3 clear means 1 stop bit, not 2
                 &   ~(UCMODE0 | UCMODE1) // bits 1 and 2 clear mean UART Mode
                 &   ~UCSYNC;        // bit 0 clear means asynchronous mode
-    int BaudOK = 1;
-    switch (Baud){
-        case 9600:  // UCBR = 6, UCBRS =0, UCBRF=13, can use 16x-over-sampling
-            UCA1BR0 = 6; // low byte of UCBR clock pre-scaler
-            UCA1BR1 = 0;  // high byte of UCBR clock pre-scaler
-            UCA1MCTL = UCBRS_0 | UCBRF_13 | UCOS16;  // sets first and second clock modulators and 16X over-sampling
-            break;
-        case 19200: // UCBR = 3, UCBRS =1, UCBRF=6, can use 16x-over-sampling
-            UCA1BR0 = 3; // low byte of UCBR clock pre-scaler
-            UCA1BR1 = 0;  // high byte of UCBR clock pre-scaler
-            UCA1MCTL = UCBRS_1 | UCBRF_6| UCOS16;  // sets first and second clock modulators and 16X over-sampling
-            break;
-        case 38400:     // UCBR = 27, UCBRS = 2, UCBRF = 0, 16x-over-sampling not available
-            UCA1BR0 = 27;
-            UCA1BR1 = 0;
-            UCA1MCTL = UCBRS_2 | UCBRF_0; // sets first and second clock modulators and NO 16x over-sampling
-            break;
-        case 57600: // UCBR = 17, UCBRS = 3, UCBRF = 0, 16x-over-sampling not available
-            UCA1BR0 = 17;
-            UCA1BR1 = 0;
-            UCA1MCTL = UCBRS_3 | UCBRF_0; // sets first and second clock modulators and NO 16x over-sampling
-            break;
-        case 11520: //  UCBR = 9, UCBRS = 1, UCBRF = 0, 16x-over-sampling not available
-            UCA1BR0 = 9;
-            UCA1BR1 = 0;
-            UCA1MCTL = UCBRS_1 | UCBRF_0; // sets first and second clock modulators and NO 16x over-sampling
-            break;
-        default:    // a non-supported Baud was requested, not OK
-            BaudOK = 0;
-            break;
-    }
+    // 115200 baud
+    UCA1BR1 = 0x00;    // high byte of N   =  0
+    UCA1BR0 = 0x0A;   // low byte of 65 -> 0x41
+    UCA1MCTL =  UCOS16 + UCBRS_0 + UCBRF_14;   // oversampling mode enabled, first and second stage modulation
     UCA1CTL1 &= ~UCSWRST;        //  configured. take state machine out of reset.
-    return BaudOK;
 }
+
 
 /************************************************************************************
 * Function: usciA1UartTxChar
@@ -132,7 +100,7 @@ int usciA1UartTxString(char* txChar){
 * argument1: buffer - unsigned char pointer to text buffer to be transmitted
 * argument2: bufLen - integer number of characters transmitted
 * return: number of bytes transmitted
-* Author: Jamie Boyd
+* Author: Jamie Boyd/Matthew Wonneberg
 * Date: 2022/02/10
 ************************************************************************************/
 int usciA1UartTxBuffer (char * buffer, unsigned int bufLen){
@@ -143,70 +111,6 @@ int usciA1UartTxBuffer (char * buffer, unsigned int bufLen){
     return ii;
 }
 
-/******************** usciA1UartUbyte **********************************************
-* - writes a string representation of the decimal value of unsigned byte by doing the
-* string conversion into a buffer and then calling usciA1UartTxBuffer.
-* Arguments:1
-*   theByte - an unsigned byte to be transmitted
-* return: nothing
-* Author: Jamie Boyd
-* Date:2022/02/10  */
-void usciA1UartUbyte (unsigned char theByte){
-    signed char strPos;
-    for (strPos = 2; strPos >= 0; strPos--){
-        intBuffer [strPos] = '0' + (theByte % 10);
-        theByte /= 10;
-    }
-    usciA1UartTxBuffer (intBuffer, 3);
-}
-
-/******************** usciA1UartSbyte **********************************************
-* - writes a string representation of the decimal value of a long integer by doing the string
-* conversion into a buffer and then calling usciA1UartTxBuffer.
-* Arguments:1
-* argument1: cntVal - a signed long integer to be transmitted
-* return: nothing
-* Author: Jamie Boyd
-* Date:2022/02/10  */
-void usciA1UartSbyte (signed char theByte){
-    unsigned char strPos;
-    if (theByte < 0){
-        intBuffer [0] = '-';
-        theByte *= -1;
-    } else{
-        intBuffer [0] = '+';
-    }
-    for (strPos = 3; strPos > 0; strPos--){
-        intBuffer [strPos] = '0' + (theByte % 10);
-        theByte /= 10;
-    }
-    usciA1UartTxBuffer (intBuffer, LONG_INT_DEC_PLACES + 1);
-}
-
-
-
-/******************** usciA1UartTxLongInt **********************************************
-* - writes a string representation of the decimal value of a long integer by doing the string
-* conversion into a buffer and then calling usciA1UartTxBuffer.
-* Arguments:1
-* argument1: cntVal - a signed long integer to be transmitted
-* return: nothing
-* Author: Jamie Boyd
-* Date:2022/02/10  */
-void usciA1UartTxLongInt (signed long cntVal){
-    unsigned char strPos;
-    if (cntVal < 0){
-        intBuffer [0] = '-';
-        cntVal *= -1;
-    } else{
-        intBuffer [0] = '+';
-    }
-    for (strPos = LONG_INT_DEC_PLACES; strPos > 0; strPos--){
-        intBuffer [strPos] = '0' + (cntVal % 10);
-        cntVal /= 10;
-    }
-    usciA1UartTxBuffer (intBuffer, LONG_INT_DEC_PLACES + 1);
-}
 
 /************************************************************************************
 * Function: usciA1UartGets
@@ -214,7 +118,7 @@ void usciA1UartTxLongInt (signed long cntVal){
 * Arguments:1
 * argument1: rxString - unsigned char pointer to text buffer to put received characters into
 * return:  pointer to rxString or NULL if unsuccessful (too many characters entered)
-* Author: Jamie Boyd
+* Author: Jamie Boyd/Matthew Wonneberg
 * Date: 2022/02/10
 ************************************************************************************/
 char * usciA1UartGets (char * rxString){
@@ -249,7 +153,7 @@ char * usciA1UartGets (char * rxString){
 * Arguments:1
 * argument1: interuptFuncPtr - pointer to a function that has a single char argument
 * returns:nothing
-* Author: Jamie Boyd
+* Author:Jamie Boyd/Matthew Wonneberg
 * Date: 2022/02/13
 ************************************************************************************/
 void usciA1UartInstallRxInt (rxIntFunc rxFunc){
@@ -261,7 +165,7 @@ void usciA1UartInstallRxInt (rxIntFunc rxFunc){
 * - enables or disables interupts for character in Rx buffer
 * Arguments:1
 * argument1:isOnNotOFF - non-zero enables, 0 disables
-* Author: Jamie Boyd
+* Author: Jamie Boyd/Matthew Wonneberg
 * Date: 2022/02/13
 ************************************************************************************/
 void usciA1UartEnableRxInt (char isOnNotOFF){
@@ -278,7 +182,7 @@ void usciA1UartEnableRxInt (char isOnNotOFF){
 * Arguments:1
 * argument1: interuptFuncPtr - pointer to a function that returns a single char
 * returns: unsigned char that will be put in the Tx buffer
-* Author: Jamie Boyd
+* Author:Jamie Boyd/Matthew Wonneberg
 * Date: 2022/02/13
 ************************************************************************************/
 void usciA1UartInstallTxInt (txIntFunc txFunc){
@@ -291,7 +195,7 @@ void usciA1UartInstallTxInt (txIntFunc txFunc){
 * Arguments:1
 * argument:isOnNotOFF - non-zero enables, 0 disables
 * returns: nothing
-* Author: Jamie Boyd
+* Author:Jamie Boyd/Matthew Wonneberg
 * Date: 2022/02/13
 ************************************************************************************/
 void usciA1UartEnableTxInt (char isOnNotOFF){
@@ -309,7 +213,7 @@ void usciA1UartEnableTxInt (char isOnNotOFF){
 * the corresponding interrupt
 * Arguments:none
 * returns: nothing
-* Author: Jamie Boyd
+* Author: Jamie Boyd/Matthew Wonneberg
 * Date: 2022/02/13
 * Modified: 2022/03/22 by Jamie Boyd added parameter or return val to indicate wake from low power mode
 ************************************************************************************/

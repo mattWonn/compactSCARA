@@ -1,3 +1,8 @@
+#! /usr/bin/python
+#-*-coding: utf-8 -*
+from abc import ABCMeta, abstractmethod
+import os
+import inspect
 
 import serial
 import serial.tools
