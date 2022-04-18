@@ -9,7 +9,7 @@
 #include "eStopLimitSwitch.h"
 #include "quadEncDec.h"
 #include "MotorsPWM.h"
-
+#include "ZaxisCtrl.h"
 
 #include <string.h>
 #include <math.h>
@@ -55,7 +55,8 @@ int main(void) {
       SCARA_failure ();
     _enable_interrupts();
     quadEncInit();                      // set up quadrature decoding for both arms
-    motorsPWMinit();                    // initialize TimerA0 and ports for PWM and motor driver direction
+    motorsPWMinit();                    // initialize Timer A 0 and GPIO pins for PWM and motor driver direction
+    zAxisInit ();                       // initializes timer A 1 and GPIO pins for Z-axis control
     usciA1UartInit();                   // Set up UART control and run binary UART commands in endless loop
     binInterp_init();
 

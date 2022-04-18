@@ -4,71 +4,45 @@
  *  Created on: Apr. 17, 2022
  *      Author: Jamie Boyd / Matthew Wonneberg
  */
-
-#include "ZaxisCtrl.h"
 #include <msp430.h>
+#include "SCARA.h"
+#include "ZaxisCtrl.h"
 
-volatile signed int gPosCountZ;
+zAxisController zControl;       // stores information about z-control
+volatile signed int gZPos = 0;      // easily accessed global set from interrupt
 
-// initializes timer A 1 on P2.0
+// initializes timerA 1 for output and sets pins for direction and enable
 void zAxisInit (void){
-    unsigned int timerSpeed;     // speed in steps/second = Hz
-    P2DIR |= ZAXIS_BIT;    // output pin 2.0    TA1 CCR1 output pin
-    P1SEL |= ZAXIS_BIT;
-    TA1CCR0 = 1999; // assign CCR0 value that the timer will count up to
-    TA1CCR1 = 1000;  // capture compare register 1 initialized to 50%, because frequency is the thing here, not duty cycle
-    TA1CTL = (TASSEL__SMCLK | MC_1); // Timer_A0 control register, SMCLK, , Up mode(timer counts up to CCR0)
-    TA1CCTL1 = OUTMOD_0
-    TA1CCTL1 |= (OUTMOD_7); // reset set mode (output is reset when the timer counts to the TAxCCRn value, it is set when the time counts from the TAxCCR0 value to 0
-    timerSpeed
+    P2DIR |= ZAXIS_STEP;    // set output pin for steps. pin 2.0  TA1 CCR1 output pin
+    P2SEL |= ZAXIS_STEP;
+    TA1CTL = (TASSEL__SMCLK +  MC__STOP + TAIE);     // SMCLK, no division, timer off  to start , set MC__UP to move
+    TA1CCTL1 = OUTMOD_7;        // Reset/set mode
+
+    P3DIR |= (ZAXIS_DIR + ZAXIS_ENABLE);    // set up direction and selection output pins
+    P3OUT &= ~ZAXIS_ENABLE;
+    zControl.jogSpeed = 0;            // calculated speed in steps/second when "jogging" Positive goes down, Negative goes up
+    zControl.curDir =0;             // stopped +1 when moving down, -1 when moving up
+    zControl.lowerLimit= 32767;     // no limit -  better set one
+    zControl.upperLimit = -32768;   // no limit - better set one
+    zControl.resolution = ZAXIS_RES; // as calculated, but can be set by user
+    zControl.movSpeed = zAxisSetSpeed (ZAXIS_MAX_SPEED/5);  // sets CCR0 and CCR1 for desired speed
 }
-    /**************************************
-     * Function: void timerA0Init()
-     *
-     *purpose: Initialize timerA0 to the correct settings
-     *purpose: also configure the port settings
-     *
-     *returns PWM frequency chosen closest to desired
-     **************************************/
-    unsigned int timerA0Init(unsigned int pwmFreq){
-        unsigned int retVal;
-        P1DIR |= BIT2;    // output pin 1.2    TA0.1 pin
-        P1SEL |= BIT2;    // pin 1.2
 
-        TA0CCR0 = 99; // assign CCR0 value that the timer will count up to
-        TA0CCR1 = 0;  // capture compare register 1 initialized to 0%
-        TA0CCTL1 |= (OUTMOD_7); // reset set mode (output is reset when the timer counts to the TAxCCRn value, it is set when the time counts to the TAxCCR0 value
-
-        TA0CTL = (TASSEL__SMCLK | MC_1); // Timer_A0 control register, SMCLK, , Up mode(timer counts up to CCR0)
-        retVal = timerA0PwmFreqSet(pwmFreq);
-
-        P1DIR |= BIT2;    // output pin 1.2    TA0.1 pin
-        P1SEL |= BIT2;    // pin 1.2
-        return retVal;
-
-
-    }
-      /*  P1DIR |= BIT3;    // output pin 1.3    TA0.2 pin
-        P1SEL |= BIT3;    // pin 1.3
-        P1OUT &= ~BIT0;   // Reset pin
-    */
-
-
-    /* ***************************************
-     * timerA0PwmFreqSet(unsigned int pwmFreq)
-     *
-     * Finds closest set of divisors to given frequency, given that always set CCR0 to 65535 for max control
-     * We always use 20Mhz SMCLK for clock source - could go from 109 Hz down to 5 Hz using 32768 Hz ACLK.
-     * If we wanted to make a crusade out of making an exact frequency of square wave we would get nearest clock divisor with CCR0 = 100
-     * then adjust CCR0 up or down to make the exact frequency we wanted - but for PWM the exact frequency of the carrier is seldom of interest as
-     * long as it is no too fast for driver to output, and is faster than time constant of the motor. pretty much always 10kHz is a good choice
-    20E6/
-
-     *
+/* ***************************************
+ * timerA0PwmFreqSet(unsigned int pwmFreq)
+ *
+ * Finds closest set of divisors to given frequency, given that always set CCR0 to 65535 for max control
+ * We always use 20Mhz SMCLK for clock source - could go from 109 Hz down to 5 Hz using 32768 Hz ACLK.
+ * If we wanted to make a crusade out of making an exact frequency of square wave we would get nearest clock divisor with CCR0 = 100
+ * then adjust CCR0 up or down to make the exact frequency we wanted - but for PWM the exact frequency of the carrier is seldom of interest as
+ * long as it is no too fast for driver to output, and is faster than time constant of the motor. pretty much always 10kHz is a good choice
+20E6/
+make sure you have timer stopped before calling this function
+ *
 ****************************************/
 unsigned int zAxisSetSpeed(unsigned int pwmFreq) {
     unsigned int rVal;
-    TA1CTL &= ~ID__8;   // clear the bits before setting the bits
+    TA1CTL &= ~ID__8;           // clear the bits before setting the bits
     if (pwmFreq > 305){        // no division at all, use 20Mhz and adjust CCR0
         TA1EX0 = TAIDEX_0;
         TA1CCR0 = (20000000/pwmFreq)-1;
@@ -208,15 +182,95 @@ unsigned int zAxisSetSpeed(unsigned int pwmFreq) {
         }
     }
     TA1CCR1 = (TA1CCR0 + 1)/2;
+    TA1CTL |= TACLR;         // to cleanse the discriminating timer palate
     return rVal;
 }
 
+/*************************** when TAR counts from value in CCR0 to 0 ***************************************/
+#pragma vector = TIMER1_A0_VECTOR
+__interrupt void doStep(void) {
+    if (!(gSTOP)){
+        if ((gZpos > zControl.lowerLimit) || (gZpos < zControl.upperLimit)){
+            eStopSoftware ();
+        }else{
+            if (zControl.curDir){
+                gZPos +=1;
+                if (gZPos >= zControl.movTarget){
+                    TA1CTL &= ~MC__UPDOWN;
+                    zControl.jogSpeed = 0;
+                    P3OUT &= ~ZAXIS_ENABLE;
+                }
+            }else{
+                gZPos -=1;
+                if (gZPos <= zControl.movTarget){
+                    TA1CTL &= ~MC__UPDOWN;
+                    zControl.jogSpeed = 0;
+                    P3OUT &= ~ZAXIS_ENABLE;
+                }
+            }
+        }
+    }else{
+        TA1CTL &= ~MC__UPDOWN;
+        zControl.jogSpeed = 0;
+        P3OUT &= ~ZAXIS_ENABLE;
+    }
+}
 
 
-void zAxisZero(void);
-void zAxisSetUpper (signed int);
-void zAxisSetLower (signed int);
-void zAxisGoToPos (signed int);
-void zAxisGo (signed char);
-void zAxisStop (void);
+void zAxisZero(void){
+    gZPos = 0;
+}
+
+void zAxisSetUpper (signed int limit){
+    zControl.upperLimit = limit;
+}
+
+void zAxisSetLower (signed int limit){
+    zControl.lowerLimit = limit;
+}
+
+void zAxisSetUpperHere(void){
+    zControl.upperLimit = gZpos;
+}
+void zAxisSetLowerHere(void){
+    zControl.lowerLimit = gZpos;
+}
+
+void zAxisGoToPos (signed int movPos){
+    zControl.movTarget = movPos;
+    if (movPos > gZpos){
+        zControl.curDir = 1;
+        P3OUT |= ZAXIS_DIR;
+    }else{
+        zControl.curDir = 0;
+        P3OUT &= ~ZAXIS_DIR;
+    }
+    P3OUT |= ZAXIS_ENABLE;
+    TA1CTL |= MC__UP;  // to activate timer
+}
+
+
+void zAxisJog (signed int speed){
+   zControl.jogSpeed = speed;
+    if (speed > 0){
+       zControl.curDir = 1;
+       P3OUT |= ZAXIS_DIR;
+       zControl.jogSpeed = zAxisSetSpeed((unsigned int)speed)
+       zControl.movTarget = zControl.lowerLimit;
+    }else{
+        zControl.curDir = 0;
+        P3OUT &= ~ZAXIS_DIR;
+        zControl.jogSpeed = zAxisSetSpeed((unsigned int)(-1 * speed));
+        zControl.movTarget = zControl.upperLimit;
+    }
+    P3OUT |= ZAXIS_ENABLE;
+    TA1CTL |= MC__UP;  // to activate timer
+}
+
+
+void zAxisStop (void){
+   TA1CTL &= ~MC__UPDOWN;
+   zControl.curSpeed = 0;
+   P3OUT &= ~ZAXIS_ENABLE;
+}
 

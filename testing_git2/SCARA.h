@@ -24,16 +24,15 @@
  *
  */
 
-
 #ifndef SCARA_H_
 #define SCARA_H_
 
 
 extern volatile signed int gPosCountL1;         // encoder count of L1
 extern volatile signed int gPosCountL2;         // encoder count of L2
-extern volatile signed int gPWML1;              // motor speed and direction for L1
-extern volatile signed int gPWML2;              // motor speed and direction for L2
-extern volatile signed int gPosCountZ;           // stepper count of Z axis
+extern volatile signed int gPWML1;              // motor power and direction for L1
+extern volatile signed int gPWML2;              // motor power and direction for L2
+extern volatile signed int gZPos;               // position of Z axis - in steps from user-set 0
 extern volatile unsigned int gToolData;         // whatever data your tool stores
 extern volatile unsigned char gIsMoving;        // set when robot is performing a move
 extern volatile unsigned char gSTOP =0;         // 0 is normal, non-zero means stopped
