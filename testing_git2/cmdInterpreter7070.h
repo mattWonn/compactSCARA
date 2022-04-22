@@ -45,7 +45,10 @@
 #define CMD12_NARGS 4
 #define CMD13 "moveC"
 #define CMD13_NARGS 5
-#define MAX_CMDS 14
+#define CMD14 "moveJcoord"
+#define CMD14_NARGS 3
+
+#define MAX_CMDS 15
 
 volatile unsigned char data;
 volatile unsigned char x;

@@ -72,6 +72,10 @@ void motorCmdInit(CMD *vnhCmdList){
     vnhCmdList[13].name = CMD13;
     vnhCmdList[13].nArgs = CMD13_NARGS;
 
+    vnhCmdList[14].name = CMD14;
+    vnhCmdList[14].nArgs = CMD14_NARGS;
+
+
 
 }
 /***********************************
@@ -272,25 +276,54 @@ int parseCmd(CMD * cmdList, char * cmdLine){
 
             token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
 
-        if (n == 0){  // first argument
+            if (n == 0){  // first argument
+                    cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                    nArgs++;       // inc argument count
+            }
+            else if (n == 1){  // second argument
                 cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
                 nArgs++;       // inc argument count
+            }
+            else if (n == 2){  // third argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+            }
+            else if (n == 3){  // third argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+            }
+            else if (n == 4){  // third argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+            }
+            n++;
         }
-        else if (n == 1){  // second argument
+        if (nArgs > cmdList[index].nArgs || nArgs < cmdList[index].nArgs){ // too many arguments in command
+             value = -1;  // parseCmd exits with invalid data
+        }
+        if (value == 0){
+            value = index;
+        }
+        else
+            value = -1;
+    }
+    else if (index == 14){
+        while (token != NULL){            // while token is not the last character in the buffer
+
+            token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
+
+        if (n == 0){  // first argument
             cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
             nArgs++;       // inc argument count
         }
-        else if (n == 2){  // third argument
+        else if (n == 1){  // first argument
             cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
             nArgs++;       // inc argument count
         }
-        else if (n == 3){  // third argument
+        else if (n == 2){  // second argument
             cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
             nArgs++;       // inc argument count
-        }
-        else if (n == 4){  // third argument
-            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-            nArgs++;       // inc argument count
+            token = NULL;
         }
         n++;
         }
@@ -300,8 +333,6 @@ int parseCmd(CMD * cmdList, char * cmdLine){
         if (value == 0){
             value = index;
         }
-    else
-        value = -1;
     }
 
     return value;
@@ -350,6 +381,9 @@ int executeCmd(CMD *cmdList, int cmdIndex){
     volatile unsigned char dutyEnd;
     volatile unsigned char dutySend2;
     volatile unsigned char dutyEnd2;
+
+    volatile float j1HoldAng =0;
+    volatile float j2HoldAng =0;
 
     volatile unsigned char cwRet=0;
     volatile unsigned char ccwRet=0;
@@ -440,7 +474,18 @@ int executeCmd(CMD *cmdList, int cmdIndex){
 
             sendMoveC(&robot);
         }
+        break;
+    case 14://---------------- moveJcoord-----------------
 
+        scaraStateEnd.scaraPos.armSol = cmdList[14].args[2];
+
+        result = scaraIkFloat(&j1HoldAng, &j2HoldAng, cmdList[14].args[0], cmdList[14].args[1], &scaraStateEnd);
+
+        scaraStateEnd.scaraPos.theta1 = j1HoldAng*PUL_PER_DEG_N70;
+        scaraStateEnd.scaraPos.theta2 = j2HoldAng*PUL_PER_DEG_N70;
+
+        // send move command
+        sendMoveJ(scaraStateEnd);
 
     }//---------------------------------
 

@@ -96,8 +96,8 @@ int main(void) {
 
    //--------------- Update Loop ----------------
 
-           posCount = 830;
-           posCount2 = 830;
+           posCount = 0;
+           posCount2 = 0;
            startMoveJ =0;
            prevPosCount =0;
            prevPosCount2 =0;
@@ -150,11 +150,13 @@ int main(void) {
            __delay_cycles(10000);
            char menu1[] = " moveJ J1, J2\n\r"; // change moveJ to start from current position
            numChars = ucsiA1UartTxString(&menu1);
+           char menu2[] = " moveJcoord x, y, 1:L 0:R \n\r"; // change moveJ to start from current position
+            numChars = ucsiA1UartTxString(&menu2);
            __delay_cycles(10000);
-           char menu2[] = " moveL xB, yB, 1:L 0:R, up:1 dn:0\n\r";
-           numChars = ucsiA1UartTxString(&menu2);
-           char menu3[] = " moveC StrAng, endAng, Radius, 1:L 0:R, up:1 dn:0\n\r";
-            numChars = ucsiA1UartTxString(&menu3);
+           char menu3[] = " moveL xB, yB, 1:L 0:R, up:1 dn:0\n\r";
+           numChars = ucsiA1UartTxString(&menu3);
+           char menu4[] = " moveC StrAng, endAng, Radius, 1:L 0:R, up:1 dn:0\n\r";
+            numChars = ucsiA1UartTxString(&menu4);
 
 
 

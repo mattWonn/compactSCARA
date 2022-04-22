@@ -56,6 +56,8 @@ void quadEncInit(){
          preA = currA; // only need to update previousA because we are not using preB
      P2IFG &= ( ~BIT4 & ~BIT5 ); // flags are cleared when exiting routine*/
      }
+     else
+         P2IFG &= ~0xF0; // clear all flags if stuck
 
 
 }
