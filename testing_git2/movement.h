@@ -25,7 +25,7 @@
 #define MAX_ABS_THETA2_PUL (MAX_ABS_THETA2 * PUL_PER_DEG_N70)
 #define MAX_ABS_X 30.48      // max x value
 #define MAX_ABS_Y 30.48       // max y value
-#define MIN_ABS_X 0      // min x value
+#define MIN_ABS_X -30      // min x value
 #define MIN_ABS_Y -30       // min y value
 #define XY_RES_FACTOR 10
 #define INNER_CIRCLE_BOUNDS 65 // 1000* 6.5cm // cm radius
@@ -117,6 +117,7 @@ unsigned int moveJ(signed int endAng1, signed int endAng2);
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);
 int moveScaraC(SCARA_ROBOT* scaraState);
 unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* toolY);
+unsigned int scaraFkPulse(signed int pul1, signed int pul2, float* toolX, float* toolY);
 unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 unsigned int scaraIkFloat(float *ang1, float * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 //unsigned int scaraIkPulses(signed int *ang1, signed int * ang2, float toolX, float toolY, SCARA_ROBOT *scaraState1);

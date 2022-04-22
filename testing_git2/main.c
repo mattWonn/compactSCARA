@@ -110,9 +110,14 @@ int main(void) {
            posError1Sum = 0;
            posError2Sum = 0;
 
-           kP = 2.3;// map pul/UpdateTime to PWM(0:100); 1uT/0.01s * 1s/6716pul * 100%
-           kI = 0; //1.8
-           kD = 0.2;
+           kPAng = 2.3;// map pul/UpdateTime to PWM(0:100); 1uT/0.01s * 1s/6716pul * 100%
+           kIAng = 0; //1.8
+           kDAng = 0.2;
+
+           kPLin = 2.2;
+           kILin = 0;
+           kDLin = 2.0;
+
 
 
    //----------- Structured Commands -------------------

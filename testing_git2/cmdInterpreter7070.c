@@ -240,29 +240,29 @@ int parseCmd(CMD * cmdList, char * cmdLine){
             value = index;
         }
     }
-    else if (index == 12){
+    else if (index == 12){//----------------moveL---------------------
         while (token != NULL){            // while token is not the last character in the buffer
 
             token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
 
-        if (n == 0){  // first argument
+            if (n == 0){  // first argument
+                    cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                    nArgs++;       // inc argument count
+            }
+            else if (n == 1){  // second argument
                 cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
                 nArgs++;       // inc argument count
-        }
-        else if (n == 1){  // second argument
-            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-            nArgs++;       // inc argument count
-        }
-        else if (n == 2){  // third argument
-            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-            nArgs++;       // inc argument count
-        }
-        else if (n == 3){  // fourth argument
-            cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-            nArgs++;       // inc argument count
+            }
+            else if (n == 2){  // third argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+            }
+            else if (n == 3){  // fourth argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
 
-        }
-        n++;
+            }
+            n++;
         }
         if (nArgs > cmdList[index].nArgs || nArgs < cmdList[index].nArgs){ // too many arguments in command
              value = -1;  // parseCmd exits with invalid data
@@ -307,7 +307,7 @@ int parseCmd(CMD * cmdList, char * cmdLine){
         else
             value = -1;
     }
-    else if (index == 14){
+    else if (index == 14){//---------------moveJcoord-------------------
         while (token != NULL){            // while token is not the last character in the buffer
 
             token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
@@ -334,6 +334,9 @@ int parseCmd(CMD * cmdList, char * cmdLine){
             value = index;
         }
     }
+
+    if (index < 0 || index > 14)
+        value = -1;
 
     return value;
 }
@@ -462,7 +465,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
 
         if (abs(cmdList[13].args[0]) > 360 || abs(cmdList[13].args[1]) > 360)
             result = -1;
-        if (cmdList[13].args[2] < 1)
+        if (cmdList[13].args[2] < 1 || cmdList[13].args[2] > MAX_ABS_X)
             result = -1;
         if (abs(cmdList[13].args[1] - cmdList[13].args[0]) > 361)
             result = -1;
