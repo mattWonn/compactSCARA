@@ -13,29 +13,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-/*
- * main_lab.c
- *
- *
- *  using P1.5 as PWM1
- *  using P2.0 as PWM2
- *
- *  using P3.0 as INA1
- *  using P3.1 as INB1
- *
- *  using P3.3 as INA2
- *  using P3.4 as INB2
- *
- */
 
-//#define dcoFreq 1      // leaving at 1 works with Uart settings: BR1 =0x00, BR0 = 0x03, RS_1, RF_6.
+
 #define dcoFreq 20     //  BR = 65: BR1 = 0x00 BR0 = 0x41, RS_0 , RF_6
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
-
-    P4OUT = 0x00;
-    P6OUT = 0x00;
 
       _disable_interrupts();
       unsigned char oscFail = 1; // clock set
@@ -57,10 +40,9 @@ int main(void) {
     volatile char getsInvalidString[] = "\nInvalid String entry\n\r";
     char returned =1;
     volatile signed int indexReturned;
-    CMD mddCmds[MAX_CMDS]; // array of mddCmds of type CMD
+    CMD mddCmds[MAX_CMDS]; // initialize array of Cmds
 
-    UCA1IE |= UCRXIE;         // Receive interrupt en
-  // __enable_interrupt();
+    UCA1IE |= UCRXIE; // Receive interrupt enable
 
 
 
@@ -99,8 +81,6 @@ int main(void) {
            posCount = 0;
            posCount2 = 0;
            startMoveJ =0;
-           prevPosCount =0;
-           prevPosCount2 =0;
            noMove1 =0;
            noMove2 =0;
            armSolChange = 0;
@@ -110,13 +90,14 @@ int main(void) {
            posError1Sum = 0;
            posError2Sum = 0;
 
-           kPAng = 2.3;// map pul/UpdateTime to PWM(0:100); 1uT/0.01s * 1s/6716pul * 100%
-           kIAng = 0; //1.8
-           kDAng = 0.2;
+           //  set control variables for angular moves vs linear moves
+           kPAng = 2.3;
+           kIAng = 0;
+           kDAng = 0;
 
            kPLin = 2.2;
            kILin = 0;
-           kDLin = 2.0;
+           kDLin = 0;
 
 
 

@@ -25,8 +25,6 @@ volatile int startMoveJ;
 
 volatile signed int velCount; // units pulses/updatetime
 volatile signed int velCount2; // units pulses/updatetime
-volatile signed int prevPosCount;
-volatile signed int prevPosCount2;
 
 volatile float kP;
 volatile float kI;

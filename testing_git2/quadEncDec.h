@@ -18,8 +18,7 @@
 #define CURRSTATE1 (P2IN & 0x30)
 #define CURRSTATE2 (P2IN & 0xC0)
 
-#define PORT2DIR P2DIR &= (~CHB &~ CHA &~ CH2B &~ CH2A ) // input
-//#define PORT2IN P2IN |= (CHB | CHA | CH2B | CH2A ) // read only
+#define PORT2DIR P2DIR &= ~BIT4 &~BIT5 &~BIT6 &~BIT7;
 #define CLEARFLAGS P2IFG = 0x00
 #define INTERUPTEN P2IE |= (CHB | CHA | CH2B | CH2A) //
 

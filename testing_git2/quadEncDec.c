@@ -2,7 +2,7 @@
  * quadEncDec.c
  *
  *  Created on: Mar. 22, 2021
- *      Author: Rinz
+ *      Author: Matthew Wonneberg, Jamie Boyd
  */
 
 #include <msp430.h>
@@ -13,8 +13,7 @@
 
 void quadEncInit(){
 
-    P2DIR &= ~BIT4 &~BIT5 &~BIT6 &~BIT7;
-    //PORT2DIR;
+    PORT2DIR;
     CLEARFLAGS;
     INTERUPTEN;
 }

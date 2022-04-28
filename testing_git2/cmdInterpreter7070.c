@@ -463,27 +463,31 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         break;
     case 13://----------moveC--------------------
 
-        if (abs(cmdList[13].args[0]) > 360 || abs(cmdList[13].args[1]) > 360)
+        if (abs(cmdList[13].args[0]) > 360 || abs(cmdList[13].args[1]) > 360) // verify that both angles do not exceed 360 degrees
             result = -1;
-        if (cmdList[13].args[2] < 1 || cmdList[13].args[2] > MAX_ABS_X)
+        if (cmdList[13].args[2] < 1 || cmdList[13].args[2] > MAX_ABS_X) // verify that the radius is within the set limits
             result = -1;
-        if (abs(cmdList[13].args[1] - cmdList[13].args[0]) > 361)
+        if (abs(cmdList[13].args[1] - cmdList[13].args[0]) > 361) // verify that the arc does not go over 361 degrees
             result = -1;
-        if (result == 0){
+        if (result == 0){ // store the angles of the arc and the arm solution
             scaraStateSet.scaraPos.theta1 = cmdList[13].args[0]*PUL_PER_DEG_N70;
             scaraStateEnd.scaraPos.theta1 = cmdList[13].args[1]*PUL_PER_DEG_N70;
             scaraStateSet.scaraPos.radius = cmdList[13].args[2];
             SCARA_ROBOT robot = scaraInitState(0, 0, cmdList[13].args[3], cmdList[13].args[4]); // x y armSol penPos
 
+            // send the move command
             sendMoveC(&robot);
         }
         break;
     case 14://---------------- moveJcoord-----------------
 
+        // store the desired arm solution (1 for left arm, 0 for right arm
         scaraStateEnd.scaraPos.armSol = cmdList[14].args[2];
 
+        // find the coorisponding arm angles based on the desired (x, y) coordinate
         result = scaraIkFloat(&j1HoldAng, &j2HoldAng, cmdList[14].args[0], cmdList[14].args[1], &scaraStateEnd);
 
+        // store the joint angles in pulses
         scaraStateEnd.scaraPos.theta1 = j1HoldAng*PUL_PER_DEG_N70;
         scaraStateEnd.scaraPos.theta2 = j2HoldAng*PUL_PER_DEG_N70;
 

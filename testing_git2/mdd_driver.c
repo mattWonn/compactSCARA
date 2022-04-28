@@ -2,7 +2,7 @@
  * Uartmddhpi.c
  *
  *  Created on: March 8, 2022
- *      Author: Matthew Wonneberg
+ *      Author: Matthew Wonneberg, Jamie Boyd
  */
 
 #include <mdd_driver.h>
@@ -42,7 +42,7 @@ void displayPos(){
  * Date: March 14 2022
  *********************************/
 void displayPos2(){
-    volatile char posPrint[20] = {0}; // Uart
+    volatile char posPrint[20] = {0};
     volatile int ret;
 
        sprintf(posPrint, "\nCount = %d \n\r", posCount2); // insert the number of characters into the display string
