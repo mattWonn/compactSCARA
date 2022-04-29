@@ -985,7 +985,7 @@ unsigned int scaraIkFloat(float *ang1, float *ang2, double toolX, double toolY, 
 *
 * returns: LINE_DATA lineInit
 * created by: Matthew Wonneberg, Jamie Boyd
-* Date: March 17 20222
+* Date: March 17 2022
 ************************************************************/
 LINE_DATA initLine(double xB, double yB, double xA, double yA, int numPts)
 {
