@@ -120,7 +120,7 @@ unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* tool
 unsigned int scaraFkPulse(signed int pul1, signed int pul2, float* toolX, float* toolY);
 unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 unsigned int scaraIkFloat(float *ang1, float * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
-//unsigned int scaraIkPulses(signed int *ang1, signed int * ang2, float toolX, float toolY, SCARA_ROBOT *scaraState1);
+//unsigned int scaraIkPulses(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState);
 LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 double DegToRad(double);  // returns angle in radians from input angle in degrees

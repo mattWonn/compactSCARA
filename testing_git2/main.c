@@ -145,8 +145,8 @@ int main(void) {
             numChars = ucsiA1UartTxString(&menu4);
 
 
-
     while (1){//--------------- main loop-------------------
+
 
       char rxGetString[30] = {0};   // reset getString buffer
 

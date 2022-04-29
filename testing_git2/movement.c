@@ -347,8 +347,6 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
     SCARA_ROBOT scaraStateSet;
     SCARA_ROBOT scaraStateEnd;
 
-    //!!!!!!!!!!!!!!!!!!!!!!!!! add arm solution change condition
-
     scaraStateSet.scaraPos.theta1 = posCount*DEG_PER_PUL_N70;
     scaraStateSet.scaraPos.theta2 = posCount2*DEG_PER_PUL_N70;
 
@@ -357,7 +355,7 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
     attemptedArmSolution = scaraState->scaraPos.armSol; // store the attempted arm solution
 
 
-    // arm solution change condition for first point
+   // arm solution change condition for first point
         // get current joint angles
         currentAngJ1 = posCount;
         currentAngJ2 = posCount2;
@@ -366,12 +364,12 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
         // compare within one degree
         if (currentAngJ1 > ((j1HoldAng*PUL_PER_DEG_N70)+9) || currentAngJ1 < ((j1HoldAng*PUL_PER_DEG_N70)-9) || currentAngJ2 > ((j2HoldAng*PUL_PER_DEG_N70)+9) || currentAngJ2 < ((j2HoldAng*PUL_PER_DEG_N70)-9)){
             // if different, movJ to the same point with the correct arm solution
-            /********TOOL_UP******************/
+            /********TOOL_UP*****************/
             scaraStateEnd.scaraPos.theta1 = j1HoldAng*PUL_PER_DEG_N70;
             scaraStateEnd.scaraPos.theta2 = j2HoldAng*PUL_PER_DEG_N70;
 
             sendMoveJ(scaraStateEnd);
-            /*********TOOL_RETURN*************/
+            /*********TOOL_RETURN************/
         }
 
 
@@ -382,11 +380,8 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
 
     timeForMove = (sqrt((abs(deltaD)*2*PI)/A_MAX_LINEAR));
     w = (2*(PI))/timeForMove;
-
     arrayLength = (timeForMove/T_UPDATE)+1;
-
     aMaxMove = A_MAX_LINEAR;
-
 
     // fill the position and velocity array targets
     for(tInc; tInc < arrayLength; tInc++){
@@ -419,7 +414,6 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
             }
             posArray1[tInc] = j1HoldAng*PUL_PER_DEG_N70;
             posArray2[tInc] = j2HoldAng*PUL_PER_DEG_N70;
-
             xHoldPrev = xHold; // store the previous x,y values incase an arm solution change is needed
             yHoldPrev = yHold;
 
@@ -427,8 +421,6 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
                 value = 1;
                 tInc = arrayLength;
             }
-
-
         }
         else{
             value = 1; // exit calculations if the move is not possible
@@ -926,26 +918,37 @@ unsigned int scaraIkFloat(float *ang1, float *ang2, double toolX, double toolY, 
     return (exit);
 }
 
-
-/*unsigned int scaraIkPulses(signed int *ang1, signed int *ang2, float toolX, float toolY, SCARA_ROBOT *scaraState1){
+/***********************************************************
+* Name: int scaraIkPulses
+* function: provides the calculations to control the robot with inverse kinematics using pulses
+* arguments
+*            ang1:  (pointer type signed int - points to theta1 in pulses
+*            ang2:  (pointer type signed int - points to theta2 in pulses
+*            toolX: (double - x position of arm
+*            toolY: (double - y position of arm
+*
+*
+* created by: Matthew Wonneberg, Jamie Boyd
+* Date: April 25 2022
+************************************************************/
+/*unsigned int scaraIkPulses(signed int *ang1, signed int *ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1){
 
     volatile unsigned int exit = 0;
     volatile signed int angJ1;
     volatile signed int angJ2;
-    float B;     // length from origin to x,y
-    float beta;  // cosine law angle
-    float alpha; // angle of x,y
-    unsigned int armSol = scaraState1->scaraPos.armSol;
+    volatile float B;     // length from origin to x,y
+    volatile float beta;  // cosine law angle
+    volatile float alpha; // angle of x,y
 
-    B = sqrt(pow(toolX, 2) + pow(toolY, 2)); // straight line distance from origin to (x,y) point
-    alpha = RadToPul(atan2(toolY, toolX)); // angle of B from origin to (x,y) point
+    B = sqrt((toolX*toolX)+(toolY*toolY));                                      // straight line distance from origin to (x,y) point
+    alpha = RadToPul(atan2(toolY, toolX));                                        // angle of B from origin to (x,y) point
     beta = RadToPul(acos((pow(L2, 2) - pow(B, 2) - pow(L1, 2)) / (-2 * B * L1))); // cosine law to find beta
 
-    if (scaraState1->scaraPos.armSol == LEFT_ARM_SOLUTION) { // left hand solution
+    if (scaraState1->scaraPos.armSol == LEFT_ARM_SOLUTION) {                      // left hand solution
         angJ1 = alpha + beta;
-        if (angJ1 > MAX_ABS_THETA1_PUL || angJ1 < -MAX_ABS_THETA1_PUL){  // switch solutions if the selected solution was impossible
+        if (angJ1 > MAX_ABS_THETA1_PUL || angJ1 < -MAX_ABS_THETA1_PUL){           // switch solutions if the selected solution was impossible
             angJ1 = alpha - beta;
-            scaraState1->scaraPos.armSol = RIGHT_ARM_SOLUTION; // changed to Right hand solution
+            scaraState1->scaraPos.armSol = RIGHT_ARM_SOLUTION;                    // changed to Right hand solution
             armSolChange = 1;
             if (angJ1 > MAX_ABS_THETA1_PUL || angJ1 < -MAX_ABS_THETA1_PUL)
                 exit =1;
@@ -972,7 +975,7 @@ unsigned int scaraIkFloat(float *ang1, float *ang2, double toolX, double toolY, 
     }
 
     return (exit);
-}*/
+}
 /***********************************************************
 * Name: LINE_DATA initLine
 * function: used to set up the points of the line between the start and end points
@@ -1043,10 +1046,10 @@ double RadToDeg(double angRad){
 //---------------------------------------------------------------------------------------
 // Returns angle in radians from input angle in motor pulses
 double PulToRad(double pulses){
-    return (PI/1708)*pulses; // 1707.96 deg/ rad
+    return (PI/1708.0)*pulses; // 1707.96 deg/ rad
 }
 //---------------------------------------------------------------------------------------
 // Returns angle in pulses from input angle in radians
 double RadToPul(double radians){
-    return (1708/PI)*radians;
+    return (1708.0/PI)*radians;
 }
