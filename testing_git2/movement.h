@@ -13,8 +13,8 @@
 #define MAX_POINTS 50          // maximum number of points in a line
 #define LEFT_ARM_SOLUTION 1           // index that can be used to indicate left arm
 #define RIGHT_ARM_SOLUTION 0           // index that can be used to indicate right arm
-#define L1 15.24       // inner arm length
-#define L2 15.24       // outer arm length
+#define L1 15       // inner arm length
+#define L2 15       // outer arm length
 
 #define PUL_PER_DEG_N70 9.48866 // 3415.92pul/360deg
 #define MAX_ABS_THETA1 110       // max angle of  arm 1
@@ -117,10 +117,10 @@ unsigned int moveJ(signed int endAng1, signed int endAng2);
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);
 int moveScaraC(SCARA_ROBOT* scaraState);
 unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* toolY);
-unsigned int scaraFkPulse(signed int pul1, signed int pul2, float* toolX, float* toolY);
+unsigned int scaraFkPulses(signed int pul1, signed int pul2, float* toolX, float* toolY);
 unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 unsigned int scaraIkFloat(float *ang1, float * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
-//unsigned int scaraIkPulses(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
+unsigned int scaraIkPulses(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState);
 LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 double DegToRad(double);  // returns angle in radians from input angle in degrees

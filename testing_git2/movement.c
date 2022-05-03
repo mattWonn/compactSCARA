@@ -258,12 +258,15 @@ void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
                 scaraStateSolution->scaraPos.armSol = LEFT_ARM_SOLUTION;
 
             // calculate the new joint angles for the new arm solution, at the same coordinate
-            result = scaraIkFloat(&angleJ1, &angleJ2, endLine.pA.x, endLine.pA.y, scaraStateSolution);
+            //result = scaraIkFloat(&angleJ1, &angleJ2, endLine.pA.x, endLine.pA.y, scaraStateSolution);
+            result = scaraIkPulses(&angleJ1, &angleJ2, endLine.pA.x, endLine.pA.y, scaraStateSolution);
 
             if (result == 0){
                 // store new solution joint angles for the same spot at switch point of desired line,
-                scaraStateEnd.scaraPos.theta1 = angleJ1*PUL_PER_DEG_N70;
-                scaraStateEnd.scaraPos.theta2 = angleJ2*PUL_PER_DEG_N70;
+               // scaraStateEnd.scaraPos.theta1 = angleJ1*PUL_PER_DEG_N70;
+                //scaraStateEnd.scaraPos.theta2 = angleJ2*PUL_PER_DEG_N70;
+                 scaraStateEnd.scaraPos.theta1 = angleJ1;
+                 scaraStateEnd.scaraPos.theta2 = angleJ2;
 
                 // send command to perform switching arm solutions
                 sendMoveJ(scaraStateEnd);
@@ -336,8 +339,8 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
 
     volatile unsigned int tInc = 0;
 
-    signed int currentAngJ1;
-    signed int currentAngJ2;
+    signed int desiredAngJ1;
+    signed int desiredAngJ2;
     volatile signed int angleJ1;
     volatile signed int angleJ2;
 
@@ -347,15 +350,19 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
     SCARA_ROBOT scaraStateSet;
     SCARA_ROBOT scaraStateEnd;
 
+    /*
     scaraStateSet.scaraPos.theta1 = posCount*DEG_PER_PUL_N70;
     scaraStateSet.scaraPos.theta2 = posCount2*DEG_PER_PUL_N70;
-
     value = scaraFk(scaraStateSet.scaraPos.theta1, scaraStateSet.scaraPos.theta2, &newLine.pA.x, &newLine.pA.y);
+    attemptedArmSolution = scaraState->scaraPos.armSol; // store the attempted arm solution
+    */
+
+    value = scaraFkPulses(posCount, posCount2, &newLine.pA.x, &newLine.pA.y);
 
     attemptedArmSolution = scaraState->scaraPos.armSol; // store the attempted arm solution
 
 
-   // arm solution change condition for first point
+  /* // arm solution change condition for first point
         // get current joint angles
         currentAngJ1 = posCount;
         currentAngJ2 = posCount2;
@@ -364,14 +371,27 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
         // compare within one degree
         if (currentAngJ1 > ((j1HoldAng*PUL_PER_DEG_N70)+9) || currentAngJ1 < ((j1HoldAng*PUL_PER_DEG_N70)-9) || currentAngJ2 > ((j2HoldAng*PUL_PER_DEG_N70)+9) || currentAngJ2 < ((j2HoldAng*PUL_PER_DEG_N70)-9)){
             // if different, movJ to the same point with the correct arm solution
-            /********TOOL_UP*****************/
+            //********TOOL_UP****************
             scaraStateEnd.scaraPos.theta1 = j1HoldAng*PUL_PER_DEG_N70;
             scaraStateEnd.scaraPos.theta2 = j2HoldAng*PUL_PER_DEG_N70;
 
             sendMoveJ(scaraStateEnd);
-            /*********TOOL_RETURN************/
-        }
+            //*********TOOL_RETURN***********
+        }*/
 
+     // arm solution change condition for first point
+          // calc joint angles for arm solution beginning x,y
+          value = scaraIkPulses(&desiredAngJ1, &desiredAngJ2, newLine.pA.x, newLine.pA.y, scaraState);// lowercase k
+          // compare within one degree
+          if (posCount > (desiredAngJ1+9) || posCount < (desiredAngJ2-9) || posCount2 > (desiredAngJ2+9) || posCount2 < (desiredAngJ2-9)){
+              // if different, movJ to the same point with the correct arm solution
+              //********TOOL_UP****************
+              scaraStateEnd.scaraPos.theta1 = desiredAngJ1;
+              scaraStateEnd.scaraPos.theta2 = desiredAngJ2;
+
+              sendMoveJ(scaraStateEnd);
+              //*********TOOL_RETURN***********
+          }
 
     // calculate line displacements
     deltaX = newLine.pB.x - newLine.pA.x;
@@ -396,7 +416,8 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
             tInc = arrayLength;
         }
         else{
-            returned = scaraIkFloat(&j1HoldAng, &j2HoldAng, xHold, yHold, scaraState); // calculate arm angles of x,y point
+            //returned = scaraIkFloat(&j1HoldAng, &j2HoldAng, xHold, yHold, scaraState); // calculate arm angles of x,y point
+            returned = scaraIkPulses(&posArray1[tInc], &posArray2[tInc], xHold, yHold, scaraState);
         if (returned == 0){
             if (armSolChange == 1){ // determine if a armSolution change was needed
 
@@ -412,8 +433,9 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
                 armSolChange =0;
                 return(3);
             }
-            posArray1[tInc] = j1HoldAng*PUL_PER_DEG_N70;
-            posArray2[tInc] = j2HoldAng*PUL_PER_DEG_N70;
+            //posArray1[tInc] = j1HoldAng*PUL_PER_DEG_N70;
+            //posArray2[tInc] = j2HoldAng*PUL_PER_DEG_N70;
+
             xHoldPrev = xHold; // store the previous x,y values incase an arm solution change is needed
             yHoldPrev = yHold;
 
@@ -500,12 +522,13 @@ void sendMoveC(SCARA_ROBOT *scaraStateSolution){
                 scaraStateSolution->scaraPos.armSol = LEFT_ARM_SOLUTION;
 
             // calculate joint angles for the same (x, y) coordinate, but with a new arm solution
-            result = scaraIk(&angleJ1, &angleJ2, armChangeStart.x, armChangeStart.y, scaraStateSolution);
+            //result = scaraIk(&angleJ1, &angleJ2, armChangeStart.x, armChangeStart.y, scaraStateSolution);
+            result = scaraIkPulses(&midState.scaraPos.theta1, &midState.scaraPos.theta2, armChangeStart.x, armChangeStart.y, scaraStateSolution);
 
             if (result == 0){
                 // assign the joint angles for the new arm solution
-                midState.scaraPos.theta1 = angleJ1*PUL_PER_DEG_N70;
-                midState.scaraPos.theta2 = angleJ2*PUL_PER_DEG_N70;
+                //midState.scaraPos.theta1 = angleJ1*PUL_PER_DEG_N70;
+                //midState.scaraPos.theta2 = angleJ2*PUL_PER_DEG_N70;
 
                 // perform the moveJ to the same coordiante, just with switched arm solutions
                 sendMoveJ(midState); // start end M1, start end M2;
@@ -528,8 +551,6 @@ void sendMoveC(SCARA_ROBOT *scaraStateSolution){
                         while (startMoveJ == 1){}
                         startMoveJ =0;
                         updateIndex = 0;
-                        posCount = posArray1[arrayLength-1];
-                        posCount2 = posArray2[arrayLength-1];
                         noMove1 = 0;
                         noMove2 = 0;
                     }
@@ -590,14 +611,16 @@ int moveScaraC(SCARA_ROBOT* scaraState){
     volatile unsigned int attemptedArmSolution;
     volatile unsigned int aMaxMove;
     volatile unsigned int tInc = 0;
-    volatile signed int currentAngJ1;
-    volatile signed int currentAngJ2;
+   // volatile signed int currentAngJ1;
+   // volatile signed int currentAngJ2;
+    volatile signed int desiredAngJ1;
+    volatile signed int desiredAngJ2;
     volatile signed int thetaStart;
     volatile signed int thetaEnd;
     volatile unsigned int radius;
 
     thetaStart = scaraStateSet.scaraPos.theta1;
-    thetaEnd = scaraStateEnd.scaraPos.theta1;
+    thetaEnd = scaraStateEnd.scaraPos.theta1+9;
     radius = scaraStateSet.scaraPos.radius;
 
 
@@ -610,23 +633,37 @@ int moveScaraC(SCARA_ROBOT* scaraState){
 
     attemptedArmSolution = scaraState->scaraPos.armSol; // store the attempted arm solution
 
-    value = scaraFkPulse(posCount, posCount2, &scaraStateSet.scaraPos.x, &scaraStateSet.scaraPos.y);// lowercase k)
+    value = scaraFkPulses(posCount, posCount2, &scaraStateSet.scaraPos.x, &scaraStateSet.scaraPos.y);// lowercase k)
 
-    currentAngJ1 = posCount;// get current joint angles
+    /*currentAngJ1 = posCount;// get current joint angles
     currentAngJ2 = posCount2;
     // calculate joint angles for arm solution beginning (xA, yA)
     value = scaraIkFloat(&j1HoldAng, &j2HoldAng, scaraStateSet.scaraPos.x, scaraStateSet.scaraPos.y, scaraState);// lowercase k
     // compare arm angle results of current position with the desired joint angle positions
     if (currentAngJ1 > (int)((j1HoldAng*PUL_PER_DEG_N70)+9) || currentAngJ1 < (int)((j1HoldAng*PUL_PER_DEG_N70)-9) || currentAngJ2 > (int)((j2HoldAng*PUL_PER_DEG_N70)+9) || currentAngJ2 < (int)((j2HoldAng*PUL_PER_DEG_N70)-9)){
         // if different, movJ to the same point with the correct arm solution
-        /********TOOL_UP******************/
+        //********TOOL_UP*****************
         scaraStateEnd.scaraPos.theta1 = j1HoldAng*PUL_PER_DEG_N70;
         scaraStateEnd.scaraPos.theta2 = j2HoldAng*PUL_PER_DEG_N70;
 
         sendMoveJ(scaraStateEnd);
-        /*********TOOL_RETURN*************/
+        //*********TOOL_RETURN*************
     }
+    */
 
+     // arm solution change condition for first point
+     // calc joint angles for arm solution beginning x,y
+     value = scaraIkPulses(&desiredAngJ1, &desiredAngJ2, scaraStateSet.scaraPos.x, scaraStateSet.scaraPos.y, scaraState);// lowercase k
+     // compare within one degree
+     if (posCount > (desiredAngJ1+9) || posCount < (desiredAngJ2-9) || posCount2 > (desiredAngJ2+9) || posCount2 < (desiredAngJ2-9)){
+         // if different, movJ to the same point with the correct arm solution
+         //********TOOL_UP****************
+         scaraStateEnd.scaraPos.theta1 = desiredAngJ1;
+         scaraStateEnd.scaraPos.theta2 = desiredAngJ2;
+
+         sendMoveJ(scaraStateEnd);
+         //*********TOOL_RETURN***********
+     }
 
     // find delta xy between the current coordinate of the robot and the arc center position
     deltaXa = radius*cos(PulToRad(thetaStart));
@@ -676,7 +713,8 @@ int moveScaraC(SCARA_ROBOT* scaraState){
         }
         else{
             //returned = scaraIk(&(posArray1[tInc]), &(posArray2[tInc]), xHold, yHold, scaraState); // calculate arm angles of x,y point
-            returned = scaraIkFloat(&j1HoldAng, &j2HoldAng, xHold, yHold, scaraState); // calculate arm angles of x,y point
+            //returned = scaraIkFloat(&j1HoldAng, &j2HoldAng, xHold, yHold, scaraState); // calculate arm angles of x,y point
+            returned = scaraIkPulses(&posArray1[tInc], &posArray2[tInc], xHold, yHold, scaraState);
 
             if (returned == 0){
                 if (armSolChange == 1){ // determine if a armSolution change was needed
@@ -692,8 +730,8 @@ int moveScaraC(SCARA_ROBOT* scaraState){
                     armSolChange =0;
                     return(3);
                 }
-                posArray1[tInc] = j1HoldAng*PUL_PER_DEG_N70; // store position values in pulses
-                posArray2[tInc] = j2HoldAng*PUL_PER_DEG_N70;
+                //posArray1[tInc] = j1HoldAng*PUL_PER_DEG_N70; // store position values in pulses
+                //posArray2[tInc] = j2HoldAng*PUL_PER_DEG_N70;
 
                 xHoldPrev = xHold; // store the previous x,y values incase an arm solution change is needed
                 yHoldPrev = yHold;
@@ -770,7 +808,7 @@ unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* tool
 * Date: March 24 2020
 * Modified: April 22 2022
 ************************************************************/
-unsigned int scaraFkPulse(signed int pul1, signed int pul2, float* toolX, float* toolY){
+unsigned int scaraFkPulses(signed int pul1, signed int pul2, float* toolX, float* toolY){
 
     volatile unsigned int exit = 0;
     volatile double toolX1, toolY1;
@@ -931,7 +969,7 @@ unsigned int scaraIkFloat(float *ang1, float *ang2, double toolX, double toolY, 
 * created by: Matthew Wonneberg, Jamie Boyd
 * Date: April 25 2022
 ************************************************************/
-/*unsigned int scaraIkPulses(signed int *ang1, signed int *ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1){
+unsigned int scaraIkPulses(signed int *ang1, signed int *ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1){
 
     volatile unsigned int exit = 0;
     volatile signed int angJ1;

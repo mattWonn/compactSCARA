@@ -147,7 +147,6 @@ int main(void) {
 
     while (1){//--------------- main loop-------------------
 
-
       char rxGetString[30] = {0};   // reset getString buffer
 
       returned = usciA1UartGets(&rxGetString);  // get a string from the console

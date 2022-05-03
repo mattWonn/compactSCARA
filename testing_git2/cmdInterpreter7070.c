@@ -470,8 +470,8 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         if (abs(cmdList[13].args[1] - cmdList[13].args[0]) > 361) // verify that the arc does not go over 361 degrees
             result = -1;
         if (result == 0){ // store the angles of the arc and the arm solution
-            scaraStateSet.scaraPos.theta1 = cmdList[13].args[0]*PUL_PER_DEG_N70;
-            scaraStateEnd.scaraPos.theta1 = cmdList[13].args[1]*PUL_PER_DEG_N70;
+            scaraStateSet.scaraPos.theta1 = cmdList[13].args[0]*PUL_PER_DEG_N70; // starting angle
+            scaraStateEnd.scaraPos.theta1 = cmdList[13].args[1]*PUL_PER_DEG_N70; // ending angle
             scaraStateSet.scaraPos.radius = cmdList[13].args[2];
             SCARA_ROBOT robot = scaraInitState(0, 0, cmdList[13].args[3], cmdList[13].args[4]); // x y armSol penPos
 
