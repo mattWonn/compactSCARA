@@ -33,7 +33,9 @@ def moveL():
 
 def moveC():
     screen.grab_release()
-    #robot.moveC(eStartAng.get(), eEndAng.get(), eArc.get(), armSolution.get(), toolPosition.get())
+    startAnglePulses = eStartAng.get()*SCARA.pulses_per_degrees
+    endAnglePulses = eEndAng.get()*SCARA.pulses_per_degrees
+    #robot.moveC(startAnglePulses, endAnglePulses, eArc.get(), armSolution.get(), toolPosition.get())
     screen.grab_set()
 
 def resetPosition():
