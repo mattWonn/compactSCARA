@@ -92,11 +92,11 @@ int main(void) {
 
            //  set control variables for angular moves vs linear moves
            kPAng = 2.3;
-           kIAng = 0.05;
+           kIAng = 0.02;
            kDAng = 0;
 
            kPLin = 2.2;
-           kILin = 0.05;
+           kILin = 0.02;
            kDLin = 0;
 
 

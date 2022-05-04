@@ -79,10 +79,10 @@ unsigned int moveJ(signed int endAng1, signed int endAng2){
     signed int deltaD;
     signed int deltaD2;
     float timeForMove;
-    float vMaxMove;
-    float aMaxMove;
-    float vMaxMove2;
-    float aMaxMove2;
+    volatile float vMaxMove;
+    volatile float aMaxMove;
+    volatile float vMaxMove2;
+    volatile float aMaxMove2;
     unsigned int masterJoint;
 
     unsigned int tInc = 0;
@@ -392,6 +392,18 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
               sendMoveJ(scaraStateEnd);
               //*********TOOL_RETURN***********
           }
+          if (armSolChange == 1){ // change initial arm solution if starting with non possible solution
+              if (attemptedArmSolution == LEFT_ARM_SOLUTION){
+                  attemptedArmSolution = RIGHT_ARM_SOLUTION;
+                  scaraState->scaraPos.armSol = RIGHT_ARM_SOLUTION;
+                  armSolChange = 0;
+              }
+              else{
+                  attemptedArmSolution = LEFT_ARM_SOLUTION;
+                  scaraState->scaraPos.armSol = LEFT_ARM_SOLUTION;
+                  armSolChange = 0;
+              }
+          }
 
     // calculate line displacements
     deltaX = newLine.pB.x - newLine.pA.x;
@@ -663,6 +675,18 @@ int moveScaraC(SCARA_ROBOT* scaraState){
 
          sendMoveJ(scaraStateEnd);
          //*********TOOL_RETURN***********
+     }
+     if (armSolChange == 1){ // change initial arm solution if starting with non possible solution
+         if (attemptedArmSolution == LEFT_ARM_SOLUTION){
+             attemptedArmSolution = RIGHT_ARM_SOLUTION;
+             scaraState->scaraPos.armSol = RIGHT_ARM_SOLUTION;
+             armSolChange = 0;
+         }
+         else{
+             attemptedArmSolution = LEFT_ARM_SOLUTION;
+             scaraState->scaraPos.armSol = LEFT_ARM_SOLUTION;
+             armSolChange = 0;
+         }
      }
 
     // find delta xy between the current coordinate of the robot and the arc center position
@@ -974,9 +998,9 @@ unsigned int scaraIkPulses(signed int *ang1, signed int *ang2, double toolX, dou
     volatile unsigned int exit = 0;
     volatile signed int angJ1;
     volatile signed int angJ2;
-    volatile float B;     // length from origin to x,y
-    volatile float beta;  // cosine law angle
-    volatile float alpha; // angle of x,y
+    volatile double B;     // length from origin to x,y
+    volatile double beta;  // cosine law angle
+    volatile double alpha; // angle of x,y
 
     B = sqrt((toolX*toolX)+(toolY*toolY));                                      // straight line distance from origin to (x,y) point
     alpha = RadToPul(atan2(toolY, toolX));                                        // angle of B from origin to (x,y) point

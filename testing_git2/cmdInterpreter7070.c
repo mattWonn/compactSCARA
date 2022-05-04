@@ -465,8 +465,8 @@ int executeCmd(CMD *cmdList, int cmdIndex){
 
         if (abs(cmdList[13].args[0]) > 360 || abs(cmdList[13].args[1]) > 360) // verify that both angles do not exceed 360 degrees
             result = -1;
-        if (cmdList[13].args[2] < 1 || cmdList[13].args[2] > MAX_ABS_X) // verify that the radius is within the set limits
-            result = -1;
+      //  if (cmdList[13].args[2] < 1 || cmdList[13].args[2] > MAX_ABS_X) // verify that the radius is within the set limits
+      //      result = -1;
         if (abs(cmdList[13].args[1] - cmdList[13].args[0]) > 361) // verify that the arc does not go over 361 degrees
             result = -1;
         if (result == 0){ // store the angles of the arc and the arm solution

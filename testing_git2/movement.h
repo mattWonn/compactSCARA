@@ -13,8 +13,8 @@
 #define MAX_POINTS 50          // maximum number of points in a line
 #define LEFT_ARM_SOLUTION 1           // index that can be used to indicate left arm
 #define RIGHT_ARM_SOLUTION 0           // index that can be used to indicate right arm
-#define L1 15       // inner arm length
-#define L2 15       // outer arm length
+#define L1 15.24       // inner arm length
+#define L2 15.24       // outer arm length
 
 #define PUL_PER_DEG_N70 9.48866 // 3415.92pul/360deg
 #define MAX_ABS_THETA1 110       // max angle of  arm 1
@@ -35,9 +35,9 @@
 
 #define DEG_PER_PUL_N70 0.10538896
 #define T_UPDATE 0.01
-#define W_MAX 177//360//708 // deg/s
-#define W_MAX_PUL 3359
-#define A_MAX 88//180//354 //deg/s^2
+#define W_MAX 354//360//708 // deg/s
+#define W_MAX_PUL 3358
+#define A_MAX 177//180//354 //deg/s^2
 #define A_MAX_PUL 1679
 #define A_MAX_LINEAR 23 // mm/s^2
 #define V_MAX_LINEAR 47 // mm/s
