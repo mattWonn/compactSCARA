@@ -13,29 +13,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-/*
- * main_lab.c
- *
- *
- *  using P1.5 as PWM1
- *  using P2.0 as PWM2
- *
- *  using P3.0 as INA1
- *  using P3.1 as INB1
- *
- *  using P3.3 as INA2
- *  using P3.4 as INB2
- *
- */
 
-//#define dcoFreq 1      // leaving at 1 works with Uart settings: BR1 =0x00, BR0 = 0x03, RS_1, RF_6.
+
 #define dcoFreq 20     //  BR = 65: BR1 = 0x00 BR0 = 0x41, RS_0 , RF_6
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
-
-    P4OUT = 0x00;
-    P6OUT = 0x00;
 
       _disable_interrupts();
       unsigned char oscFail = 1; // clock set
@@ -57,10 +40,9 @@ int main(void) {
     volatile char getsInvalidString[] = "\nInvalid String entry\n\r";
     char returned =1;
     volatile signed int indexReturned;
-    CMD mddCmds[MAX_CMDS]; // array of mddCmds of type CMD
+    CMD mddCmds[MAX_CMDS]; // initialize array of Cmds
 
-    UCA1IE |= UCRXIE;         // Receive interrupt en
-  // __enable_interrupt();
+    UCA1IE |= UCRXIE; // Receive interrupt enable
 
 
 
@@ -78,7 +60,6 @@ int main(void) {
 
    //------------- Encoder-----------------
 
-
            quadEncInit();
            ucsiA1UartInit();
            updateTimerBInit();
@@ -93,21 +74,13 @@ int main(void) {
            preA2 = (P2IN & 0x80)>>7;
 
            P2IFG &= 0x00; // flags are cleared
-       //    TA0CCTL1 &= ~CCIFG;
-       //    P2IE &= ~0xFF;       // disable posCount
-      //     __enable_interrupt();
-
 
 
    //--------------- Update Loop ----------------
 
-           volatile unsigned int waiting=2;
-
            posCount = 0;
            posCount2 = 0;
            startMoveJ =0;
-           prevPosCount =0;
-           prevPosCount2 =0;
            noMove1 =0;
            noMove2 =0;
            armSolChange = 0;
@@ -117,9 +90,15 @@ int main(void) {
            posError1Sum = 0;
            posError2Sum = 0;
 
-           kP = 2.3;// map pul/UpdateTime to PWM(0:100); 1uT/0.01s * 1s/6716pul * 100%
-           kI = 0; //1.8
-           kD = 0.2;
+           //  set control variables for angular moves vs linear moves
+           kPAng = 2.3;
+           kIAng = 0.02;
+           kDAng = 0;
+
+           kPLin = 2.2;
+           kILin = 0.02;
+           kDLin = 0;
+
 
 
    //----------- Structured Commands -------------------
@@ -152,26 +131,18 @@ int main(void) {
                     numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
            */
 
-          /* scaraStateSet.scaraPos.theta1 = 0*PUL_PER_DEG_N70;
-           scaraStateEnd.scaraPos.theta1 = 45*PUL_PER_DEG_N70;
-           scaraStateSet.scaraPos.theta2 = 0*PUL_PER_DEG_N70;
-           scaraStateEnd.scaraPos.theta2 = -45*PUL_PER_DEG_N70;
-
-           returned = sendMoveJ(scaraStateSet, scaraStateEnd);
-
-           returned = returned+1;*/
-
-
-
-           char menu[] = "\nMODULAR SCARA MENU OPTIONS\n\r";
+           char menu[] = "\n MODULAR SCARA MENU OPTIONS\n\r";
            numChars = ucsiA1UartTxString(&menu);
            __delay_cycles(10000);
-           char menu1[] = "1: moveJ J1, J2\n\r"; // change moveJ to start from current position
+           char menu1[] = " moveJ J1, J2\n\r"; // change moveJ to start from current position
            numChars = ucsiA1UartTxString(&menu1);
+           char menu2[] = " moveJcoord x, y, 1:L 0:R \n\r"; // change moveJ to start from current position
+            numChars = ucsiA1UartTxString(&menu2);
            __delay_cycles(10000);
-           char menu2[] = "2: moveL xB, yB, 1:L 0:R, up:1 dn:0\n\r";
-           numChars = ucsiA1UartTxString(&menu2);
-
+           char menu3[] = " moveL xB, yB, 1:L 0:R, up:1 dn:0\n\r";
+           numChars = ucsiA1UartTxString(&menu3);
+           char menu4[] = " moveC StrAng, endAng, Radius, 1:L 0:R, up:1 dn:0\n\r";
+            numChars = ucsiA1UartTxString(&menu4);
 
 
     while (1){//--------------- main loop-------------------
@@ -189,20 +160,6 @@ int main(void) {
       }
       else
          numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-
-
-    /*  mddCW(50);
-      mddCW2(50);
-      __delay_cycles(55000000);
-      mddBrake();
-      mddBrake2();
-      __delay_cycles(35000000);
-      mddCCW(25);
-      mddCCW2(25);
-      __delay_cycles(55000000);
-      mddBrake();
-      mddBrake2();
-      __delay_cycles(35000000);*/
 
 
     }

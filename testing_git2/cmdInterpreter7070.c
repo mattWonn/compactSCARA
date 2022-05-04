@@ -1,8 +1,8 @@
 /*
  * cmdInterpreter7070.c
  *
- *  Created on: Feb. 20, 2021
- *      Author: Rinz
+ *  Created on: March, 8 2022
+ *      Author: Matthew Wonneberg, Jamie Boyd
  */
 #include <msp430.h>
 #include "ucsiUart.h"
@@ -68,6 +68,13 @@ void motorCmdInit(CMD *vnhCmdList){
 
     vnhCmdList[12].name = CMD12;
     vnhCmdList[12].nArgs = CMD12_NARGS;
+
+    vnhCmdList[13].name = CMD13;
+    vnhCmdList[13].nArgs = CMD13_NARGS;
+
+    vnhCmdList[14].name = CMD14;
+    vnhCmdList[14].nArgs = CMD14_NARGS;
+
 
 
 }
@@ -233,27 +240,90 @@ int parseCmd(CMD * cmdList, char * cmdLine){
             value = index;
         }
     }
-    else if (index == 12){
+    else if (index == 12){//----------------moveL---------------------
+        while (token != NULL){            // while token is not the last character in the buffer
+
+            token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
+
+            if (n == 0){  // first argument
+                    cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                    nArgs++;       // inc argument count
+            }
+            else if (n == 1){  // second argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+            }
+            else if (n == 2){  // third argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+            }
+            else if (n == 3){  // fourth argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+
+            }
+            n++;
+        }
+        if (nArgs > cmdList[index].nArgs || nArgs < cmdList[index].nArgs){ // too many arguments in command
+             value = -1;  // parseCmd exits with invalid data
+        }
+        if (value == 0){
+            value = index;
+        }
+    }
+    else if (index == 13){ //-----------moveC-------------------
+        while (token != NULL){            // while token is not the last character in the buffer
+
+            token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
+
+            if (n == 0){  // first argument
+                    cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                    nArgs++;       // inc argument count
+            }
+            else if (n == 1){  // second argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+            }
+            else if (n == 2){  // third argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+            }
+            else if (n == 3){  // third argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+            }
+            else if (n == 4){  // third argument
+                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
+                nArgs++;       // inc argument count
+            }
+            n++;
+        }
+        if (nArgs > cmdList[index].nArgs || nArgs < cmdList[index].nArgs){ // too many arguments in command
+             value = -1;  // parseCmd exits with invalid data
+        }
+        if (value == 0){
+            value = index;
+        }
+        else
+            value = -1;
+    }
+    else if (index == 14){//---------------moveJcoord-------------------
         while (token != NULL){            // while token is not the last character in the buffer
 
             token = strtok(NULL, " ,.\t\n");  // the argument is assigned to token following the command in line
 
         if (n == 0){  // first argument
-                cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
-                nArgs++;       // inc argument count
-        }
-        else if (n == 1){  // second argument
             cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
             nArgs++;       // inc argument count
         }
-        else if (n == 2){  // third argument
+        else if (n == 1){  // first argument
             cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
             nArgs++;       // inc argument count
         }
-        else if (n == 3){  // fourth argument
+        else if (n == 2){  // second argument
             cmdList[index].args[n] = atoi(token); // dutyCycle for the command is converted from ascii to integer
             nArgs++;       // inc argument count
-
+            token = NULL;
         }
         n++;
         }
@@ -264,7 +334,8 @@ int parseCmd(CMD * cmdList, char * cmdLine){
             value = index;
         }
     }
-    else
+
+    if (index < 0 || index > 14)
         value = -1;
 
     return value;
@@ -314,6 +385,9 @@ int executeCmd(CMD *cmdList, int cmdIndex){
     volatile unsigned char dutySend2;
     volatile unsigned char dutyEnd2;
 
+    volatile float j1HoldAng =0;
+    volatile float j2HoldAng =0;
+
     volatile unsigned char cwRet=0;
     volatile unsigned char ccwRet=0;
 
@@ -356,7 +430,7 @@ int executeCmd(CMD *cmdList, int cmdIndex){
         posCount =0;
         displayPos();
         break;
-    case 6://---------------move (cw/ccw) (dutyCycle)--------
+    case 6://-----------------------
 
         break;
     case 7://----------------BrakeM2-------------
@@ -369,7 +443,6 @@ int executeCmd(CMD *cmdList, int cmdIndex){
     case 9://--------------moveJ---------------------
         break;
     case 10://--------------resetCount--------------
-    //    startM2 = 0;
         posCount2 =0;
         displayPos2();
         break;
@@ -379,16 +452,47 @@ int executeCmd(CMD *cmdList, int cmdIndex){
        scaraStateEnd.scaraPos.theta1 = cmdList[11].args[0]*PUL_PER_DEG_N70;
        scaraStateEnd.scaraPos.theta2 = cmdList[11].args[1]*PUL_PER_DEG_N70;
 
-
        sendMoveJ(scaraStateEnd);
        break;
     case 12://-----------moveL-------------------
 
         holdLine = initLine(cmdList[12].args[0], cmdList[12].args[1], 0, 0, 0);//xb yb xa ya npts
-
         SCARA_ROBOT testRobot = scaraInitState(0, 0, cmdList[12].args[2], cmdList[12].args[3]); // x y armSol penPos
 
         sendMoveL(&testRobot, holdLine);
+        break;
+    case 13://----------moveC--------------------
+
+        if (abs(cmdList[13].args[0]) > 360 || abs(cmdList[13].args[1]) > 360) // verify that both angles do not exceed 360 degrees
+            result = -1;
+      //  if (cmdList[13].args[2] < 1 || cmdList[13].args[2] > MAX_ABS_X) // verify that the radius is within the set limits
+      //      result = -1;
+        if (abs(cmdList[13].args[1] - cmdList[13].args[0]) > 361) // verify that the arc does not go over 361 degrees
+            result = -1;
+        if (result == 0){ // store the angles of the arc and the arm solution
+            scaraStateSet.scaraPos.theta1 = cmdList[13].args[0]*PUL_PER_DEG_N70; // starting angle
+            scaraStateEnd.scaraPos.theta1 = cmdList[13].args[1]*PUL_PER_DEG_N70; // ending angle
+            scaraStateSet.scaraPos.radius = cmdList[13].args[2];
+            SCARA_ROBOT robot = scaraInitState(0, 0, cmdList[13].args[3], cmdList[13].args[4]); // x y armSol penPos
+
+            // send the move command
+            sendMoveC(&robot);
+        }
+        break;
+    case 14://---------------- moveJcoord-----------------
+
+        // store the desired arm solution (1 for left arm, 0 for right arm
+        scaraStateEnd.scaraPos.armSol = cmdList[14].args[2];
+
+        // find the coorisponding arm angles based on the desired (x, y) coordinate
+        result = scaraIkFloat(&j1HoldAng, &j2HoldAng, cmdList[14].args[0], cmdList[14].args[1], &scaraStateEnd);
+
+        // store the joint angles in pulses
+        scaraStateEnd.scaraPos.theta1 = j1HoldAng*PUL_PER_DEG_N70;
+        scaraStateEnd.scaraPos.theta2 = j2HoldAng*PUL_PER_DEG_N70;
+
+        // send move command
+        sendMoveJ(scaraStateEnd);
 
     }//---------------------------------
 

@@ -25,7 +25,8 @@
 * return: none
 * Author: Greg Scutt
 * Date: March 1st, 2017
-* Modified: <date of any mods> usually taken care of by rev control
+* Modified: <March 15, 2022>
+* Modified by: Matthew Wonneberg, Jamie Boyd
 ************************************************************************************/
 void ucsiA1UartInit(){
 
@@ -81,7 +82,8 @@ void ucsiA1UartInit(){
 * return: none
 * Author: Greg Scutt
 * Date: March 1st, 2017
-* Modified: <date of any mods> usually taken care of by rev control
+* Modified: <March 15, 2022>
+* Modified by: Matthew Wonneberg, Jamie Boyd
 ************************************************************************************/
 void ucsiA1UartTxChar(unsigned char txChar) {
 
@@ -104,7 +106,8 @@ void ucsiA1UartTxChar(unsigned char txChar) {
 * return: number of characters transmitted
 * Author: Greg Scutt
 * Date: March 1st, 2017
-* Modified: <date of any mods> usually taken care of by rev control
+* Modified: <March 15, 2022>
+* Modified by: Matthew Wonneberg, Jamie Boyd
 ************************************************************************************/
 int ucsiA1UartTxString(unsigned char *txChar){
 
@@ -139,6 +142,8 @@ int ucsiA1UartTxString(unsigned char *txChar){
  * argurments: char *rxString
  *
  * returns: pointer to rxString or Null if unsucessful
+ *Modified: <March 15, 2022>
+* Modified by: Matthew Wonneberg, Jamie Boyd
  **********************************/
 char usciA1UartGets(char *rxString){
     volatile unsigned int i=0;
@@ -176,21 +181,6 @@ char usciA1UartGets(char *rxString){
       strcpy(rxString, rxBuffer); // copy the finished buffer into rxString
 
     return result;// if unsuccessful
-}
-
-
-
-#pragma vector = USCI_A1_VECTOR
-__interrupt void USCI_A1_ISR(void) {
-  switch(__even_in_range(UCA1IV,4))
-  {
-  case 0:break;// no interrupt
-  case 2:      // data received RXIFG highest priority
-    break;
-  case 4:  // TXFIG transmit buffer empty
-    break;
-  default: break;
-  }
 }
 
 
