@@ -1,78 +1,151 @@
-
+#! /usr/bin/python
+#-*-coding: utf-8 -*
+from abc import ABCMeta, abstractmethod
+import os
+import inspect
 import serial
-import serial.tools
 import struct
 
 class SCARA:
+    # data about robot
+    defaultPORT = '/dev/cu.usbmodem141203'
+    defaultBAUD = 115200
+    length_L1 = 150
+    length_L2 = 150
+    pulses_per_Degree = 9.48867
+    # command codes corresponding to positions in msp430 command array
+    zeroEncodersCode =0
+    getPosCode = 1
+    setMtrCode = 2
+    emStopCode = 3
+    emResetCode = 4
+    zGetPosCode = 5
+    zZeroCode = 6
+    zSetUpperCode = 7
+    zSetUpperHereCode = 8
+    zSetLowerCode = 9
+    zSetLowerHereCode = 10
+    zSetSpeedCode = 11
+    zGotoPosCode = 12
+    zJogStartCode = 13
+    zJogStopCode = 14
+    movjCode = 15
     # SCARA state 
     # format = error, motor1 PWM, motor2 PWM, toolData, encoder 1 counts, encoder 2 counts, z axis counts,  
     # size = 4 + 3*2 = 10
-    dataFormat = struct.Struct('<BhhhBBB')
-    posFormat = struct.Struct ('<bhh')    # just the arm positions
-    mtrsFormat = struct.Struct ('<bxx')
-    defaultPORT = '/dev/cu.usbmodem142203'
-    defaultBAUD = 115200
-    getStateCode = 0        # msp430 must recognize these codes,
-    getPosCode = 1          # do the needful, and send back results
-    setMtrCode =2
-    EmStopCode = 3
-    movJCode = 4
+    # data formats for packing and unpacking streams of bytes. Remember that when sending bytes to the
+    # microcontroller, multi-byte values must start on an even byte, note use of pad bytes (x) to ensure this
+    # the number of bytes the microcontroller is expecting to read must include the pad bytes
+    # Note that the msp430 has little endian byte order, coded as <
+    posReceiveFormat = struct.Struct ('<Bhh')    # unsigned byte error code and signed word arm positions
+    posSendFormat = struct.Struct('<Bxhh')
+    zAxisConfirmSendFormat = struct.Struct ('<BBh')     # unsigned byte function code, confirm request and signed word position
+    zAxisSendFormat = struct.Struct ('<Bxh')
+    zAxisSpeedSendFormat = struct.Struct ('<BxH')
+    zAxisReceiveFormat = struct.Struct ('<Bh')
+    mtrsFormat = struct.Struct ('<Bxx')
     noErrCode =  0          # first byte of results msp430 sends must be one of these error codes
     EmStoppedCode = 1       #
-
+    ZaxisOverCode = 2
+    ZaxisUnderCode = 3
     def __init__(self, port, baud):
         self.serPort = port
         self.serBaud = baud
         self.ser = serial.Serial(port, baud, timeout = 10)
-        buffer = self.ser.read(24)
-        print(buffer)
-        self.getState ()
+        self.state = dict(L1pos = 0, L2pos=0, Zpos=0, lastErr =0)
+
+    def zeroEncoders (self):
+        self.ser.write ((SCARA.zeroEncodersCode).to_bytes(1, byteorder='little', signed=False))
 
     def getPos (self):
         self.ser.write ((SCARA.getPosCode).to_bytes(1, byteorder='little', signed=False))
         buffer=self.ser.read (5)
-        print (buffer)
-        posData = SCARA.posFormat.unpack (buffer)
-        self.state [0] = posData [0]
+        posData = SCARA.posReceiveFormat.unpack (buffer)
+        self.state['lastErr'] = posData [0]
         if (posData [0] == SCARA.noErrCode):
-            self.state [4] = posData[1]
-            self.state [5] = posData[2]
+            self.state['L1pos'] = posData[1]
+            self.state['L2pos'] = posData[2]
         else:
-           print("Error: ", self.state [0])
-           
-    # 11 [0] numBytes [1]errCode, [2,3]encoder 1 counts, [4,5]encoder 2 counts, [6,7]z axis counts,
-    # [8] tool Data, [9]motor1 PWM, [10]motor2 PWM
-
-    def getState (self):
-        self.ser.write ((SCARA.getStateCode).to_bytes(1, byteorder='little', signed=False))
-        buffer = self.ser.read (10)
-        print (buffer)
-        self.state = list (SCARA.dataFormat.unpack (buffer))
-        if (self.state [0] == SCARA.noErrCode):
-            print (self.state)
-        else:
-            print ("Error: ", self.state [0])
+           print("Error: ", self.state['lastErr'])
 
     def setMtrs (self, M1val, M2val, doConfirm=0):
         buffer = (SCARA.setMtrCode).to_bytes(1, byteorder='little', signed=False)\
-                 + (M1val).to_bytes(1, byteorder='little', signed=False)\
-                 + (M2val).to_bytes(1, byteorder='little', signed=False)
+                 +(doConfirm).to_bytes(1, byteorder='little', signed=False)\
+                 + (M1val).to_bytes(2, byteorder='little', signed=True)\
+                 + (M2val).to_bytes(2, byteorder='little', signed=True)
+        print (buffer)       
+
         self.ser.write (buffer)
         if doConfirm:
             buffer = self.ser.read (3)
             print (buffer)
-            self.state [0] = SCARA.mtrsFormat.unpack (buffer)[0]
-            if (self.state [0] != SCARA.noErrCode):
-                print ("Error: ", self.state [0])
+            self.state['lastErr'] = SCARA.mtrsSendFormat.unpack (buffer)[0]
+            if (self.state['lastErr'] != SCARA.noErrCode):
+                print ("Error: ", self.state['lastErr'])
 
-    #does an emergency stop and sends back SCARA state, with error code set to ESTOP       
-    def EmStop (self, doStop =1):
-        self.ser.write ((SCARA.EmStopCode).to_bytes (1, byteorder = 'little', signed = False))
-        errVal = int.from_bytes( self.ser.read (1), byteorder='little', signed=False)
-        if (errVal != SCARA.EmStoppedCode):
-            print ("SCARA was not stopped.")
-       
+    #does an emergency stop     
+    def EmStop (self):
+        self.ser.write ((SCARA.emStopCode).to_bytes (1, byteorder = 'little', signed = False))
+        self.state['lastErr'] = SCARA.EmStoppedCode
 
+    #resets emergency stop, nothing is returned     
+    def EmStopReset (self):
+        self.ser.write ((SCARA.emResetCode).to_bytes (1, byteorder = 'little', signed = False))
+        self.state['lastErr'] = SCARA.noErrCode
+        
+    def zeroZaxis(self):
+        self.ser.write ((SCARA.zZeroCode).to_bytes (1, byteorder = 'little', signed = False))
+        self.state ['Zpos'] = 0
+
+    # gets Z position
+    def getZpos (self):
+        self.ser.write((SCARA.zGetPosCode).to_bytes (1, byteorder = 'little', signed = False))
+        buffer=self.ser.read (3)
+        data = SCARA.zAxisReceiveFormat.unpack (buffer)
+        self.state['lastErr'] = data[0]
+        if self.state['lastErr'] != SCARA.noErrCode:
+            print ("Error: ", self.state['lastErr'])
+        else:
+            self.state['Zpos'] = data[1]
+        
+    def setZSpeed (self, speed):
+        buffer = SCARA.zAxisSpeedSendFormat.pack(SCARA.zSetSpeedCode, speed)
+        self.ser.write (buffer)
+    
+    def gotoZpos (self, position, doConfirm = 0):
+        buffer = SCARA.zAxisConfirmSendFormat.pack (SCARA.zGotoPosCode, doConfirm, position)
+        self.ser.write (buffer)
+        if doConfirm:
+            buffer = self.ser.read (3)
+            self.state['lastErr'] = struct.unpack('<Bxx',buffer)
+
+    def jogZstart (self, speedDir):
+        buffer = SCARA.zAxisSendFormat.pack(SCARA.zJogStartCode, speedDir)
+        self.ser.write (buffer)
+
+
+    def jogZstop (self):
+        self.ser.write ((SCARA.zJogStopCode).to_bytes (1, byteorder = 'little', signed = False))
+
+    def setZupperLimit (self, limit):
+        buffer = SCARA.zAxisSendFormat.pack (SCARA.zSetUpperCode, limit)
+        self.ser.write (buffer)
+
+    def setZlowerLimit (self, limit):
+        buffer = SCARA.zAxisSendFormat.pack (SCARA.zSetLowerCode, limit)
+        self.ser.write (buffer)
+    
+    def setZupperHere (self):
+        self.ser.write ((SCARA.zSetUpperHereCode).to_bytes (1, byteorder = 'little', signed = False))
+        
+    def setZlowerHere (self):
+        self.ser.write ((SCARA.zSetLowerHereCode).to_bytes (1, byteorder = 'little', signed = False))
+
+    def moveJ (self, endAng1, endAng2):
+        buffer = SCARA.posSendFormat.pack (SCARA.movjCode, endAng1, endAng2)
+        self.ser.write (buffer)
+                        
+    """  
     #does a joint interpolated movement from current joint posiitons to new joint positions
     def movJ (self, enc1, enc2, doConfirm=0):
         buffer = (SCARA.movJCode).to_bytes (1, byteorder = 'little', signed = False)\
@@ -82,7 +155,7 @@ class SCARA:
         errVal = int.from_bytes( self.ser.read (1), byteorder='little', signed=False)
         if (errVal != SCARA.EmStoppedCode):
             print ("SCARA was not stopped.")
-
+    """
     #def startLiveUpdate (self, doEnc, doMtr, doZ):
         
 
