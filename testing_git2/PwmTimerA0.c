@@ -5,14 +5,13 @@
  *      Author: Matthew Wonneberg, Jamie Boyd
  */
 #include <msp430.h>
-#include <ucsiUart.h>
-#include <mdd_driver.h>
-#include <UartpwmTimerA0.h>
+#include <PwmTimerA0.h>
 
 /**************************************
  * Function: void timerA0Init()
  *
- *purpose: Initialize timers to the correct settings and also configure the port settings
+ * purpose: Initialize timers to the correct settings and also configure the port settings
+ * for direction selections
  *
  *returns nothing
  *Author: Matthew Wonneberg, Jamie Boyd
@@ -41,6 +40,12 @@ void timerA0Init(unsigned int pwmFreq){
     P1SEL |= BIT4;    // pin 1.2
     P1OUT &= ~BIT4;   // Reset pin
 
+
+
+    // INA, INB, SEL outputs
+    P3OUT |= 0x00;
+    P3DIR |= (BIT0 + BIT1 +BIT2 +BIT3 + BIT4); // pins set as output direction
+    P3OUT &= (~BIT0 & ~BIT1 & ~BIT2 & ~BIT3 & ~BIT4); // P3out set to 0 (led's off)
 
 }
 /* ***************************************
@@ -118,6 +123,53 @@ char timerA0DutyCycleSet2(unsigned char dutyCycle)
     return value;
 }
 
+
+
+
+/* ********************************
+ * funciton: char mddInputCtrl(unsigned char ctrl)
+ *
+ * Purpose:  Sends cntrl to output if in range 0x0 -> 0x7
+ *
+ * return 0 if in range and -1 if not
+ * author: Matthew Wonneberg, Jamie Boyd
+ * Date: March 14 2022
+ *********************************/
+char mddInputCtrl(unsigned char ctrl)
+{
+    volatile signed char result =0;
+
+    if ((ctrl & ~CTRLMASK) == ZEROVAL){ // check that cntrl is within 0x0 - 0x7
+       CTRLPORT = ((CTRLMASK2 & CTRLPORT)+ctrl) ;   //send ctrl to output
+    }
+    else{
+        result =-1; // if ctrl is out of range
+    }
+
+    return result;
+}
+/* ********************************
+ * funciton: char mddInputCtrl2(unsigned char ctrl)
+ *
+ * Purpose:  Sends cntrl to output for second motor driver if in range 0x0 -> 0x7
+ *
+ * return 0 if in range and -1 if not
+ * author: Matthew Wonneberg, Jamie Boyd
+ * date: March 14 2022
+ *********************************/
+char mddInputCtrl2(unsigned char ctrl)
+{
+   volatile signed char result =0;
+
+    if ((ctrl & ~CTRLMASK2) == ZEROVAL){ // check that cntrl is within 0x0 - 0x7
+        CTRLPORT = ((CTRLMASK & CTRLPORT)+ctrl) ;   //send ctrl to output
+    }
+    else{
+        result =-1; // if ctrl is out of range
+    }
+
+    return result;
+}
 
 
 

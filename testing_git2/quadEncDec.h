@@ -28,7 +28,7 @@ void quadEncInit();
 volatile unsigned int prevState;
 volatile unsigned int currentState;
 volatile unsigned int dirStatus;
-volatile signed int posCount;
+extern volatile signed int gPosCountL1;
 
 volatile unsigned char preA;
 volatile unsigned char preB;
@@ -38,7 +38,7 @@ volatile unsigned char currB;
 volatile unsigned int prevState2;
 volatile unsigned int currentState2;
 volatile unsigned int dirStatus2;
-volatile signed int posCount2;
+extern volatile signed int gPosCountL2;
 
 volatile unsigned char preA2;
 volatile unsigned char preB2;

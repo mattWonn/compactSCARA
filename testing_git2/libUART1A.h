@@ -41,7 +41,7 @@ typedef char (*txIntFunc)(unsigned char*);
 * Author: Greg Scutt
 * Date: March 1st, 2017
 * Modified: 2022/01/10 by Jamie Boyd */
-int usciA1UartInit(unsigned int Baud);
+void usciA1UartInit(void);
 
 void usciA1UartUbyte (unsigned char theByte);
 void usciA1UartSbyte (signed char theByte);

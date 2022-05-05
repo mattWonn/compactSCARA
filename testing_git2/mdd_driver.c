@@ -9,11 +9,11 @@
 #include <cmdInterpreter7070.h>
 #include <msp430.h>
 #include <ucsiUart.h>
-#include <UartpwmTimerA0.h>
 #include <quadEncDec.h>
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <PwmTimerA0.h>
 /* ********************************
  * funciton: void displayPos
  *
@@ -27,7 +27,7 @@ void displayPos(){
     volatile char posPrint[20] = {0}; // Uart set up character array
     volatile int ret;
 
-       sprintf(posPrint, "\nCount = %d \n\r", posCount); // insert the number of characters into the display string
+       sprintf(posPrint, "\nCount = %d \n\r", gPosCountL2); // insert the number of characters into the display string
        ret = ucsiA1UartTxString(&posPrint); // print the string
 
 }

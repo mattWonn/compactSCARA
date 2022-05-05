@@ -25,16 +25,15 @@ txIntFunc txIntFuncPtr = NULL;
 
 /************************************************************************************
 * Function: usciA1UartInit
-* - configures UCA1 UART to use SMCLK, no parity, 8 bit data, LSB first, one stop bit
+* - configures UCA1 UART for 115200 baud, no parity, 8 bit data, LSB first, one stop bit
 * - assumes SMCLK = 2^20 Hz
-* Arguments: 1
-* argument 1: Baud, an msp430 supported baud, 16x over-sampling is used if supported for the Baud
-* return: 1 if a supported Baud was requested, else 0
+* Arguments: none
+* return: nothing
 * Author: Greg Scutt
 * Date: March 1st, 2017
-* Modified: 2022/01/10 by Jamie Boyd
+* Modified: 2022/01/10 by Jamie Boyd/Mathew Wonneburg for 20MHz clock, 115200 baud
 ************************************************************************************/
-int usciA1UartInit(unsigned int Baud){
+void usciA1UartInit(void){
     _UART_A1PSEL;                   // // macro selects special functions (TXD and RXD) for P4 pins 4 and 5 which connect to TXD, RXD jumpers
     UCA1CTL1 |= UCSWRST;            // Sets USCI A1  Software Reset Enabled bit in USC A1 CTL1 register.
 
@@ -52,39 +51,11 @@ int usciA1UartInit(unsigned int Baud){
                 &   ~UCSPB          // bit 3 clear means 1 stop bit, not 2
                 &   ~(UCMODE0 | UCMODE1) // bits 1 and 2 clear mean UART Mode
                 &   ~UCSYNC;        // bit 0 clear means asynchronous mode
-    int BaudOK = 1;
-    switch (Baud){
-        case 9600:  // UCBR = 6, UCBRS =0, UCBRF=13, can use 16x-over-sampling
-            UCA1BR0 = 6; // low byte of UCBR clock pre-scaler
-            UCA1BR1 = 0;  // high byte of UCBR clock pre-scaler
-            UCA1MCTL = UCBRS_0 | UCBRF_13 | UCOS16;  // sets first and second clock modulators and 16X over-sampling
-            break;
-        case 19200: // UCBR = 3, UCBRS =1, UCBRF=6, can use 16x-over-sampling
-            UCA1BR0 = 3; // low byte of UCBR clock pre-scaler
-            UCA1BR1 = 0;  // high byte of UCBR clock pre-scaler
-            UCA1MCTL = UCBRS_1 | UCBRF_6| UCOS16;  // sets first and second clock modulators and 16X over-sampling
-            break;
-        case 38400:     // UCBR = 27, UCBRS = 2, UCBRF = 0, 16x-over-sampling not available
-            UCA1BR0 = 27;
-            UCA1BR1 = 0;
-            UCA1MCTL = UCBRS_2 | UCBRF_0; // sets first and second clock modulators and NO 16x over-sampling
-            break;
-        case 57600: // UCBR = 17, UCBRS = 3, UCBRF = 0, 16x-over-sampling not available
-            UCA1BR0 = 17;
-            UCA1BR1 = 0;
-            UCA1MCTL = UCBRS_3 | UCBRF_0; // sets first and second clock modulators and NO 16x over-sampling
-            break;
-        case 11520: //  UCBR = 9, UCBRS = 1, UCBRF = 0, 16x-over-sampling not available
-            UCA1BR0 = 9;
-            UCA1BR1 = 0;
-            UCA1MCTL = UCBRS_1 | UCBRF_0; // sets first and second clock modulators and NO 16x over-sampling
-            break;
-        default:    // a non-supported Baud was requested, not OK
-            BaudOK = 0;
-            break;
-    }
+    // 115200 baud
+    UCA1BR1 = 0x00;    // high byte of N   =  0
+    UCA1BR0 = 0x0A;   // low byte of 65 -> 0x41
+    UCA1MCTL =  UCOS16 + UCBRS_0 + UCBRF_14;   // oversampling mode enabled, first and second stage modulation
     UCA1CTL1 &= ~UCSWRST;        //  configured. take state machine out of reset.
-    return BaudOK;
 }
 
 /************************************************************************************

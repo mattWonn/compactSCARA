@@ -5,17 +5,14 @@
  *      Author: Matthew Wonneberg, Jamie Boyd
  */
 #include <msp430.h>
-#include <ucsiUart.h>
 #include <updateTimerB.h>
-#include <uartPwmTimerA0.h>
 #include <quadEncDec.h>
-#include <ucsiUart.h>
 #include "mdd_driver.h"
 #include <movement.h>
 
-#include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <PwmTimerA0.h>
 
 /**************************************
  * Function: void timerB0Init()
@@ -87,7 +84,7 @@ void updateTimer(){
             //-------------- Motor 1 ------------------------
             if (noMove1 == 0){// proceed if there is a move of the joint for joint 1
 
-                posError1 = posArray1[updateIndex] - posCount; // motor 1 position error = setpoint - current position
+                posError1 = posArray1[updateIndex] - gPosCountL1; // motor 1 position error = setpoint - current position
                 posError1Change = posError1 - prevError1; // delta position over time (position derivative)
                 posError1Integral = posError1Sum; // summation of all errors throughout the move
 
@@ -129,7 +126,7 @@ void updateTimer(){
             //------------- Motor 2 ------------------------
             if(noMove2 ==0){// proceed if there is a move of the joint
 
-                posError2 = posArray2[updateIndex] - posCount2;// motor 2 position error = setpoint - current position
+                posError2 = posArray2[updateIndex] - gPosCountL2;// motor 2 position error = setpoint - current position
                 posError2Change = posError2 - prevError2;// delta position over time (position derivative)
                 posError2Integral = posError2Sum;// summation of all errors throughout the move
 

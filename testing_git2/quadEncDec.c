@@ -6,16 +6,27 @@
  */
 
 #include <msp430.h>
-#include "ucsiUart.h"
 #include "quadEncDec.h"
-#include <string.h>
-#include <stdio.h>
+
+volatile signed int gPosCountL1 = 1789;
+volatile signed int gPosCountL2 = -1984;
+
 
 void quadEncInit(){
 
     PORT2DIR;
     CLEARFLAGS;
     INTERUPTEN;
+    prevState = CURRSTATE1; // read currentState
+    preA = (P2IN & 0x20)>>5;
+    preB = (P2IN & 0x10)>>4;
+
+    prevState2 = CURRSTATE2; // read currentState
+    P2IES = (prevState2 + prevState);
+    preB2 = (P2IN & 0x40)>>6;
+    preA2 = (P2IN & 0x80)>>7;
+
+    P2IFG &= 0x00; // flags are cleared
 }
 
 
@@ -29,11 +40,11 @@ void quadEncInit(){
          currA2 = (currentState2 & 0x80)>>7; // shift high bit into currA2 variable
          P2IES = ((currentState+currentState2) & 0xF0);// edge select for both motors
              if (currB2 ^ preA2){ // CCW
-                 posCount2--;
+                 gPosCountL2--;
                  dirStatus2 =1;
              }
              else{
-                 posCount2++;  // CW
+                 gPosCountL2++;  // CW
                  dirStatus2 =0;
              }
              preA2 = currA2; // only need to update previousA because we are not using preB
@@ -45,11 +56,11 @@ void quadEncInit(){
      currB = (currentState & 0x10)>>4; // /16
      P2IES = ((currentState+currentState2) & 0xF0);//fixxx
          if (currB ^ preA){ // CCW
-             posCount--;
+             gPosCountL1--;
              dirStatus =1;
          }
          else{
-             posCount++;  // CW
+             gPosCountL1++;  // CW
              dirStatus =0;
          }
          preA = currA; // only need to update previousA because we are not using preB

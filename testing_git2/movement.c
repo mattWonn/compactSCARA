@@ -6,17 +6,15 @@
  */
 
 #include <msp430.h>
-#include "ucsiUart.h"
-#include "mdd_driver.h"
-#include "UartPwmTimerA0.h"
 #include "quadEncDec.h"
+#include "PwmTimerA0.h""
 #include "updateTimerB.h"
-#include "UcsControl.h"
 #include "movement.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+
 
 /***********************************************************
 * Name: void sendMoveJ
@@ -90,15 +88,15 @@ unsigned int moveJ(signed int endAng1, signed int endAng2){
 
     if (endAng1 <= MAX_ABS_THETA1_PUL && endAng1 >= -MAX_ABS_THETA1_PUL){ // verify range
         if (endAng2 <= MAX_ABS_THETA2_PUL && endAng2 >= -MAX_ABS_THETA2_PUL){ // verify range
-            displacement1 = abs(endAng1 - posCount);
-            displacement2 = abs(endAng2 - posCount2);
+            displacement1 = abs(endAng1 - gPosCountL1);
+            displacement2 = abs(endAng2 - gPosCountL2);
 
             // determine if a no-move condition is requested
-            if (endAng1 == posCount)
+            if (endAng1 == gPosCountL1)
                 noMove1 =1;
             else
                 noMove1 =0;
-            if (endAng2 == posCount2)
+            if (endAng2 == gPosCountL2)
                 noMove2 = 1;
             else
                 noMove2 =0;
@@ -106,20 +104,20 @@ unsigned int moveJ(signed int endAng1, signed int endAng2){
             // determine which joint has to move the farthest and bases calculations on that joint
             if (displacement1 >= displacement2){
                 masterJoint =1;
-                deltaD = (endAng1 - posCount);
-                deltaD2 = (endAng2 - posCount2);
-                if (endAng1 >= posCount)
+                deltaD = (endAng1 - gPosCountL1);
+                deltaD2 = (endAng2 - gPosCountL2);
+                if (endAng1 >= gPosCountL1)
                     direction1=1;
-                if (endAng2 >= posCount2)
+                if (endAng2 >= gPosCountL2)
                     direction2=1;
             }
             else{
                 masterJoint =2;
-                deltaD = (endAng2 - posCount2);
-                deltaD2 = (endAng1 - posCount);
-                if (endAng1 >= posCount)
+                deltaD = (endAng2 - gPosCountL2);
+                deltaD2 = (endAng1 - gPosCountL1);
+                if (endAng1 >= gPosCountL1)
                     direction2=1;
-                if (endAng2 >= posCount2)
+                if (endAng2 >= gPosCountL2)
                     direction1=1;
             }
 
@@ -151,8 +149,8 @@ unsigned int moveJ(signed int endAng1, signed int endAng2){
                     aMaxMove2 = -1*aMaxMove2;
 
                 for(tInc; tInc<arrayLength; tInc++){
-                    posArray1[tInc] = RadToPul((PulToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+posCount;
-                    posArray2[tInc] = RadToPul((PulToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+posCount2;
+                    posArray1[tInc] = RadToPul((PulToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+gPosCountL1;
+                    posArray2[tInc] = RadToPul((PulToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+gPosCountL2;
                     if ((posArray2[tInc] > (posArray1[tInc]+ RELATIVE_THETA2_PUL)) || (posArray2[tInc] < (-RELATIVE_THETA2_PUL + posArray1[tInc]))){ // on the fly max theta2 value verification
                         exit = 1;
                         tInc = arrayLength;
@@ -169,8 +167,8 @@ unsigned int moveJ(signed int endAng1, signed int endAng2){
                     aMaxMove2 = -1*aMaxMove2;
 
                 for(tInc; tInc<arrayLength; tInc++){
-                    posArray2[tInc] = RadToPul((PulToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+posCount2;
-                    posArray1[tInc] = RadToPul((PulToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+posCount;
+                    posArray2[tInc] = RadToPul((PulToRad(aMaxMove)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+gPosCountL2;
+                    posArray1[tInc] = RadToPul((PulToRad(aMaxMove2)*(tInc*T_UPDATE))/w)  -  RadToPul(PulToRad(aMaxMove2)*(sin(w*(tInc*T_UPDATE)))/pow(w,2))+gPosCountL1;
                     if ((posArray2[tInc] > (posArray1[tInc]+ RELATIVE_THETA2_PUL)) || (posArray2[tInc] < (-RELATIVE_THETA2_PUL + posArray1[tInc]))){ // on the fly max theta2 value verification
                         exit = 1;
                         tInc = arrayLength;
@@ -357,7 +355,7 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
     attemptedArmSolution = scaraState->scaraPos.armSol; // store the attempted arm solution
     */
 
-    value = scaraFkPulses(posCount, posCount2, &newLine.pA.x, &newLine.pA.y);
+    value = scaraFkPulses(gPosCountL1, gPosCountL2, &newLine.pA.x, &newLine.pA.y);
 
     attemptedArmSolution = scaraState->scaraPos.armSol; // store the attempted arm solution
 
@@ -383,7 +381,7 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
           // calc joint angles for arm solution beginning x,y
           value = scaraIkPulses(&desiredAngJ1, &desiredAngJ2, newLine.pA.x, newLine.pA.y, scaraState);// lowercase k
           // compare within one degree
-          if (posCount > (desiredAngJ1+9) || posCount < (desiredAngJ2-9) || posCount2 > (desiredAngJ2+9) || posCount2 < (desiredAngJ2-9)){
+          if (gPosCountL1 > (desiredAngJ1+9) || gPosCountL1 < (desiredAngJ2-9) || gPosCountL2 > (desiredAngJ2+9) || gPosCountL2 < (desiredAngJ2-9)){
               // if different, movJ to the same point with the correct arm solution
               //********TOOL_UP****************
               scaraStateEnd.scaraPos.theta1 = desiredAngJ1;
@@ -645,7 +643,7 @@ int moveScaraC(SCARA_ROBOT* scaraState){
 
     attemptedArmSolution = scaraState->scaraPos.armSol; // store the attempted arm solution
 
-    value = scaraFkPulses(posCount, posCount2, &scaraStateSet.scaraPos.x, &scaraStateSet.scaraPos.y);// lowercase k)
+    value = scaraFkPulses(gPosCountL1, gPosCountL2, &scaraStateSet.scaraPos.x, &scaraStateSet.scaraPos.y);// lowercase k)
 
     /*currentAngJ1 = posCount;// get current joint angles
     currentAngJ2 = posCount2;
@@ -667,7 +665,7 @@ int moveScaraC(SCARA_ROBOT* scaraState){
      // calc joint angles for arm solution beginning x,y
      value = scaraIkPulses(&desiredAngJ1, &desiredAngJ2, scaraStateSet.scaraPos.x, scaraStateSet.scaraPos.y, scaraState);// lowercase k
      // compare within one degree
-     if (posCount > (desiredAngJ1+9) || posCount < (desiredAngJ2-9) || posCount2 > (desiredAngJ2+9) || posCount2 < (desiredAngJ2-9)){
+     if (gPosCountL1 > (desiredAngJ1+9) || gPosCountL1 < (desiredAngJ2-9) || gPosCountL2 > (desiredAngJ2+9) || gPosCountL2 < (desiredAngJ2-9)){
          // if different, movJ to the same point with the correct arm solution
          //********TOOL_UP****************
          scaraStateEnd.scaraPos.theta1 = desiredAngJ1;

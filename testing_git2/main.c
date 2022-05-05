@@ -1,68 +1,23 @@
 /**
  * main.c
  */
-#include <msp430.h>
-#include "ucsiUart.h"
-#include "mdd_driver.h"
-#include "UartPwmTimerA0.h"
-#include "quadEncDec.h"
-#include "updateTimerB.h"
-#include "UcsControl.h"
-#include "movement.h"
-#include "cmdInterpreter7070.h"
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
+
+#include "SCARA.h"                  //
 
 
-#define dcoFreq 20     //  BR = 65: BR1 = 0x00 BR0 = 0x41, RS_0 , RF_6
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
+    _disable_interrupts();
+    /*********Set main clock frequency to 20 MHz *********************************************/
+    ucsSelSource(1,1,1,1);
+    if (ucsDcoFreqSet (20, 2, 1)) SCARA_failure();
+    //*************** motor control *********************************************/
+    timerA0Init(PWMFREQ);        // initialize TimerA0 and port 3 pins for direction selection
+    //*************** Quadrature Decoding *********************************************/
+    quadEncInit();
 
-      _disable_interrupts();
-      unsigned char oscFail = 1; // clock set
-      /*********Set clock frequency*********************************************/
-      unsigned char testPass = 1;
-      ucsSelSource(1,1,1,1);
-      oscFail = ucsDcoFreqSet (dcoFreq, 2, 1);            //set sclk to dcoFreq
-      if (oscFail)
-          return 1;
-      /***End***Set clock frequency*********************************************/
-
-
-
-    //-----------UART CONTROL ------------------------
-    ucsiA1UartInit();
-
-    volatile int numChars;
-    volatile unsigned char stringRet;
-    volatile char getsInvalidString[] = "\nInvalid String entry\n\r";
-    char returned =1;
-    volatile signed int indexReturned;
-    CMD mddCmds[MAX_CMDS]; // initialize array of Cmds
-
-    UCA1IE |= UCRXIE; // Receive interrupt enable
-
-
-
-   //------------motor control--------------
-
-       timerA0Init(PWMFREQ);        // initialize TimerA0 and ports
-       motorCmdInit(mddCmds); // add new commands to this function and define them in the motor driver.h file
-
-       // INA, INB, SEL outputs
-       P3OUT |= 0x00;
-       P3DIR |= (BIT0 + BIT1 +BIT2 +BIT3 + BIT4 +BIT5); // pins set as output direction
-       P3OUT &= (~BIT0 & ~BIT1 & ~BIT2 & ~BIT3 & ~BIT4 & ~BIT5); // P3out set to 0 (led's off)
-
-
-
-   //------------- Encoder-----------------
-
-           quadEncInit();
-           ucsiA1UartInit();
-           updateTimerBInit();
+    updateTimerBInit();
 
            prevState = CURRSTATE1; // read currentState
            preA = (P2IN & 0x20)>>5;
@@ -78,8 +33,8 @@ int main(void) {
 
    //--------------- Update Loop ----------------
 
-           posCount = 0;
-           posCount2 = 0;
+           gPosCountL1 = 0;
+           gPosCountL2 = 0;
            startMoveJ =0;
            noMove1 =0;
            noMove2 =0;
@@ -101,68 +56,46 @@ int main(void) {
 
 
 
-   //----------- Structured Commands -------------------
 
 
            volatile signed int angleJ1;
            volatile signed int angleJ2;
 
+           zAxisInit ();                       // initializes timer A 1 and GPIO pins for Z-axis control
+           eStopSetUp ();                      // emergency stop
 
 
-           /*----------------- paste this to send a value to the console--------------------------------
-            *
-                  volatile char posPrint[25]; // Uart
-                  volatile int ret;
+   //-----------UART CONTROL ------------------------
+    usciA1UartInit();                   // Set up UART control and run binary UART commands in endless loop
+    binInterp_init();
+    binInterp_addCmd (1, binInterp_zeroCount);              //  0
+    binInterp_addCmd (1, binInterp_getCount);               //  1
+    binInterp_addCmd (6, binInterp_setMtrs);                //  2
+    binInterp_addCmd (1, binInterp_eStop);                  //  3
+    binInterp_addCmd (1, binInterp_eStopReset);             //  4
+    binInterp_addCmd (1, binInterp_zAxisGetPos);            //  5
+    binInterp_addCmd (1, binInterp_zAxisZero);              //  6
+    binInterp_addCmd (4, binInterp_zAxisSetUpper);          //  7
+    binInterp_addCmd (1, binInterp_zAxisSetUpperHere);      //  8
+    binInterp_addCmd (4, binInterp_zAxisSetLower);          //  9
+    binInterp_addCmd (1, binInterp_zAxisSetLowerHere);      //  10
+    binInterp_addCmd (4, binInterp_zAxisSetSpeed);          //  11
+    binInterp_addCmd (4, binInterp_zAxisGoToPos);           //  12
+    binInterp_addCmd (4, binInterp_zAxisJog);               //  13
+    binInterp_addCmd (1, binInterp_zAxisJogStop);           //  14
+    binInterp_addCmd (6, binInterp_moveJ);                  //  15
 
-                 sprintf(posPrint, "Error1 = %d \n\r", error); // insert the number of characters into the display string
-                 ret = ucsiA1UartTxString(&posPrint); // print the string
+       _enable_interrupts();
 
-           */
-
-           /*--------------- paste this in the main loop to access the command interpereter------------------
-                 returned = usciA1UartGets(&rxGetString);  // get a string from the console
-
-                 if (returned != 0){
-                    indexReturned = parseCmd(mddCmds, rxGetString); // send string to motor control
-                    if (indexReturned == -1)
-                        numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-                 }
-                 else
-                    numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-           */
-
-           char menu[] = "\n MODULAR SCARA MENU OPTIONS\n\r";
-           numChars = ucsiA1UartTxString(&menu);
-           __delay_cycles(10000);
-           char menu1[] = " moveJ J1, J2\n\r"; // change moveJ to start from current position
-           numChars = ucsiA1UartTxString(&menu1);
-           char menu2[] = " moveJcoord x, y, 1:L 0:R \n\r"; // change moveJ to start from current position
-            numChars = ucsiA1UartTxString(&menu2);
-           __delay_cycles(10000);
-           char menu3[] = " moveL xB, yB, 1:L 0:R, up:1 dn:0\n\r";
-           numChars = ucsiA1UartTxString(&menu3);
-           char menu4[] = " moveC StrAng, endAng, Radius, 1:L 0:R, up:1 dn:0\n\r";
-            numChars = ucsiA1UartTxString(&menu4);
-
-
-    while (1){//--------------- main loop-------------------
-
-      char rxGetString[30] = {0};   // reset getString buffer
-
-      returned = usciA1UartGets(&rxGetString);  // get a string from the console
-
-      if (returned != 0){
-         indexReturned = parseCmd(mddCmds, rxGetString); // send string to motor control
-         if (indexReturned == -1)
-             numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-         else
-             indexReturned = executeCmd(mddCmds, indexReturned); // execute the command
-      }
-      else
-         numChars = ucsiA1UartTxString(&getsInvalidString); // print error message
-
-
-    }
-
-    return 0;
+       binInterp_run ();
 }
+
+// better than nothing, blinking LED is some indication to user that things went south.
+void SCARA_failure (void){
+    P6DIR |= ESTOP_LED;
+    while (1){
+        P6OUT ^= ESTOP_LED;
+        __delay_cycles(50000);  // 2 Hz, the angriest frequency
+    }
+}
+
