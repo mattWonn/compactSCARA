@@ -8,11 +8,11 @@ import struct
 
 class SCARA:
     # data about robot
-    defaultPORT = '/dev/cu.usbmodem141203'
+    defaultPORT = '/dev/cu.usbmodem142203'
     defaultBAUD = 115200
     length_L1 = 150
     length_L2 = 150
-    pulses_per_Degree = 9.48867
+    pulses_per_degree = 9.48867
     # command codes corresponding to positions in msp430 command array
     zeroEncodersCode =0
     getPosCode = 1

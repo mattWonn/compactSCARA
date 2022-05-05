@@ -12,13 +12,15 @@ portList=serial.tools.list_ports.comports()
 portLength = len(portList)
 baud = 115200
 
+robot = None
 
 #----------------------- GUI commands -------------------------------
 def moveJ():
     screen.grab_release()
-    j1anglePulses = eJ1.get()*SCARA.pulses_per_degrees
-    j2anglePulses = eJ1.get()*SCARA.pulses_per_degrees
-    # robot.moveJ(j1anglePulses, j2AnglePulses, toolPosition.get())
+    #j1anglePulses = eJ1.get()*SCARA.pulses_per_degree
+    #j2anglePulses = eJ2.get()*SCARA.pulses_per_degree
+    #robot.moveJ(j1anglePulses, j2AnglePulses)
+    robot.moveJ(int (eJ1.get()), int(eJ2.get()))
     screen.grab_set()
     
 def moveJcoord():
@@ -33,14 +35,14 @@ def moveL():
 
 def moveC():
     screen.grab_release()
-    startAnglePulses = eStartAng.get()*SCARA.pulses_per_degrees
-    endAnglePulses = eEndAng.get()*SCARA.pulses_per_degrees
+    startAnglePulses = eStartAng.get()*SCARA.pulses_per_degree
+    endAnglePulses = eEndAng.get()*SCARA.pulses_per_degree
     #robot.moveC(startAnglePulses, endAnglePulses, eArc.get(), armSolution.get(), toolPosition.get())
     screen.grab_set()
 
 def resetPosition():
     screen.grab_release()
-    #robot.zeroEncoders()
+    robot.zeroEncoders()
     screen.grab_set()
 
 def stopProgram():
@@ -128,8 +130,8 @@ portOption.set("  Select  ") # default value
 def selectPort(portOption):
     pop.grab_release()
     pop.destroy()
-    robot = SCARA(portOption, robot.defaultBAUD)
-
+    global robot
+    robot = SCARA('/dev/' + portOption.name, SCARA.defaultBAUD)
 
 
 global pop
