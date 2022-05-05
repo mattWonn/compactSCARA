@@ -5,10 +5,14 @@ import os
 import inspect
 import serial
 import struct
+import serial.tools.list_ports
+
+portList=serial.tools.list_ports.comports()
 
 class SCARA:
     # data about robot
-    defaultPORT = '/dev/cu.usbmodem142203'
+    #defaultPORT = '/dev/cu.usbmodem142203'
+     defaultPORT = 'COM9'
     defaultBAUD = 115200
     length_L1 = 150
     length_L2 = 150
