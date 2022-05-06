@@ -45,7 +45,7 @@ void sendMoveJ(SCARA_ROBOT scaraStateEnd){
         // when the move is finished, reset the start variable
         startMoveJ = 0;
         TA0CCR4 = 0; //reset the timer registers to output 0 PWM manually
-        TA1CCR1 = 0;
+        TA0CCR3 = 0;
         exit = mddInputCtrl(CTRLBRAKE); // send brake commands to both motors
         exit = mddInputCtrl2(CTRLBRAKE2);
         updateIndex = 0; // reset the updateIndex

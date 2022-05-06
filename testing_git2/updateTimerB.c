@@ -75,7 +75,7 @@ void updateTimer(){
         if (updateIndex >= arrayLength-1){ // exit condition, resets start bit, and applies the braking signal to both motors
             startMoveJ =0; // reset start bit
             TA0CCR4 = 0; // send 0% PWM signals
-            TA1CCR1 = 0;
+            TA0CCR3 = 0;
             exit = mddInputCtrl2(CTRLBRAKE2); // apply braking signals to motors
             exit = mddInputCtrl(CTRLBRAKE);
             P2IFG &= ~0xF0; // clear flags due to quadrature encoder interrupts

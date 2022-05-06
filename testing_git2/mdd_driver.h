@@ -21,8 +21,8 @@ unsigned int counting2;
 #define CTRLOUT (P3DIR |= 0x3);
 
 #define CTRLMASK2 (BIT4 + BIT2)
-#define INA2 BIT4 // P3.3
-#define INB2 BIT2 // P3.2
+#define INA2 BIT4 // P3.2
+#define INB2 BIT2 // P3.3
 #define CTRLOUT2 (P3DIR |= BIT4+BIT2); (P3SEL |= BIT4+BIT2)
 
 #define CTRLCW (CTRLMASK & (INA & ~INB))

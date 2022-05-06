@@ -1,6 +1,7 @@
 from cgitb import enable
 from os import popen
 from tkinter import *
+from array import array
 import time
 import math
 import tkinter.ttk as ttk
@@ -12,42 +13,68 @@ portList=serial.tools.list_ports.comports()
 portLength = len(portList)
 baud = 115200
 
-robot = 0
+robot = None
+L1array = array('h', (i for i in range(401)))
+L2array = array('h', (i for i in range(401)))
+
 
 def selectPort(portOption):
     global robot 
     pop.grab_release()
     pop.destroy()
     robot = SCARA(portOption.name, SCARA.defaultBAUD)
+    # robot = SCARA( 'file nam' portOption.name, SCARA.defaultBaud) for mac
+
+def moveJ():
+    screen.grab_release()
+    j1anglePulses = float(eJ1.get())*SCARA.pulses_per_degree
+    j2anglePulses = float(eJ2.get())*SCARA.pulses_per_degree
+    robot.moveJ(int(eJ1.get()), int(eJ2.get()))
+    screen.grab_set()
 
 def moveJcoord():
     screen.grab_release()
-    #robot.moveJcoord(eX.get(), eY.get(), armSolution.get(), toolPosition.get())
+    robot.moveJcoord(eX.get(), eY.get(), armSolution.get())
     screen.grab_set()
 
 def moveL():
     screen.grab_release()
-    #robot.moveL(eX.get(), eY.get(), armSolution.get(), toolPosition.get())
+    robot.moveL(float(eX.get()), float(eY.get()), armSolution.get())
     screen.grab_set()
 
 def moveC():
     screen.grab_release()
     startAnglePulses = eStartAng.get()*SCARA.pulses_per_degree
     endAnglePulses = eEndAng.get()*SCARA.pulses_per_degree
-    #robot.moveC(startAnglePulses, endAnglePulses, eArc.get(), armSolution.get(), toolPosition.get())
+    robot.moveC(startAnglePulses, endAnglePulses, eArc.get(), armSolution.get())
+    screen.grab_set()
+
+def moveZ():
+    screen.grab_release()
+    toolMovement = eTool.get()*SCARA.z_steps_per_cm
+    robot.moveC(toolMovement)
     screen.grab_set()
 
 def resetPosition():
     screen.grab_release()
-    #robot.zeroEncoders()
+    robot.zeroEncoders()
+    screen.grab_set()
+
+def homeZaxis():
+    screen.grab_release()
+    robot.zeroZaxis()
     screen.grab_set()
 
 def stopProgram():
     pass
-    #robot.doStop =1
+    robot.emStop()
+
+def runProgram():
+    pass
+    robot.emStopReset()
 
 def quitProgram():
-    #robot.doStop=1
+    robot.doStop=1
     pass
     quit()
 #-------------------------------------------------------------------------------
@@ -110,7 +137,7 @@ def moveLProgram():
 
 screen = Tk()
 screen.title("Modular SCARA")
-screen.geometry('900x800')
+screen.geometry('1100x800')
 #screen.config(bg='#DCDCDC')
 
 blank = Label(screen, text="  ")
@@ -125,13 +152,6 @@ portOption = StringVar(screen)
 portOption.set("  Select  ") # default value
 
 #----------------------- GUI commands -------------------------------
-def moveJ():
-    screen.grab_release()
-    j1anglePulses = float(eJ1.get())*SCARA.pulses_per_degree
-    j2anglePulses = float(eJ2.get())*SCARA.pulses_per_degree
-    #command = moveJ(int(eJ1.get()), int(eJ2.get()))
-    robot.moveJ(int(eJ1.get()), int(eJ2.get()))
-    screen.grab_set()
     
 
 global pop
@@ -150,14 +170,14 @@ portMenu = OptionMenu(pop, portOption, *portList, command=selectPort)
 portMenu.pack()
 
 #------------------- Label section---------------------
-theta1Label = Label(screen, text="Joint 1 angle:", font=('Calibri 14'))
+theta1Label = Label(screen, text="Joint 1 angle (deg):", font=('Calibri 14'))
 theta1Label.grid(row=2, column=0)
-theta2Label = Label(screen, text="Joint 2 angle:",font=('Calibri 14'))
+theta2Label = Label(screen, text="Joint 2 angle (deg):",font=('Calibri 14'))
 theta2Label.grid(row=2, column=1)
 
-xLabel = Label(screen, width =20, text="\n\nX position:",font=('Calibri 14'))
+xLabel = Label(screen, width =20, text="\n\nX position (cm):",font=('Calibri 14'))
 xLabel.grid(row=4, column=0)
-yLabel = Label(screen, text="\n\nY position:",font=('Calibri 14'))
+yLabel = Label(screen, text="\n\nY position (cm):",font=('Calibri 14'))
 yLabel.grid(row=4, column=1)
 
 startAngLabel = Label(screen, width =20, text="\n\nStarting arc angle:",font=('Calibri 14'))
@@ -172,6 +192,9 @@ startAngLabel.grid(row=8, column=0)
 
 startAngLabel = Label(screen, width =20, text="\n\nTool Position:",font=('Calibri 14'))
 startAngLabel.grid(row=10, column=0)
+
+startAngLabel = Label(screen, width =20, text="\n\nMove Tool by (cm):",font=('Calibri 14'))
+startAngLabel.grid(row=10, column=2)
 
 startAngLabel = Label(screen, width =20, text="\n\nCommand Movement:",font=('Calibri 14'))
 startAngLabel.grid(row=12, column=0)
@@ -212,6 +235,11 @@ eArc = Entry(screen, width=15, borderwidth=5)
 eArc.grid(row=7, column=2)
 eArc.insert(0, "5")
 
+# tool position entry box in centimeters
+eTool = Entry(screen, width=15, borderwidth=5)
+eTool.grid(row=11, column=2)
+eTool.insert(0, "0")
+
 #------------------------ Button section --------------------------------------------
 leftB = Radiobutton(screen, width= 15, text="left", variable=armSolution, value =1,font=('Calibri 12'))
 leftB.grid(row=9, column=0)
@@ -222,6 +250,7 @@ upB.grid(row=11, column=0)
 dnB = Radiobutton(screen, width= 15, text="tool down", variable=toolPosition, value=1,font=('Calibri 12'))
 dnB.grid(row=11, column=1)
 
+
 buttonMJ = Button(screen, width = 15, text= "Move J", borderwidth=5, padx=15, pady=5, command=moveJ)
 buttonMJ.grid(row=13, column=0)
 buttonMJC = Button(screen, width = 15, text= "Move J coordinate",borderwidth=5, padx=15, pady=5, command=moveJcoord)
@@ -230,15 +259,21 @@ buttonML = Button(screen, width = 15, text= "Move Linear", borderwidth=5,padx=15
 buttonML.grid(row=13, column=2)
 buttonMC = Button(screen, width = 15, text= "Move Circular", borderwidth=5,padx=15, pady=5, command=moveC)
 buttonMC.grid(row=13, column=3)
+buttonMT = Button(screen, width = 15, text= "Move Z by distance", borderwidth=5,padx=15, pady=5, command=moveZ)
+buttonMT.grid(row=13, column=4)
 
 buttonDisp = Button(screen, width = 15, text= "Display Position", borderwidth=5,padx=15, pady=5) #command display position
 buttonDisp.grid(row=15, column=0)
 buttonReset = Button(screen, width = 15, text= "Reset Position", borderwidth=5,padx=15, pady=5, command=resetPosition) #command reset position
 buttonReset.grid(row=15, column=1)
+buttonReset = Button(screen, width = 15, text= "Home Z-Axis", borderwidth=5,padx=15, pady=5, command=homeZaxis) #command reset position
+buttonReset.grid(row=15, column=2)
 button = Button(screen, width = 15, text= "STOP", borderwidth=5, bg="red", fg="white", padx=15, pady=5, command=stopProgram)
-button.grid(row=15, column=2)
-button = Button(screen, width = 15, text= "End Program", borderwidth=5,padx=15, pady=5,command = quitProgram)
 button.grid(row=15, column=3)
+button = Button(screen, width = 15, text= "continue", borderwidth=5, padx=15, pady=5, command=runProgram)
+button.grid(row=15, column=4)
+button = Button(screen, width = 15, text= "End Program", borderwidth=5,padx=15, pady=5,command = quitProgram)
+button.grid(row=15, column=5)
 
 A_MAX_LINEAR = 10
 T_UPDATE = 0.01
