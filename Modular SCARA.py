@@ -7,13 +7,14 @@ import tkinter.ttk as ttk
 from SCARA import SCARA
 from zlib import DEFLATED
 import serial.tools.list_ports
-
+from array import array
 portList=serial.tools.list_ports.comports()
 portLength = len(portList)
 baud = 115200
 
 robot = None
-
+L1array= array ('h', (i for i in range(401)))
+L2array= array ('h', (i for i in range(401)))
 #----------------------- GUI commands -------------------------------
 def moveJ():
     screen.grab_release()

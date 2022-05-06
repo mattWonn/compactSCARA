@@ -84,6 +84,8 @@ int main(void) {
     binInterp_addCmd (4, binInterp_zAxisJog);               //  13
     binInterp_addCmd (1, binInterp_zAxisJogStop);           //  14
     binInterp_addCmd (6, binInterp_moveJ);                  //  15
+    binInterp_addCmd (10, binInterp_moveJ_Coord);           //  16
+    binInterp_addCmd (10, binInterp_moveL);                 //  17
 
        _enable_interrupts();
 

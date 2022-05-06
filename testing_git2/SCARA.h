@@ -10,14 +10,14 @@
 #include <string.h>
 #include <math.h>
 #include "UcsControl.h"             // Clock control
-#include "quadEncDec.h"             // Quadrature decoder functions
-#include "PwmTimerA0.h"
-#include "updateTimerB.h"
-#include "movement.h"
-#include "ZaxisCtrl.h"
-#include "eStopLimitSwitch.h"
-#include "libUART1A.h"
-#include "BinaryCmdInterp.h"
+#include "quadEncDec.h"             // Quadrature decoder functions on port 2 interrupt
+#include "PwmTimerA0.h"             // PWM motor signals on timer A0 P1.4 and 1.5 and motor direction on P3 0-4
+#include "updateTimerB.h"           // timer for update function during a move
+#include "movement.h"               // different types of movement - lines, joint interpolated moves, circles
+#include "ZaxisCtrl.h"              // stepper motor for Z axis
+#include "eStopLimitSwitch.h"       // runs emergency stop hardware
+#include "libUART1A.h"              // runs serial port with interrupt-driven functions
+#include "BinaryCmdInterp.h"        // sends and receives binary data over serial port
 
 
 
@@ -43,6 +43,8 @@ unsigned char binInterp_zAxisGoToPos (unsigned char * inputData, unsigned char *
 unsigned char binInterp_zAxisJog (unsigned char * inputData, unsigned char * outputResults);            // 13
 unsigned char binInterp_zAxisJogStop (unsigned char * inputData, unsigned char * outputResults);        // 14
 unsigned char binInterp_moveJ (unsigned char * inputData, unsigned char * outputResults);               // 15
+unsigned char binInterp_moveJ_Coord (unsigned char * inputData, unsigned char * outputResults);         // 16
+unsigned char binInterp_moveL  (unsigned char * inputData, unsigned char * outputResults);              // 17
 
 
 #endif /* SCARA_H_ */

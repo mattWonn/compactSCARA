@@ -6,13 +6,14 @@ import inspect
 import serial
 import struct
 import serial.tools.list_ports
+from array import array
 
 portList=serial.tools.list_ports.comports()
 
 class SCARA:
     # data about robot
-    #defaultPORT = '/dev/cu.usbmodem142203'
-     defaultPORT = 'COM9'
+    defaultPORT = '/dev/cu.usbmodem142203'
+    #defaultPORT = 'COM9'
     defaultBAUD = 115200
     length_L1 = 150
     length_L2 = 150
@@ -34,6 +35,8 @@ class SCARA:
     zJogStartCode = 13
     zJogStopCode = 14
     movjCode = 15
+    movjCoordCode = 16
+    movlCode =17
     # SCARA state 
     # format = error, motor1 PWM, motor2 PWM, toolData, encoder 1 counts, encoder 2 counts, z axis counts,  
     # size = 4 + 3*2 = 10
@@ -48,6 +51,7 @@ class SCARA:
     zAxisSpeedSendFormat = struct.Struct ('<BxH')
     zAxisReceiveFormat = struct.Struct ('<Bh')
     mtrsFormat = struct.Struct ('<Bxx')
+    posFloatFormat = struct.Struct('<BBff')
     noErrCode =  0          # first byte of results msp430 sends must be one of these error codes
     EmStoppedCode = 1       #
     ZaxisOverCode = 2
@@ -148,27 +152,21 @@ class SCARA:
     def moveJ (self, endAng1, endAng2):
         buffer = SCARA.posSendFormat.pack (SCARA.movjCode, endAng1, endAng2)
         self.ser.write (buffer)
-                        
-    """  
-    #does a joint interpolated movement from current joint posiitons to new joint positions
-    def movJ (self, enc1, enc2, doConfirm=0):
-        buffer = (SCARA.movJCode).to_bytes (1, byteorder = 'little', signed = False)\
-                 + enc1.to_bytes (2, byteorder = 'little', signed = True)\
-                 + enc2.to_bytes (2, byteorder = 'little', signed = True)
-        self.ser.write ((SCARA.movJCode).to_bytes (1, byteorder = 'little', signed = False))
-        errVal = int.from_bytes( self.ser.read (1), byteorder='little', signed=False)
-        if (errVal != SCARA.EmStoppedCode):
-            print ("SCARA was not stopped.")
-    """
-    #def startLiveUpdate (self, doEnc, doMtr, doZ):
+
+    def moveJcoord (self, xPos, yPos, armSol):
+          buffer = SCARA.posFloatFormat.pack (SCARA.movjCoordCode, armSol, xPos, yPos)
+          self.ser.write (buffer)
+
+    def moveL(self, xPos, yPos, armSol):
+          buffer = SCARA.posFloatFormat.pack (SCARA.movlCode, armSol, xPos, yPos)
+          self.ser.write (buffer)
+
+    def moveCustom (self, 
         
 
 if __name__ == '__main__':
     clem = SCARA (SCARA.defaultPORT, SCARA.defaultBAUD) 
-    #Clem.getPos()
-    #print (clem.state)
     
-
     
 """
 for i in range (0,160):
