@@ -6,6 +6,10 @@
  */
 #include "SCARA.h"
 
+unsigned int gArraySize;
+unsigned int gArray_i;
+unsigned char arrayNum;
+unsigned char byteNum;
 
 // index =0. inputSize = 1. no results
 unsigned char binInterp_zeroCount (unsigned char * inputData, unsigned char * outputResults){
@@ -132,9 +136,107 @@ unsigned char binInterp_moveJ  (unsigned char * inputData, unsigned char * outpu
     signed int * mtrPtr = (signed int *) & (inputData [2]);
     signed int endAng1 = *mtrPtr++;
     signed int endAng2 = *mtrPtr;
-    scaraStateEnd.scaraPos.theta1 = endAng1*PUL_PER_DEG_N70;
-    scaraStateEnd.scaraPos.theta2 = endAng2*PUL_PER_DEG_N70;
+    scaraStateEnd.scaraPos.theta1 = endAng1;
+    scaraStateEnd.scaraPos.theta2 = endAng2;
     sendMoveJ(scaraStateEnd);
 
     return 0;
 }
+
+
+// index = 16. input size = 10 [0] = index, 1 =armSol, [2,3,4,5] = xPos (float), [6,7,8,9] = yPos. No result
+unsigned char binInterp_moveJ_Coord  (unsigned char * inputData, unsigned char * outputResults){
+    float j1HoldAng =0;
+    float j2HoldAng =0;
+    int armSol = (int)inputData[1];
+    float * coordPtr = (float *) &inputData[2];
+    float xCoord = *coordPtr++;
+    float yCoord = *coordPtr;
+
+    // store the desired arm solution (1 for left arm, 0 for right arm
+    scaraStateEnd.scaraPos.armSol = armSol;
+
+    // find the cooresponding arm angles based on the desired (x, y) coordinate
+    if (!(scaraIkFloat(&j1HoldAng, &j2HoldAng, xCoord, yCoord, &scaraStateEnd))){
+
+        // store the joint angles in pulses
+        scaraStateEnd.scaraPos.theta1 = j1HoldAng*PUL_PER_DEG_N70;
+        scaraStateEnd.scaraPos.theta2 = j2HoldAng*PUL_PER_DEG_N70;
+
+        // send move command
+        sendMoveJ(scaraStateEnd);
+    }
+    return 0;
+}
+
+
+// index = 17. input size = 10 [0] = index, 1 =armSol, [2,3,4,5] = end xPos (float), [6,7,8,9] = end yPos. No result
+unsigned char binInterp_moveL  (unsigned char * inputData, unsigned char * outputResults){
+
+    int armSol = (int)inputData[1];
+    float * coordPtr = (float *) &inputData[2];
+    float xCoord = *coordPtr++;
+    float yCoord = *coordPtr;
+    holdLine = initLine(xCoord, yCoord, 0, 0, 0); //xb yb
+    SCARA_ROBOT testRobot = scaraInitState(0, 0, armSol,0 ); // x y armSol penPos
+    sendMoveL(&testRobot, holdLine);
+    return 0;
+}
+
+// index = 18. input size = 4 [0] = index,1 =padByte, [2,3] = array Size
+unsigned char binInterp_moveCustom  (unsigned char * inputData, unsigned char * outputResults){
+    signed int * arraySizePtr = (signed int *) & (inputData [2]);
+    gArraySize = *arraySizePtr;
+    gArray_i = 0;
+//    gArrayNum =0;
+    usciA1UartEnableRxInt (0);
+ //   usciA1UartInstallRxInt (&array_RxInterrupt);
+    usciA1UartEnableRxInt (1);
+    __low_power_mode_0();  // when we wake up, data has been received
+
+
+}
+
+/*
+unsigned char array_RxInterrupt (char data){
+    unsigned char rVal = 0;
+    static char value[2];
+    static signed int * valPtr = &value;
+    value[byteNum] = data;
+    if (byteNum == 1){
+        if (gArrayNum ==0){
+            posArray1 [gArray_i] = *valPtr;
+        } else{
+            posArray2 [gArray_i] = *valPtr;
+        }
+        gArray_i +=1;
+        byteNum =0;
+        if (gArray_i == gArraySize){
+            if (gArrayNum ==0){
+                gArray_i =0;
+                gArrayNum =1;
+            } else{
+
+
+            }
+        }
+
+    }
+
+
+
+
+
+}
+
+
+typedef unsigned char (*rxIntFunc)(char);
+typedef char (*txIntFunc)(unsigned char*);
+
+usciA1UartInstallTxInt (&DATA_TxInterrupt);
+usciA1UartEnableTxInt (1);
+__low_power_mode_0();  // when we wake up, data has been sent
+usciA1UartInstallTxInt (&binInterp_TxInterrupt); // re-enable usual tx functions
+usciA1UartEnableTxInt (1);
+
+*/

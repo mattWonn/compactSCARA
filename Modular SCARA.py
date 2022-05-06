@@ -8,12 +8,13 @@ import tkinter.ttk as ttk
 from SCARA import SCARA
 from zlib import DEFLATED
 import serial.tools.list_ports
-
+from array import array
 portList=serial.tools.list_ports.comports()
 portLength = len(portList)
 baud = 115200
 
 robot = None
+<<<<<<< HEAD
 L1array = array('h', (i for i in range(401)))
 L2array = array('h', (i for i in range(401)))
 
@@ -32,6 +33,19 @@ def moveJ():
     robot.moveJ(int(eJ1.get()), int(eJ2.get()))
     screen.grab_set()
 
+=======
+L1array= array ('h', (i for i in range(401)))
+L2array= array ('h', (i for i in range(401)))
+#----------------------- GUI commands -------------------------------
+def moveJ():
+    screen.grab_release()
+    #j1anglePulses = eJ1.get()*SCARA.pulses_per_degree
+    #j2anglePulses = eJ2.get()*SCARA.pulses_per_degree
+    #robot.moveJ(j1anglePulses, j2AnglePulses)
+    robot.moveJ(int (eJ1.get()), int(eJ2.get()))
+    screen.grab_set()
+    
+>>>>>>> branch 'master' of https://github.com/mattWonn/compactSCARA
 def moveJcoord():
     screen.grab_release()
     robot.moveJcoord(eX.get(), eY.get(), armSolution.get())
@@ -58,11 +72,14 @@ def moveZ():
 def resetPosition():
     screen.grab_release()
     robot.zeroEncoders()
+<<<<<<< HEAD
     screen.grab_set()
 
 def homeZaxis():
     screen.grab_release()
     robot.zeroZaxis()
+=======
+>>>>>>> branch 'master' of https://github.com/mattWonn/compactSCARA
     screen.grab_set()
 
 def stopProgram():
@@ -150,6 +167,13 @@ displayMainPage=0
 
 portOption = StringVar(screen)
 portOption.set("  Select  ") # default value
+
+def selectPort(portOption):
+    pop.grab_release()
+    pop.destroy()
+    global robot
+    robot = SCARA('/dev/' + portOption.name, SCARA.defaultBAUD)
+
 
 #----------------------- GUI commands -------------------------------
     

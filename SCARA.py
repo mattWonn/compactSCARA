@@ -161,7 +161,11 @@ class SCARA:
           buffer = SCARA.posFloatFormat.pack (SCARA.movlCode, armSol, xPos, yPos)
           self.ser.write (buffer)
 
+<<<<<<< HEAD
     #def moveCustom (self, 
+=======
+    def moveCustom (self, 
+>>>>>>> branch 'master' of https://github.com/mattWonn/compactSCARA
         
 
 if __name__ == '__main__':
