@@ -45,6 +45,6 @@ unsigned char binInterp_zAxisJogStop (unsigned char * inputData, unsigned char *
 unsigned char binInterp_moveJ (unsigned char * inputData, unsigned char * outputResults);               // 15
 unsigned char binInterp_moveJ_Coord (unsigned char * inputData, unsigned char * outputResults);         // 16
 unsigned char binInterp_moveL  (unsigned char * inputData, unsigned char * outputResults);              // 17
-
+unsigned char binInterp_moveC (unsigned char * inputData, unsigned char * outputResults);               // 18
 
 #endif /* SCARA_H_ */

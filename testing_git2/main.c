@@ -51,7 +51,7 @@ int main(void) {
            kDAng = 0;
 
            kPLin = 2.2;
-           kILin = 0.02;
+           kILin = 0.0;
            kDLin = 0;
 
 
@@ -86,10 +86,11 @@ int main(void) {
     binInterp_addCmd (6, binInterp_moveJ);                  //  15
     binInterp_addCmd (10, binInterp_moveJ_Coord);           //  16
     binInterp_addCmd (10, binInterp_moveL);                 //  17
+    binInterp_addCmd (10, binInterp_moveC);                 //  18
 
        _enable_interrupts();
 
-       binInterp_run ();
+       binInterp_run ();   // bl
 }
 
 // better than nothing, blinking LED is some indication to user that things went south.

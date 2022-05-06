@@ -8,8 +8,8 @@
 
 unsigned int gArraySize;
 unsigned int gArray_i;
-unsigned char arrayNum;
-unsigned char byteNum;
+unsigned char gArrayNum;
+unsigned char gByteNum;
 
 // index =0. inputSize = 1. no results
 unsigned char binInterp_zeroCount (unsigned char * inputData, unsigned char * outputResults){
@@ -30,10 +30,10 @@ unsigned char binInterp_getCount (unsigned char * inputData, unsigned char * out
 
 // index =2. inputSize = 6 [0] = index, [1] = pad byte, [2,3] = encoder L1 count, [4,5] = encoder L2 count. no results
 unsigned char binInterp_setMtrs (unsigned char * inputData, unsigned char * outputResults){
-    signed int * mtrPtr = (signed int *) & (inputData [2]);
-//    signed int L1 = *mtrPtr++;
-//    signed int L2 = *mtrPtr;
-    // motorsPWMset (L1, L2);
+  /*  signed int * mtrPtr = (signed int *) & (inputData [2]);
+    signed int L1 = *mtrPtr++;
+    signed int L2 = *mtrPtr;
+    // motorsPWMset (L1, L2);*/
     return 0;
 }
 
@@ -136,8 +136,8 @@ unsigned char binInterp_moveJ  (unsigned char * inputData, unsigned char * outpu
     signed int * mtrPtr = (signed int *) & (inputData [2]);
     signed int endAng1 = *mtrPtr++;
     signed int endAng2 = *mtrPtr;
-    scaraStateEnd.scaraPos.theta1 = endAng1;
-    scaraStateEnd.scaraPos.theta2 = endAng2;
+    scaraStateEnd.scaraPos.theta1 = endAng1*PUL_PER_DEG_N70;
+    scaraStateEnd.scaraPos.theta2 = endAng2*PUL_PER_DEG_N70;
     sendMoveJ(scaraStateEnd);
 
     return 0;
@@ -183,25 +183,53 @@ unsigned char binInterp_moveL  (unsigned char * inputData, unsigned char * outpu
     return 0;
 }
 
+
+
+// index = 18. input size = 10 [0] = index, [1] = armSol, [2,3] = signed int startAngle [4,5] = signed int end angle, [6,7,8,9] = float radius
+unsigned char binInterp_moveC  (unsigned char * inputData, unsigned char * outputResults){
+    int armSol = (int)inputData[1];
+    signed int * anglePtr = (signed int *) &inputData[2];
+    signed int startAngle = *anglePtr++;
+    signed int endAngle =  *anglePtr++;
+    float * radPtr = (float *) anglePtr;
+    float radius= *radPtr;
+
+    if (abs(startAngle) < 361 && abs(endAngle) < 361){ // verify that both angles do not exceed 360 degrees
+        if (abs(endAngle- startAngle) < 361){ // verify that the arc does not go over 361 degrees
+             scaraStateSet.scaraPos.theta1 = startAngle*PUL_PER_DEG_N70; // starting angle
+             scaraStateEnd.scaraPos.theta1 = endAngle*PUL_PER_DEG_N70; // ending angle
+             scaraStateSet.scaraPos.radius = radius;
+             SCARA_ROBOT robot = scaraInitState(0, 0, armSol, 0); // x y armSol penPos
+             // send the move command
+             sendMoveC(&robot);
+        }
+    }
+    return 0;
+}
+
+
+
+
+
+/*
 // index = 18. input size = 4 [0] = index,1 =padByte, [2,3] = array Size
 unsigned char binInterp_moveCustom  (unsigned char * inputData, unsigned char * outputResults){
     signed int * arraySizePtr = (signed int *) & (inputData [2]);
     gArraySize = *arraySizePtr;
     gArray_i = 0;
-//    gArrayNum =0;
+    gArrayNum =0;
     usciA1UartEnableRxInt (0);
- //   usciA1UartInstallRxInt (&array_RxInterrupt);
+    usciA1UartInstallRxInt (&array_RxInterrupt);
     usciA1UartEnableRxInt (1);
-    __low_power_mode_0();  // when we wake up, data has been received
-
-
 }
 
-/*
+
+
 unsigned char array_RxInterrupt (char data){
-    unsigned char rVal = 0;
+    unsigned char returnVal = 0;
     static char value[2];
     static signed int * valPtr = &value;
+    unsigned char byteNum = gArray_i%2
     value[byteNum] = data;
     if (byteNum == 1){
         if (gArrayNum ==0){
@@ -210,23 +238,15 @@ unsigned char array_RxInterrupt (char data){
             posArray2 [gArray_i] = *valPtr;
         }
         gArray_i +=1;
-        byteNum =0;
         if (gArray_i == gArraySize){
             if (gArrayNum ==0){
                 gArray_i =0;
                 gArrayNum =1;
             } else{
-
-
+                returnVal =1;
             }
         }
-
     }
-
-
-
-
-
 }
 
 
@@ -240,3 +260,4 @@ usciA1UartInstallTxInt (&binInterp_TxInterrupt); // re-enable usual tx functions
 usciA1UartEnableTxInt (1);
 
 */
+
