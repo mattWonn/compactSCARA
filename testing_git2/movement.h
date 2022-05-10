@@ -23,10 +23,10 @@
 #define RELATIVE_THETA2_PUL 1471 // 155 * PUL_PER_DEG_N70
 #define MAX_ABS_THETA2 (180)       // max angle of outer arm relative to x axis
 #define MAX_ABS_THETA2_PUL (MAX_ABS_THETA2 * PUL_PER_DEG_N70)
-#define MAX_ABS_X 30.48      // max x value
-#define MAX_ABS_Y 30.48       // max y value
-#define MIN_ABS_X -30      // min x value
-#define MIN_ABS_Y -30       // min y value
+#define MAX_ABS_X 30.5      // max x value
+#define MAX_ABS_Y 30.5       // max y value
+#define MIN_ABS_X -30.5      // min x value
+#define MIN_ABS_Y -30.5       // min y value
 #define XY_RES_FACTOR 10
 #define INNER_CIRCLE_BOUNDS 65 // 1000* 6.5cm // cm radius
 #define TOOL_UP 0
@@ -116,10 +116,10 @@ void sendMoveJ(SCARA_ROBOT scaraStateM2);
 unsigned int moveJ(signed int endAng1, signed int endAng2);
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);
 int moveScaraC(SCARA_ROBOT* scaraState);
-unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* toolY);
+//unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* toolY);
 unsigned int scaraFkPulses(signed int pul1, signed int pul2, float* toolX, float* toolY);
-unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
-unsigned int scaraIkFloat(float *ang1, float * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
+//unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
+//unsigned int scaraIkFloat(float *ang1, float * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 unsigned int scaraIkPulses(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState);
 LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);

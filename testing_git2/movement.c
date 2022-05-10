@@ -29,7 +29,7 @@
 void sendMoveJ(SCARA_ROBOT scaraStateEnd){
     unsigned int exit;
 
-    __disable_interrupt();
+    //__disable_interrupt();
     // calculate position arrays for the joint interpolated move
     exit = moveJ(scaraStateEnd.scaraPos.theta1,scaraStateEnd.scaraPos.theta2); // start end M1, start end M2;
     if (exit == 0){ // if the calculations were successful, then send them to the robot
@@ -38,17 +38,18 @@ void sendMoveJ(SCARA_ROBOT scaraStateEnd){
         kI = kIAng;
         kD = kDAng;
         __enable_interrupt();
+        _BIS_SR(GIE);
         // set the variable to start the updating of the motors
         startMoveJ = 1;
         while (startMoveJ == 1){} // wait for the move to finish
 
         // when the move is finished, reset the start variable
         startMoveJ = 0;
+        updateIndex = 0; // reset the updateIndex
         TA0CCR4 = 0; //reset the timer registers to output 0 PWM manually
         TA0CCR3 = 0;
         exit = mddInputCtrl(CTRLBRAKE); // send brake commands to both motors
         exit = mddInputCtrl2(CTRLBRAKE2);
-        updateIndex = 0; // reset the updateIndex
         noMove1 = 0; // reset the no move condition
         noMove2 = 0;
     }
@@ -86,40 +87,55 @@ unsigned int moveJ(signed int endAng1, signed int endAng2){
     unsigned int tInc = 0;
     float w = 0;
 
-    if (endAng1 <= MAX_ABS_THETA1_PUL && endAng1 >= -MAX_ABS_THETA1_PUL){ // verify range
-        if (endAng2 <= MAX_ABS_THETA2_PUL && endAng2 >= -MAX_ABS_THETA2_PUL){ // verify range
-            displacement1 = abs(endAng1 - gPosCountL1);
-            displacement2 = abs(endAng2 - gPosCountL2);
+    volatile signed int endAng1n = endAng1;
+    volatile signed int endAng2n = endAng2;
+
+    if (endAng1n <= MAX_ABS_THETA1_PUL && endAng1n >= -MAX_ABS_THETA1_PUL){ // verify range
+        if (endAng2n <= MAX_ABS_THETA2_PUL && endAng2n >= -MAX_ABS_THETA2_PUL){ // verify range
+            displacement1 = abs(endAng1n - gPosCountL1);
+            displacement2 = abs(endAng2n - gPosCountL2);
 
             // determine if a no-move condition is requested
-            if (endAng1 == gPosCountL1)
-                noMove1 =1;
+            if (gPosCountL1 < (endAng1n+9) && gPosCountL1 > (endAng1n-9))
+                noMove1 = 1;
             else
                 noMove1 =0;
-            if (endAng2 == gPosCountL2)
-                noMove2 = 1;
+
+            if (gPosCountL2 < (endAng2n+9) && gPosCountL2 > (endAng2n-9))
+                noMove2 =1;
             else
                 noMove2 =0;
 
+
             // determine which joint has to move the farthest and bases calculations on that joint
-            if (displacement1 >= displacement2){
+
+            if (displacement1 >= displacement2){ // L1 has to move farther
                 masterJoint =1;
-                deltaD = (endAng1 - gPosCountL1);
-                deltaD2 = (endAng2 - gPosCountL2);
-                if (endAng1 >= gPosCountL1)
-                    direction1=1;
-                if (endAng2 >= gPosCountL2)
-                    direction2=1;
+                deltaD = (endAng1n - gPosCountL1);
+                deltaD2 = (endAng2n - gPosCountL2);
+                if (endAng1n >= gPosCountL1)
+                    direction1 = 1; // positive angle for L1
+                else
+                    direction1 = 0; // negative angle for L1
+                if (endAng2n >= gPosCountL2)
+                    direction2 = 1;
+                else
+                    direction2 = 0;
             }
             else{
-                masterJoint =2;
-                deltaD = (endAng2 - gPosCountL2);
-                deltaD2 = (endAng1 - gPosCountL1);
-                if (endAng1 >= gPosCountL1)
-                    direction2=1;
-                if (endAng2 >= gPosCountL2)
-                    direction1=1;
+                masterJoint =2; // L2 has to move farther
+                deltaD = (endAng2n - gPosCountL2);
+                deltaD2 = (endAng1n - gPosCountL1);
+                if (endAng1n >= gPosCountL1)
+                    direction2 = 1; // positive angle for L2
+                else
+                    direction2 = 0; // negative angle for L2
+                if (endAng2n >= gPosCountL2)
+                    direction1 = 1;
+                else
+                    direction1 = 0;
             }
+
 
 
             timeForMove = sqrt((abs(deltaD)*2*PI)/A_MAX_PUL); // calculate period (T) for sinusoidal profile
@@ -216,12 +232,15 @@ void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
         kI = kILin;
         kD = kDLin;
         __enable_interrupt();
+        _BIS_SR(GIE);
         __delay_cycles(10000);
         // set the variable to start the updating of the motors
         startMoveJ=1;
         while (startMoveJ == 1){}// wait until the move finishes
         startMoveJ =0; // reset the start bit
         updateIndex = 0; // reset the index for incrementing positions
+        result = mddInputCtrl(CTRLBRAKE); // send brake commands to both motors
+        result = mddInputCtrl2(CTRLBRAKE2);
         noMove1 = 0;// reset the no move condition variable
         noMove2 = 0;
         P2IFG &= ~0xF0;
@@ -236,6 +255,7 @@ void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
             kI = kILin;
             kD = kDLin;
             __enable_interrupt();
+            _BIS_SR(GIE);
             __delay_cycles(10000);
             // set the variable to start the updating of the motors
             startMoveJ=1;
@@ -244,9 +264,12 @@ void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
 
             startMoveJ =0; // reset the start bit
             updateIndex = 0; // reset the index for incrementing positions
+            result = mddInputCtrl(CTRLBRAKE); // send brake commands to both motors
+            result = mddInputCtrl2(CTRLBRAKE2);
             noMove1 = 0; // reset the no move condition variable
             noMove2 = 0;
-            __disable_interrupt();
+            P2IFG &= ~0xF0;
+
             /**********TOOLUP************/
 
             // after the first move is performed with the original arm solution, switch solutions
@@ -282,6 +305,7 @@ void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
                         kI = kILin;
                         kD = kDLin;
                         __enable_interrupt();
+                        _BIS_SR(GIE);
                         __delay_cycles(10000);
                         // set the variable to start the updating of the motors
                         startMoveJ=1;
@@ -290,8 +314,11 @@ void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine){
 
                         startMoveJ =0; // reset the start bit
                         updateIndex = 0; // reset the index for the position array's
+                        result = mddInputCtrl(CTRLBRAKE); // send brake commands to both motors
+                        result = mddInputCtrl2(CTRLBRAKE2);
                         noMove1 = 0; // reset the no move condition variable
                         noMove2 = 0;
+                        P2IFG &= ~0xF0;
                     }
                 }
             }
@@ -323,8 +350,8 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
     volatile float deltaD;
     volatile unsigned int armSolution;
 
-    float timeForMove;
-    float w = 0;
+    volatile float timeForMove;
+    volatile float w = 0;
     volatile float d = 0;
     volatile float xHoldPrev =0;
     volatile float yHoldPrev =0;
@@ -337,8 +364,8 @@ int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine){
 
     volatile unsigned int tInc = 0;
 
-    signed int desiredAngJ1;
-    signed int desiredAngJ2;
+    volatile signed int desiredAngJ1;
+    volatile signed int desiredAngJ2;
     volatile signed int angleJ1;
     volatile signed int angleJ2;
 
@@ -497,6 +524,7 @@ void sendMoveC(SCARA_ROBOT *scaraStateSolution){
         kD = kDLin;
         __enable_interrupt();
         __delay_cycles(10000);
+        _BIS_SR(GIE);
         // set the start bit to send positions to the motors
         startMoveJ=1;
         while (startMoveJ == 1){} // wait until the move is finished
@@ -515,6 +543,7 @@ void sendMoveC(SCARA_ROBOT *scaraStateSolution){
             kD = kDLin;
             __enable_interrupt();
             __delay_cycles(10000);
+            _BIS_SR(GIE);
             // set the start bit to send positions to the motors
             startMoveJ=1;
             while (startMoveJ == 1){} // wait until the move is finished
@@ -557,6 +586,8 @@ void sendMoveC(SCARA_ROBOT *scaraStateSolution){
                         kD = kDLin;
                         __enable_interrupt();
                         __delay_cycles(10000);
+                        _BIS_SR(GIE);
+
                         startMoveJ=1;
                         while (startMoveJ == 1){}
                         startMoveJ =0;
@@ -608,10 +639,10 @@ int moveScaraC(SCARA_ROBOT* scaraState){
     volatile unsigned int armSolution;
     volatile signed int direction;
 
-    float timeForMove;
+    volatile float timeForMove;
     volatile float arcAngle;
     volatile float holdArcAngle;
-    float w = 0;
+    volatile float w = 0;
     volatile float d = 0;
     volatile float xHoldPrev =0;
     volatile float yHoldPrev =0;
@@ -789,7 +820,7 @@ int moveScaraC(SCARA_ROBOT* scaraState){
 * Date: March 24 2020
 * Modified: March 5 2022
 ************************************************************/
-unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* toolY){
+/*unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* toolY){
 
     volatile unsigned int exit = 0;
     volatile double toolX1, toolY1;
@@ -833,7 +864,7 @@ unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* tool
 unsigned int scaraFkPulses(signed int pul1, signed int pul2, float* toolX, float* toolY){
 
     volatile unsigned int exit = 0;
-    volatile double toolX1, toolY1;
+    volatile float toolX1, toolY1;
     volatile double thetaB, a;
 
     if (abs(pul1) > MAX_ABS_THETA1_PUL) // if theta1 is over the limit return 1
@@ -870,7 +901,7 @@ unsigned int scaraFkPulses(signed int pul1, signed int pul2, float* toolX, float
 * created by: Matthew Wonneberg, Jamie Boyd
 * Date: March 5 2022
 ************************************************************/
-unsigned int scaraIk(signed int *ang1, signed int *ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1){
+/*unsigned int scaraIk(signed int *ang1, signed int *ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1){
 
     unsigned int exit = 0;
     volatile float angJ1;
@@ -931,7 +962,7 @@ unsigned int scaraIk(signed int *ang1, signed int *ang2, double toolX, double to
 * created by: Matthew Wonneberg, Jamie Boyd
 * Date: April 21 2022
 ************************************************************/
-unsigned int scaraIkFloat(float *ang1, float *ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1){
+/*unsigned int scaraIkFloat(float *ang1, float *ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1){
 
     unsigned int exit = 0;
     volatile float angJ1;
@@ -1000,7 +1031,12 @@ unsigned int scaraIkPulses(signed int *ang1, signed int *ang2, double toolX, dou
     volatile double beta;  // cosine law angle
     volatile double alpha; // angle of x,y
 
-    B = sqrt((toolX*toolX)+(toolY*toolY));                                      // straight line distance from origin to (x,y) point
+    volatile double holdB1 = pow(toolX, 2);
+    volatile double holdB2 = pow(toolY, 2);
+
+    holdB1 = holdB1 + holdB2;
+
+    B = sqrt(holdB1);                                      // straight line distance from origin to (x,y) point
     alpha = RadToPul(atan2(toolY, toolX));                                        // angle of B from origin to (x,y) point
     beta = RadToPul(acos((pow(L2, 2) - pow(B, 2) - pow(L1, 2)) / (-2 * B * L1))); // cosine law to find beta
 

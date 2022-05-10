@@ -157,11 +157,11 @@ unsigned char binInterp_moveJ_Coord  (unsigned char * inputData, unsigned char *
     scaraStateEnd.scaraPos.armSol = armSol;
 
     // find the cooresponding arm angles based on the desired (x, y) coordinate
-    if (!(scaraIkFloat(&j1HoldAng, &j2HoldAng, xCoord, yCoord, &scaraStateEnd))){
+    if (!(scaraIkPulses(&j1HoldAng, &j2HoldAng, xCoord, yCoord, &scaraStateEnd))){
 
         // store the joint angles in pulses
-        scaraStateEnd.scaraPos.theta1 = j1HoldAng*PUL_PER_DEG_N70;
-        scaraStateEnd.scaraPos.theta2 = j2HoldAng*PUL_PER_DEG_N70;
+        scaraStateEnd.scaraPos.theta1 = j1HoldAng;
+        scaraStateEnd.scaraPos.theta2 = j2HoldAng;
 
         // send move command
         sendMoveJ(scaraStateEnd);
@@ -173,7 +173,7 @@ unsigned char binInterp_moveJ_Coord  (unsigned char * inputData, unsigned char *
 // index = 17. input size = 10 [0] = index, 1 =armSol, [2,3,4,5] = end xPos (float), [6,7,8,9] = end yPos. No result
 unsigned char binInterp_moveL  (unsigned char * inputData, unsigned char * outputResults){
 
-    int armSol = (int)inputData[1];
+    volatile char armSol = (char)inputData[1];
     float * coordPtr = (float *) &inputData[2];
     float xCoord = *coordPtr++;
     float yCoord = *coordPtr;
@@ -187,7 +187,7 @@ unsigned char binInterp_moveL  (unsigned char * inputData, unsigned char * outpu
 
 // index = 18. input size = 10 [0] = index, [1] = armSol, [2,3] = signed int startAngle [4,5] = signed int end angle, [6,7,8,9] = float radius
 unsigned char binInterp_moveC  (unsigned char * inputData, unsigned char * outputResults){
-    int armSol = (int)inputData[1];
+    volatile char armSol = (char)inputData[1];
     signed int * anglePtr = (signed int *) &inputData[2];
     signed int startAngle = *anglePtr++;
     signed int endAngle =  *anglePtr++;
