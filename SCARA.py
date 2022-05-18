@@ -120,21 +120,21 @@ class SCARA:
         if self.state['lastErr'] != SCARA.noErrCode:
             print ("Error: ", self.state['lastErr'])
         else:
-            self.state['Zpos'] = data[1]/zaxis_steps_per_mm
+            self.state['Zpos'] = data[1]/SCARA.zaxis_steps_per_mm
         
     def setZSpeed (self, speed):
         buffer = SCARA.zAxisSpeedSendFormat.pack(SCARA.zSetSpeedCode, speed)
         self.ser.write (buffer)
     
     def gotoZpos (self, position, doConfirm = 0):
-        buffer = SCARA.zAxisConfirmSendFormat.pack (SCARA.zGotoPosCode, doConfirm, position * zaxis_steps_per_mm)
+        buffer = SCARA.zAxisConfirmSendFormat.pack (SCARA.zGotoPosCode, doConfirm, position * SCARA.zaxis_steps_per_mm)
         self.ser.write (buffer)
         if doConfirm:
             buffer = self.ser.read (3)
             self.state['lastErr'] = struct.unpack('<Bxx',buffer)
 
     def jogZstart (self, speedDir):
-        buffer = SCARA.zAxisSendFormat.pack(SCARA.zJogStartCode, speedDir/zaxis_steps_per_mm)
+        buffer = SCARA.zAxisSendFormat.pack(SCARA.zJogStartCode, speedDir/SCARA.zaxis_steps_per_mm)
         self.ser.write (buffer)
 
 
@@ -142,11 +142,11 @@ class SCARA:
         self.ser.write ((SCARA.zJogStopCode).to_bytes (1, byteorder = 'little', signed = False))
 
     def setZupperLimit (self, limit):
-        buffer = SCARA.zAxisSendFormat.pack (SCARA.zSetUpperCode, limit * zaxis_steps_per_mm)
+        buffer = SCARA.zAxisSendFormat.pack (SCARA.zSetUpperCode, limit * SCARA.zaxis_steps_per_mm)
         self.ser.write (buffer)
 
     def setZlowerLimit (self, limit):
-        buffer = SCARA.zAxisSendFormat.pack (SCARA.zSetLowerCode, limit * zaxis_steps_per_mm)
+        buffer = SCARA.zAxisSendFormat.pack (SCARA.zSetLowerCode, limit * SCARA.zaxis_steps_per_mm)
         self.ser.write (buffer)
     
     def setZupperHere (self):
