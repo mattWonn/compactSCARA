@@ -25,9 +25,9 @@
 #ifndef BINARYCMDINTERP_H_
 #define BINARYCMDINTERP_H_
 
-#define     CMD_LIST_SIZE   32      // arrays of command structures that we know about, room for  CMD_LIST_SIZE commands from Host.
+#define     CMD_LIST_SIZE   32      // arrays of command structures that we know about, room for CMD_LIST_SIZE commands from Host.
 #define     DATA_SIZE       20      // this many bytes available for each input command and output results. should be lots
-#define     BUFF_SIZE       6      // size of buffers for commands and results. Make these bigger
+#define     BUFF_SIZE       6       // size of buffers for commands and results. Make these bigger
 
 #define     BUFF_EMPTY      0       // Buffer is empty
 #define     BUFF_AVAIL      1       // space is available for adding and items are available for removing
@@ -39,7 +39,7 @@ typedef unsigned char (*command)(unsigned char * inputData, unsigned char * outp
 // a structure that describes a command. Each command you add gets one of these, stored in an array of [CMD_LIST_SIZE] [DATA_SIZE]
 typedef struct CMD {                   // defines a single command
     command theCommand;                // pointer to the function that runs when command name is sent by UART, defined by you
-    unsigned char nCharsIn;               // number of bytes in input parameters for the command, as defined by Python
+    unsigned char nCharsIn;            // number of bytes in input parameters for the command, as defined by Python
 }CMD, * CMDptr;
 
 void binInterp_init (void);

@@ -3,30 +3,30 @@
 #include "BinaryCmdInterp.h"
 
 // array of CMD structures
-CMD gCMDs [CMD_LIST_SIZE];                              // list of commands
+CMD gCMDs [CMD_LIST_SIZE];                                      // list of commands, i.e., function references plus argument size
 
 // for getting user commands
-unsigned char gCommands[BUFF_SIZE] [DATA_SIZE];                // used to hold commands as sent by Python, we do a single array and use pointer arithmetic to find start of string of interest
-volatile unsigned char gInCmd = 0;                    // for circular buffer of commands we are processing
-volatile unsigned char gOutCmd = 0;         // for circular buffer of commands we are processing
-volatile unsigned char gCmdBufState = 0;      // 0 means empty, 1 means inProgress, 2 means full
+unsigned char gCommands[BUFF_SIZE] [DATA_SIZE];                 // used to hold binary commands as sent by host, Python ,e.g.
+volatile unsigned char gInCmd = 0;                              // for circular buffer of commands we are processing
+volatile unsigned char gOutCmd = 0;                             // for circular buffer of commands we are processing
+volatile unsigned char gCmdBufState = 0;                        // 0 means empty, 1 means inProgress, 2 means full
 
 // for sending results from each command
-unsigned char gResults [BUFF_SIZE] [DATA_SIZE];        // we do a single array and use pointer arithmetic to find start of string of interest
-volatile unsigned char gInRes =0;                   // for circular buffer of Resors we are processing
-volatile unsigned char gOutRes =0;         // for circular buffer of Resors we are processing
-volatile unsigned char gResBufState = 0;      // 0 means empty, 1 means inProgress, 2 means full
+unsigned char gResults [BUFF_SIZE] [DATA_SIZE];                 // results from commands, for sending back to host
+volatile unsigned char gInRes =0;                               // for circular buffer of results we are processing
+volatile unsigned char gOutRes =0;                              // for circular buffer of results we are processing
+volatile unsigned char gResBufState = 0;                        // 0 means empty, 1 means inProgress, 2 means full
 
 
 void binInterp_init (){
-    usciA1UartInstallRxInt (&binInterp_RxInterupt);   // install UART interrupts - make sure UART has been inited with your choice of baud
+    usciA1UartInstallRxInt (&binInterp_RxInterupt);             // install UART interrupts
     usciA1UartInstallTxInt (&binInterp_TxInterrupt);
-    usciA1UartEnableRxInt (1);                      // enable Rx interrupt right away
+    usciA1UartEnableRxInt (1);                                  // enable Rx interrupt right away
     usciA1UartEnableTxInt (0);
 }
 
 unsigned char binInterp_addCmd (unsigned char nCharsIn, command commandFuncPtr){
-    static unsigned char nCMDs=0;    // number of CMD structures added to array, incremented when we add one
+    static unsigned char nCMDs=0;    // number of CMD structures in array, incremented when we add one
     gCMDs[nCMDs].theCommand = commandFuncPtr;
     gCMDs[nCMDs].nCharsIn = nCharsIn;
     nCMDs +=1;
@@ -114,11 +114,9 @@ void binInterp_doNextCommand (void){
      }
 }
 
-
-
 /* - Called when it is enabled and TXBUF is empty. disables itself when result buffer is empty
 * Arguments: 1
-*   lpm  - pointer to an unsigned char which can be set to 1 to wake from low power mode, but we always leave it at 0
+*   lpm  - pointer to an unsigned char which can be set to 1 to wake from low power mode
 * returns: the next character from the global gErrStr
 * Author: Jamie Boyd
 * Date: 2022/03/16

@@ -11,20 +11,18 @@
 extern volatile signed int gZPos;
 
 // total travel is about 90 mm. max number of steps is (90 * 32) = 2880
-
-#define     ZAXIS_RES                   32          // in steps/mm. 4 steps/mm with 8x micro-stepping.
+// resolution is 32 steps/mm. 4 steps/mm with 8x micro-stepping. But this code deals in steps, and host does the conversion
 #define     ZAXIS_MAX_SPEED             800         // in steps/sec. max rated speed is 25 mm/sec = 800 steps/sec
 #define     ZAXIS_STEP                  BIT0        // timer A 1 CCR1 output on P2.0
 #define     ZAXIS_DIR                   BIT3        // P3.3
 #define     ZAXIS_ENABLE                BIT5        // P3.5
 
-#define     ZAXIS_OVER_LOW             2
-#define     ZAXIS_UNDER_HIGH           3
+#define     ZAXIS_UNDER_LOW             2            // error codes
+#define     ZAXIS_OVER_HIGH             3            // for requested movements outside set max and min
 
 extern volatile signed int gZpos;
 
 typedef struct zAxisController{
-    unsigned char resolution;   // measure to compare with calculated
     signed int upperLimit;      // upper limit of travel, must be set by user
     signed int lowerLimit;      // lower limit of travel, must be set by user
     signed int jogSpeed;        // calculated speed in steps/second when "jogging" Positive goes down, Negative goes up

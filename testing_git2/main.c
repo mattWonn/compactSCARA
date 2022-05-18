@@ -90,7 +90,7 @@ int main(void) {
 
        _enable_interrupts();
 
-       binInterp_run ();   // bl
+       binInterp_run ();                                    // endless loop of running commands
 }
 
 // better than nothing, blinking LED is some indication to user that things went south.

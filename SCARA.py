@@ -12,12 +12,14 @@ portList=serial.tools.list_ports.comports()
 
 class SCARA:
     # data about robot
-    defaultPORT = '/dev/cu.usbmodem142203'
+    defaultPORT = '/dev/cu.usbmodem141203'
     #defaultPORT = 'COM9'
     defaultBAUD = 115200
     length_L1 = 150
     length_L2 = 150
     pulses_per_degree = 9.48867
+    zaxis_steps_per_mm = 32
+
     # command codes corresponding to positions in msp430 command array
     zeroEncodersCode =0
     getPosCode = 1
@@ -56,6 +58,8 @@ class SCARA:
     EmStoppedCode = 1       #
     ZaxisOverCode = 2
     ZaxisUnderCode = 3
+    armSolLeftCode =0
+    armSolRightCode =1
     def __init__(self, port, baud):
         self.serPort = port
         self.serBaud = baud
@@ -114,21 +118,21 @@ class SCARA:
         if self.state['lastErr'] != SCARA.noErrCode:
             print ("Error: ", self.state['lastErr'])
         else:
-            self.state['Zpos'] = data[1]
+            self.state['Zpos'] = data[1]/zaxis_steps_per_mm
         
     def setZSpeed (self, speed):
         buffer = SCARA.zAxisSpeedSendFormat.pack(SCARA.zSetSpeedCode, speed)
         self.ser.write (buffer)
     
     def gotoZpos (self, position, doConfirm = 0):
-        buffer = SCARA.zAxisConfirmSendFormat.pack (SCARA.zGotoPosCode, doConfirm, position)
+        buffer = SCARA.zAxisConfirmSendFormat.pack (SCARA.zGotoPosCode, doConfirm, position * zaxis_steps_per_mm)
         self.ser.write (buffer)
         if doConfirm:
             buffer = self.ser.read (3)
             self.state['lastErr'] = struct.unpack('<Bxx',buffer)
 
     def jogZstart (self, speedDir):
-        buffer = SCARA.zAxisSendFormat.pack(SCARA.zJogStartCode, speedDir)
+        buffer = SCARA.zAxisSendFormat.pack(SCARA.zJogStartCode, speedDir/zaxis_steps_per_mm)
         self.ser.write (buffer)
 
 
@@ -136,11 +140,11 @@ class SCARA:
         self.ser.write ((SCARA.zJogStopCode).to_bytes (1, byteorder = 'little', signed = False))
 
     def setZupperLimit (self, limit):
-        buffer = SCARA.zAxisSendFormat.pack (SCARA.zSetUpperCode, limit)
+        buffer = SCARA.zAxisSendFormat.pack (SCARA.zSetUpperCode, limit * zaxis_steps_per_mm)
         self.ser.write (buffer)
 
     def setZlowerLimit (self, limit):
-        buffer = SCARA.zAxisSendFormat.pack (SCARA.zSetLowerCode, limit)
+        buffer = SCARA.zAxisSendFormat.pack (SCARA.zSetLowerCode, limit * zaxis_steps_per_mm)
         self.ser.write (buffer)
     
     def setZupperHere (self):
@@ -160,13 +164,7 @@ class SCARA:
     def moveL(self, xPos, yPos, armSol):
           buffer = SCARA.posFloatFormat.pack (SCARA.movlCode, armSol, xPos, yPos)
           self.ser.write (buffer)
-
-<<<<<<< HEAD
-    #def moveCustom (self, 
-=======
-    def moveCustom (self, 
->>>>>>> branch 'master' of https://github.com/mattWonn/compactSCARA
-        
+            
 
 if __name__ == '__main__':
     clem = SCARA (SCARA.defaultPORT, SCARA.defaultBAUD) 

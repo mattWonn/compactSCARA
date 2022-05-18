@@ -10,7 +10,7 @@
 #include "eStopLimitSwitch.h"
 
 zAxisController zControl;       // stores information about z-control
-volatile signed int gZPos = -1234;      // easily accessed global set from interrupt
+volatile signed int gZPos = 0;      // easily accessed global set from interrupt
 
 // initializes timerA 1 for output and sets pins for direction and enable
 void zAxisInit (void){
@@ -24,9 +24,8 @@ void zAxisInit (void){
     P3OUT |= ZAXIS_ENABLE;
     zControl.jogSpeed = 0;            // calculated speed in steps/second when "jogging" Positive goes down, Negative goes up
     zControl.curDir =0;             // 1 when when moving down, 0 when moving up
-    zControl.lowerLimit= 32767;     // no limit -  better set one
-    zControl.upperLimit = -32768;   // no limit - better set one
-    zControl.resolution = ZAXIS_RES; // as calculated, but can be set by user
+    zControl.lowerLimit= -32768;     // no limit -  better set one
+    zControl.upperLimit = 32767;   // no limit - better set one
     zControl.movSpeed = zAxisSetSpeed (ZAXIS_MAX_SPEED/5);  // sets CCR0 and CCR1 for desired speed
 }
 
@@ -267,18 +266,18 @@ unsigned char zAxisGoToPos (signed int movPos){
         zControl.movTarget = movPos;
         if (movPos > gZPos){
            zControl.curDir = 1;
-           P3OUT |= ZAXIS_DIR;
+           P3OUT &= ~ZAXIS_DIR;
         }else{
            zControl.curDir = 0;
-           P3OUT &= ~ZAXIS_DIR;
+           P3OUT |= ZAXIS_DIR;
         }
         P3OUT &= ~ZAXIS_ENABLE;
         TA1CTL |= (TAIE + MC__UP);// to activate timer
     } else {
         if (movPos > zControl.lowerLimit){
-            returnVal =ZAXIS_OVER_LOW;
+            returnVal =ZAXIS_UNDER_LOW;
         } else{
-            returnVal =ZAXIS_UNDER_HIGH;
+            returnVal =ZAXIS_OVER_HIGH;
         }
     }
    return returnVal;
@@ -288,12 +287,12 @@ void zAxisJog (signed int speed){
    zControl.jogSpeed = speed;
     if (speed > 0){
        zControl.curDir = 1;
-       P3OUT |= ZAXIS_DIR;
+       P3OUT &= ~ZAXIS_DIR;
        zControl.jogSpeed = zAxisSetSpeed((unsigned int)speed);
        zControl.movTarget = zControl.lowerLimit;
     }else{
         zControl.curDir = 0;
-        P3OUT &= ~ZAXIS_DIR;
+        P3OUT |= ZAXIS_DIR;
         zControl.jogSpeed = zAxisSetSpeed((unsigned int)(-1 * speed));
         zControl.movTarget = zControl.upperLimit;
     }
