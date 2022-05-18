@@ -29,8 +29,6 @@ def selectPort(portOption):
 
 def moveJ():
     screen.grab_release()
-    j1anglePulses = float(eJ1.get())*SCARA.pulses_per_degree
-    j2anglePulses = float(eJ2.get())*SCARA.pulses_per_degree
     robot.moveJ(int(eJ1.get()), int(eJ2.get()))
     screen.grab_set()
     
@@ -153,19 +151,13 @@ displayMainPage=0
 portOption = StringVar(screen)
 portOption.set("  Select  ") # default value
 
-def selectPort(portOption):
-    pop.grab_release()
-    pop.destroy()
-    global robot
-    robot = SCARA('/dev/' + portOption.name, SCARA.defaultBAUD)
-
 
 #----------------------- GUI commands -------------------------------
     
 
 global pop
 pop = Toplevel(screen)
-pop.title("My Popup")
+pop.title("COMM SELECT")
 pop.geometry("250x150")
 pop.grab_set()
 
