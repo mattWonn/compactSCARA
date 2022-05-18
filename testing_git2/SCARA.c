@@ -133,9 +133,9 @@ unsigned char binInterp_zAxisJogStop  (unsigned char * inputData, unsigned char 
 
 // index = 15. input size = 6 [0] = index, 1 = pad byte, [2,3] =endAngle1, [4,5] = endAngle2. No result
 unsigned char binInterp_moveJ  (unsigned char * inputData, unsigned char * outputResults){
-    signed int * mtrPtr = (signed int *) & (inputData [2]);
-    signed int endAng1 = *mtrPtr++;
-    signed int endAng2 = *mtrPtr;
+    volatile signed int * mtrPtr = (signed int *) & (inputData [2]);
+    volatile signed int endAng1 = *mtrPtr++;
+    volatile signed int endAng2 = *mtrPtr;
     scaraStateEnd.scaraPos.theta1 = endAng1*PUL_PER_DEG_N70;
     scaraStateEnd.scaraPos.theta2 = endAng2*PUL_PER_DEG_N70;
     sendMoveJ(scaraStateEnd);
@@ -174,7 +174,7 @@ unsigned char binInterp_moveJ_Coord  (unsigned char * inputData, unsigned char *
 unsigned char binInterp_moveL  (unsigned char * inputData, unsigned char * outputResults){
 
     volatile char armSol = (char)inputData[1];
-    float * coordPtr = (float *) &inputData[2];
+    volatile float * coordPtr = (float *) &inputData[2];
     float xCoord = *coordPtr++;
     float yCoord = *coordPtr;
     holdLine = initLine(xCoord, yCoord, 0, 0, 0); //xb yb
@@ -188,11 +188,11 @@ unsigned char binInterp_moveL  (unsigned char * inputData, unsigned char * outpu
 // index = 18. input size = 10 [0] = index, [1] = armSol, [2,3] = signed int startAngle [4,5] = signed int end angle, [6,7,8,9] = float radius
 unsigned char binInterp_moveC  (unsigned char * inputData, unsigned char * outputResults){
     volatile char armSol = (char)inputData[1];
-    signed int * anglePtr = (signed int *) &inputData[2];
-    signed int startAngle = *anglePtr++;
-    signed int endAngle =  *anglePtr++;
-    float * radPtr = (float *) anglePtr;
-    float radius= *radPtr;
+    volatile signed int * anglePtr = (signed int *) &inputData[2];
+    volatile signed int startAngle = *anglePtr++;
+    volatile signed int endAngle =  *anglePtr++;
+    volatile float * radPtr = (float *) anglePtr;
+    volatile float radius= *radPtr;
 
     if (abs(startAngle) < 361 && abs(endAngle) < 361){ // verify that both angles do not exceed 360 degrees
         if (abs(endAngle- startAngle) < 361){ // verify that the arc does not go over 361 degrees

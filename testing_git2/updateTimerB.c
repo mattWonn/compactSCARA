@@ -98,9 +98,6 @@ void updateTimer(){
                 }
                 if (sendPWM > MAX_VELOCITY) // constrain max PWM duty cycle limits
                    sendPWM = MAX_VELOCITY;
-                if (sendPWM> 0){ // min PWM duty cycle
-                   sendPWM = 0;
-                }
 
                 if (dir1 == 1){ // send motor the speed signal based on direction
                     mddInputCtrl(CTRLCW);
@@ -134,9 +131,6 @@ void updateTimer(){
 
                 if (sendPWM2 > MAX_VELOCITY) // constrain max PWM duty cycle limits
                    sendPWM2 = MAX_VELOCITY;
-                if (sendPWM2 < 0 ){ // min PWM duty cycle condition
-                    sendPWM2 =0;
-                }
 
                 if (dir2 == 1){ // send motor the speed signal based on direction
                     mddInputCtrl2(CTRLCW2);
