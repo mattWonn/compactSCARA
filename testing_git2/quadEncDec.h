@@ -1,8 +1,8 @@
 /*
  * quadEncDec.h
  *
- *  Created on: Mar. 22, 2021
- *      Author: Rinz
+ *  Created on: Mar. 22, 2022
+ *      Author: Matthew Wonneberg, Jamie Boyd
  */
 
 #ifndef QUADENCDEC_H_

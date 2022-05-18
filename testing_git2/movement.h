@@ -10,7 +10,6 @@
 
 #define PI 3.1415
 #define NUM_LINES 8           // number of lines for the main loop
-#define MAX_POINTS 50          // maximum number of points in a line
 #define LEFT_ARM_SOLUTION 1           // index that can be used to indicate left arm
 #define RIGHT_ARM_SOLUTION 0           // index that can be used to indicate right arm
 #define L1 15.24       // inner arm length
@@ -34,15 +33,16 @@
 
 
 #define DEG_PER_PUL_N70 0.10538896
-#define T_UPDATE 0.01
+#define T_UPDATE 0.005
 #define W_MAX 354//360//708 // deg/s
 #define W_MAX_PUL 3358
 #define A_MAX 177//180//354 //deg/s^2
 #define A_MAX_PUL 1679
+
 #define A_MAX_LINEAR 23 // mm/s^2
 #define V_MAX_LINEAR 47 // mm/s
 
-#define MAX_ARRAY 401
+#define MAX_ARRAY 801
 
 
 
@@ -89,12 +89,9 @@ typedef struct SCARA_ROBOT{
  LINE_DATA holdLine;
  LINE_DATA endLine;
 
-// SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState, char mtrSpeed);
-// LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);
 
-
- volatile signed int posArray1 [401];
- volatile signed int posArray2 [401];
+ volatile signed int posArray1 [MAX_ARRAY];
+ volatile signed int posArray2 [MAX_ARRAY];
  volatile unsigned int arrayLength;
  volatile unsigned int armSolChange;
  volatile unsigned int armSwitchSol;
@@ -109,17 +106,13 @@ typedef struct SCARA_ROBOT{
  volatile unsigned int noMove1;
  volatile unsigned int noMove2;
 
-//int moveScaraJ(SCARA_ROBOT* scaraState);
 void sendMoveC(SCARA_ROBOT *scaraStateSolution);
 void sendMoveL(SCARA_ROBOT *scaraStateSolution, LINE_DATA drawLine);
 void sendMoveJ(SCARA_ROBOT scaraStateM2);
 unsigned int moveJ(signed int endAng1, signed int endAng2);
 int moveScaraL(SCARA_ROBOT* scaraState, LINE_DATA newLine);
 int moveScaraC(SCARA_ROBOT* scaraState);
-//unsigned int scaraFk(signed int ang1, signed int ang2, float* toolX, float* toolY);
 unsigned int scaraFkPulses(signed int pul1, signed int pul2, float* toolX, float* toolY);
-//unsigned int scaraIk(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
-//unsigned int scaraIkFloat(float *ang1, float * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 unsigned int scaraIkPulses(signed int *ang1, signed int * ang2, double toolX, double toolY, SCARA_ROBOT *scaraState1);
 SCARA_ROBOT scaraInitState(double x, double y, int armSol, char penState);
 LINE_DATA initLine(double xA, double yA, double xB, double yB, int numPts);

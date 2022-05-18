@@ -146,12 +146,12 @@ unsigned char binInterp_moveJ  (unsigned char * inputData, unsigned char * outpu
 
 // index = 16. input size = 10 [0] = index, 1 =armSol, [2,3,4,5] = xPos (float), [6,7,8,9] = yPos. No result
 unsigned char binInterp_moveJ_Coord  (unsigned char * inputData, unsigned char * outputResults){
-    float j1HoldAng =0;
-    float j2HoldAng =0;
-    int armSol = (int)inputData[1];
-    float * coordPtr = (float *) &inputData[2];
-    float xCoord = *coordPtr++;
-    float yCoord = *coordPtr;
+    volatile signed int j1HoldAng =0;
+    volatile signed int j2HoldAng =0;
+    volatile char armSol = (char)inputData[1];
+    volatile float * coordPtr = (float *) &inputData[2];
+    volatile float xCoord = *coordPtr++;
+    volatile float yCoord = *coordPtr;
 
     // store the desired arm solution (1 for left arm, 0 for right arm
     scaraStateEnd.scaraPos.armSol = armSol;

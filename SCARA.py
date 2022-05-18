@@ -12,13 +12,13 @@ portList=serial.tools.list_ports.comports()
 
 class SCARA:
     # data about robot
-    defaultPORT = '/dev/cu.usbmodem141203'
-    #defaultPORT = 'COM9'
+    #defaultPORT = '/dev/cu.usbmodem141203'
+    defaultPORT = 'COM9'
     defaultBAUD = 115200
     length_L1 = 150
     length_L2 = 150
     pulses_per_degree = 9.48867
-    zaxis_steps_per_mm = 32
+    zaxis_steps_per_mm = 40
 
     # command codes corresponding to positions in msp430 command array
     zeroEncodersCode =0
@@ -39,6 +39,7 @@ class SCARA:
     movjCode = 15
     movjCoordCode = 16
     movlCode =17
+    movecCode = 18
     # SCARA state 
     # format = error, motor1 PWM, motor2 PWM, toolData, encoder 1 counts, encoder 2 counts, z axis counts,  
     # size = 4 + 3*2 = 10
@@ -54,6 +55,7 @@ class SCARA:
     zAxisReceiveFormat = struct.Struct ('<Bh')
     mtrsFormat = struct.Struct ('<Bxx')
     posFloatFormat = struct.Struct('<BBff')
+    movCformat = struct.Struct ('<BBhhf')
     noErrCode =  0          # first byte of results msp430 sends must be one of these error codes
     EmStoppedCode = 1       #
     ZaxisOverCode = 2
@@ -165,6 +167,14 @@ class SCARA:
           buffer = SCARA.posFloatFormat.pack (SCARA.movlCode, armSol, xPos, yPos)
           self.ser.write (buffer)
             
+
+
+    def moveC (self, startAngle, endAngle, radius, armSol):
+         buffer = SCARA.movCformat.pack(SCARA.movecCode, armSol, startAngle, endAngle, radius)
+         self.ser.write (buffer)
+
+    #def moveCustom (self, 
+        
 
 if __name__ == '__main__':
     clem = SCARA (SCARA.defaultPORT, SCARA.defaultBAUD) 
