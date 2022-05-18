@@ -29,7 +29,6 @@
 void sendMoveJ(SCARA_ROBOT scaraStateEnd){
     unsigned int exit;
 
-    //__disable_interrupt();
     // calculate position arrays for the joint interpolated move
     exit = moveJ(scaraStateEnd.scaraPos.theta1,scaraStateEnd.scaraPos.theta2); // start end M1, start end M2;
     if (exit == 0){ // if the calculations were successful, then send them to the robot
@@ -43,15 +42,6 @@ void sendMoveJ(SCARA_ROBOT scaraStateEnd){
         startMoveJ = 1;
         while (startMoveJ == 1){} // wait for the move to finish
 
-        // when the move is finished, reset the start variable
-     /*   startMoveJ = 0;
-        updateIndex = 0; // reset the updateIndex
-        TA0CCR4 = 0; //reset the timer registers to output 0 PWM manually
-        TA0CCR3 = 0;
-        mddInputCtrl(CTRLBRAKE); // send brake commands to both motors
-        mddInputCtrl2(CTRLBRAKE2);
-        noMove1 = 0; // reset the no move condition
-        noMove2 = 0;*/
     }
 
 }
