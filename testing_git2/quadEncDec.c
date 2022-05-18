@@ -1,17 +1,17 @@
 /*
  * quadEncDec.c
  *
- *  Created on: Mar. 22, 2021
+ *  Created on: Mar. 22, 2022
  *      Author: Matthew Wonneberg, Jamie Boyd
  */
 
 #include <msp430.h>
 #include "quadEncDec.h"
 
-volatile signed int gPosCountL1 = 1789;
-volatile signed int gPosCountL2 = -1984;
+volatile signed int gPosCountL1 = 0;
+volatile signed int gPosCountL2 = 0;
 
-
+// initialize ports and quadrature signal values
 void quadEncInit(){
 
     PORT2DIR;

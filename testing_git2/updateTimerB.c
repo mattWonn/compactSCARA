@@ -7,7 +7,6 @@
 #include <msp430.h>
 #include <updateTimerB.h>
 #include <quadEncDec.h>
-#include "mdd_driver.h"
 #include <movement.h>
 
 #include <stdio.h>
@@ -25,7 +24,7 @@
  **************************************/
 void updateTimerBInit(){
 
-    TB0CCR0 = 50000; // 0.0025sec*4(ID_1 divides by 2, EX0 divides by 2) = 0.01 100Hz
+    TB0CCR0 = 50000; // 0.0025sec*2(ID_2 divides by 2, EX0 divides by 1) = 0.005mS 200Hz
     TB0CCR1 = 0;  // CCR1 initialized to zero
     TB0CCTL1 |= (OUTMOD_7) // reset set mode
              | CM_0 // no capture
@@ -33,7 +32,7 @@ void updateTimerBInit(){
              & ~CCIFG  // clr flags
              & ~COV;
 
-    TB0EX0 &= 0x000;     // bits 001  divide by 2
+    TB0EX0 &= 0x000;     // bits 000  divide by 1
 
     TB0CTL = (TBSSEL_2 | ID_2 | MC_1 | TBCLR); // Timer_B0 control register, SMCLK, ID_2 SMCLK/ , up mode
 
@@ -41,10 +40,10 @@ void updateTimerBInit(){
 /**************************************
  * Function: void updateTimer()
  *
- *purpose: provides a function that updates every 0.01 seconds in order to operate the motors smoothly
+ *purpose: provides a function that updates every 0.005 seconds in order to operate the motors smoothly
  *         that will be used for updating pwm dutyCycles and updating the PID loop
  *
- *Created March 15 2021
+ *Created March 15 2022
  *Created by: Matthew Wonneberg, Jamie Boyd
  *returns nothing
  **************************************/
@@ -63,9 +62,6 @@ void updateTimer(){
     volatile signed int posError2Integral;
 
     volatile signed int exit;
-
-   //volatile char posPrint[25]; // Uart
-   //volatile int ret;
 
     // if startMoveJ is set, the move is commanded to start
     if (startMoveJ == 1){
@@ -100,11 +96,10 @@ void updateTimer(){
                     sendPWM = sendPWM*-1;
                     dir1 = 0; // ccw
                 }
-                if (sendPWM > MAX_PWM) // constrain max limits
-                   sendPWM = MAX_PWM;
-                if (sendPWM> 0 && sendPWM <= MAX_PWM){ // min voltage condition cw
-                        if (sendPWM >= MAX_VELOCITY) // max speed limit
-                           sendPWM = MAX_VELOCITY;
+                if (sendPWM > MAX_VELOCITY) // constrain max PWM duty cycle limits
+                   sendPWM = MAX_VELOCITY;
+                if (sendPWM> 0){ // min PWM duty cycle
+                   sendPWM = 0;
                 }
 
                 if (dir1 == 1){ // send motor the speed signal based on direction
@@ -131,26 +126,17 @@ void updateTimer(){
                 prevError2 = posError2;// store the current error for the derivative of position
                 posError2Sum = posError2Sum + posError2;// update the sum of the errors for the integral of position
 
-                posArray2[updateIndex] = posError2; // tracking
 
                 if (sendPWM2 < 0){ // convert sendPWM to a posotive signal with a direction (dir1)
                     sendPWM2 = sendPWM2*-1;
                     dir2 = 0; // ccw
                 }
 
-                if (sendPWM2 > MAX_PWM) // constrain max limits
-                   sendPWM2 = MAX_PWM;
-                if (sendPWM2 > 0 && sendPWM2 <= MAX_PWM){ // min voltage condition cw
-                    // attempting to eliminate starting torque requirement for high geared motor
-                   // if (sendPWM2 < 5 && sendPWM2 > 0) // min speed
-                   //     sendPWM2  = 5;
-                     if (sendPWM2 >= MAX_VELOCITY) // max speed
-                           sendPWM2 = MAX_VELOCITY;
+                if (sendPWM2 > MAX_VELOCITY) // constrain max PWM duty cycle limits
+                   sendPWM2 = MAX_VELOCITY;
+                if (sendPWM2 < 0 ){ // min PWM duty cycle condition
+                    sendPWM2 =0;
                 }
-
-              //     sprintf(posPrint, "pwm %d \n\r", sendPWM2); // insert the number of characters into the display string
-                //   ret = ucsiA1UartTxString(&posPrint); // print the string
-
 
                 if (dir2 == 1){ // send motor the speed signal based on direction
                     mddInputCtrl2(CTRLCW2);

@@ -10,21 +10,11 @@
 
 //------- loop and position variables---------
 
-#define MAX_PWM 90
 #define MAX_VELOCITY 50
 #define MIN_VELOCITY 12
 
-
-#define SLOPE 50 // 100% conversion from 180deg to PWM is 0.55, this number is 0.25 multiplied for integer math
-#define DEG_PER_PUL1 0.128571//N = 44
-#define DEG_PER_PUL 0.105388//N = 71.165, 3415.92 countable events on O/P shaft
-
-
 volatile signed int updateIndex;
 volatile unsigned int startMoveJ;
-
-volatile signed int velCount; // units pulses/updatetime
-volatile signed int velCount2; // units pulses/updatetime
 
 volatile float kP;
 volatile float kI;
