@@ -14,9 +14,10 @@ portLength = len(portList)
 baud = 115200
 
 robot = None
-<<<<<<< HEAD
+
 L1array = array('h', (i for i in range(401)))
 L2array = array('h', (i for i in range(401)))
+
 
 
 def selectPort(portOption):
@@ -33,22 +34,9 @@ def moveJ():
     robot.moveJ(int(eJ1.get()), int(eJ2.get()))
     screen.grab_set()
 
-=======
-L1array= array ('h', (i for i in range(401)))
-L2array= array ('h', (i for i in range(401)))
-#----------------------- GUI commands -------------------------------
-def moveJ():
-    screen.grab_release()
-    #j1anglePulses = eJ1.get()*SCARA.pulses_per_degree
-    #j2anglePulses = eJ2.get()*SCARA.pulses_per_degree
-    #robot.moveJ(j1anglePulses, j2AnglePulses)
-    robot.moveJ(int (eJ1.get()), int(eJ2.get()))
-    screen.grab_set()
-    
->>>>>>> branch 'master' of https://github.com/mattWonn/compactSCARA
 def moveJcoord():
     screen.grab_release()
-    robot.moveJcoord(eX.get(), eY.get(), armSolution.get())
+    robot.moveJcoord(float(eX.get()), float(eY.get()), armSolution.get())
     screen.grab_set()
 
 def moveL():
@@ -58,40 +46,34 @@ def moveL():
 
 def moveC():
     screen.grab_release()
-    startAnglePulses = eStartAng.get()*SCARA.pulses_per_degree
-    endAnglePulses = eEndAng.get()*SCARA.pulses_per_degree
-    robot.moveC(startAnglePulses, endAnglePulses, eArc.get(), armSolution.get())
+    robot.moveC(int(eStartAng.get()), int(eEndAng.get()), float(eArc.get()), armSolution.get())
     screen.grab_set()
 
 def moveZ():
     screen.grab_release()
-    toolMovement = eTool.get()*SCARA.z_steps_per_cm
-    robot.moveC(toolMovement)
-    screen.grab_set()
-
-def resetPosition():
-    screen.grab_release()
-    robot.zeroEncoders()
-<<<<<<< HEAD
+    robot.gotoZpos(int(eTool.get()))
     screen.grab_set()
 
 def homeZaxis():
     screen.grab_release()
     robot.zeroZaxis()
-=======
->>>>>>> branch 'master' of https://github.com/mattWonn/compactSCARA
     screen.grab_set()
 
+
+def resetPosition():
+    screen.grab_release()
+    robot.zeroEncoders()
+    screen.grab_set()
+
+
 def stopProgram():
-    pass
-    robot.emStop()
+    robot.EmStop()
 
 def runProgram():
-    pass
-    robot.emStopReset()
+    robot.EmStopReset()
 
 def quitProgram():
-    robot.doStop=1
+    robot.EmStop()
     pass
     quit()
 #-------------------------------------------------------------------------------
@@ -168,12 +150,6 @@ displayMainPage=0
 portOption = StringVar(screen)
 portOption.set("  Select  ") # default value
 
-def selectPort(portOption):
-    pop.grab_release()
-    pop.destroy()
-    global robot
-    robot = SCARA('/dev/' + portOption.name, SCARA.defaultBAUD)
-
 
 #----------------------- GUI commands -------------------------------
     
@@ -201,7 +177,7 @@ theta2Label.grid(row=2, column=1)
 
 xLabel = Label(screen, width =20, text="\n\nX position (cm):",font=('Calibri 14'))
 xLabel.grid(row=4, column=0)
-yLabel = Label(screen, text="\n\nY position (cm):",font=('Calibri 14'))
+yLabel = Label(screen, text="\n\nY position (mm):",font=('Calibri 14'))
 yLabel.grid(row=4, column=1)
 
 startAngLabel = Label(screen, width =20, text="\n\nStarting arc angle:",font=('Calibri 14'))
@@ -269,6 +245,7 @@ leftB = Radiobutton(screen, width= 15, text="left", variable=armSolution, value 
 leftB.grid(row=9, column=0)
 rightB = Radiobutton(screen, width= 15, text="right", variable=armSolution, value =0,font=('Calibri 12'))
 rightB.grid(row=9, column=1)
+
 upB = Radiobutton(screen, width= 15, text="tool up", variable=toolPosition, value=0,font=('Calibri 12'))
 upB.grid(row=11, column=0)
 dnB = Radiobutton(screen, width= 15, text="tool down", variable=toolPosition, value=1,font=('Calibri 12'))
@@ -286,6 +263,7 @@ buttonMC.grid(row=13, column=3)
 buttonMT = Button(screen, width = 15, text= "Move Z by distance", borderwidth=5,padx=15, pady=5, command=moveZ)
 buttonMT.grid(row=13, column=4)
 
+
 buttonDisp = Button(screen, width = 15, text= "Display Position", borderwidth=5,padx=15, pady=5) #command display position
 buttonDisp.grid(row=15, column=0)
 buttonReset = Button(screen, width = 15, text= "Reset Position", borderwidth=5,padx=15, pady=5, command=resetPosition) #command reset position
@@ -294,7 +272,7 @@ buttonReset = Button(screen, width = 15, text= "Home Z-Axis", borderwidth=5,padx
 buttonReset.grid(row=15, column=2)
 button = Button(screen, width = 15, text= "STOP", borderwidth=5, bg="red", fg="white", padx=15, pady=5, command=stopProgram)
 button.grid(row=15, column=3)
-button = Button(screen, width = 15, text= "continue", borderwidth=5, padx=15, pady=5, command=runProgram)
+button = Button(screen, width = 15, text= "E stop release", borderwidth=5, padx=15, pady=5, command=runProgram)
 button.grid(row=15, column=4)
 button = Button(screen, width = 15, text= "End Program", borderwidth=5,padx=15, pady=5,command = quitProgram)
 button.grid(row=15, column=5)

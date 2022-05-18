@@ -21,8 +21,8 @@
 
 void timerA0Init(unsigned int pwmFreq);
 char timerA0PwmFreqSet(unsigned int pwmFreq);
-char timerA0DutyCycleSet(unsigned char dutyCycle);
-char timerA0DutyCycleSet2(unsigned char dutyCycle);
+void timerA0DutyCycleSet(unsigned char dutyCycle);
+void timerA0DutyCycleSet2(unsigned char dutyCycle);
 
 
 //--------------- motor driver -----------------------
@@ -53,10 +53,8 @@ unsigned int counting2;
 
 //---- CW and CCW / brake global variabless--------------
 
-char mddInputCtrl(unsigned char ctrl);
-
-
-char mddInputCtrl2(unsigned char ctrl);
+void mddInputCtrl(unsigned char ctrl);
+void mddInputCtrl2(unsigned char ctrl);
 
 
 

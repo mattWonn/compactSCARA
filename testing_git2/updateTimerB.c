@@ -25,7 +25,7 @@
  **************************************/
 void updateTimerBInit(){
 
-    TB0CCR0 = 50000; // 0.05sec*2(ID_1 divides by 2)
+    TB0CCR0 = 50000; // 0.0025sec*4(ID_1 divides by 2, EX0 divides by 2) = 0.01 100Hz
     TB0CCR1 = 0;  // CCR1 initialized to zero
     TB0CCTL1 |= (OUTMOD_7) // reset set mode
              | CM_0 // no capture
@@ -33,7 +33,7 @@ void updateTimerBInit(){
              & ~CCIFG  // clr flags
              & ~COV;
 
-    TB0EX0 &= 0x000;     // bits 000  divide by 0
+    TB0EX0 &= 0x000;     // bits 001  divide by 2
 
     TB0CTL = (TBSSEL_2 | ID_2 | MC_1 | TBCLR); // Timer_B0 control register, SMCLK, ID_2 SMCLK/ , up mode
 
@@ -51,34 +51,36 @@ void updateTimerBInit(){
 void updateTimer(){
 
     volatile signed int sendPWM;
-    volatile int dir1 = 1;
+    volatile unsigned int dir1 = 1;
     volatile signed int posError1;
     volatile signed int posError1Change;
     volatile signed int posError1Integral;
 
     volatile signed int sendPWM2;
-    volatile int dir2 =1;
-    volatile signed int prevPosCountHold2;
+    volatile unsigned int dir2 =1;
     volatile signed int posError2;
     volatile signed int posError2Change;
     volatile signed int posError2Integral;
 
-    volatile int exit;
+    volatile signed int exit;
 
    //volatile char posPrint[25]; // Uart
    //volatile int ret;
 
     // if startMoveJ is set, the move is commanded to start
     if (startMoveJ == 1){
-        updateIndex++;
 
-        if (updateIndex >= arrayLength-1){ // exit condition, resets start bit, and applies the braking signal to both motors
+        if (updateIndex >= arrayLength){ // exit condition, resets start bit, and applies the braking signal to both motors
             startMoveJ =0; // reset start bit
+            updateIndex = 0;
             TA0CCR4 = 0; // send 0% PWM signals
             TA0CCR3 = 0;
-            exit = mddInputCtrl2(CTRLBRAKE2); // apply braking signals to motors
-            exit = mddInputCtrl(CTRLBRAKE);
+            mddInputCtrl2(CTRLBRAKE2); // apply braking signals to motors
+            mddInputCtrl(CTRLBRAKE);
+            noMove1 = 0;// reset the no move condition variable
+            noMove2 = 0;
             P2IFG &= ~0xF0; // clear flags due to quadrature encoder interrupts
+            __disable_interrupt();
         }
         else{
             //-------------- Motor 1 ------------------------
@@ -94,7 +96,6 @@ void updateTimer(){
                 prevError1 = posError1; // store the current error for the derivative of position
                 posError1Sum = posError1Sum + posError1; // update the sum of the errors for the integral of position
 
-
                 if (sendPWM < 0){ // convert sendPWM to a posotive signal with a direction (dir1)
                     sendPWM = sendPWM*-1;
                     dir1 = 0; // ccw
@@ -102,23 +103,17 @@ void updateTimer(){
                 if (sendPWM > MAX_PWM) // constrain max limits
                    sendPWM = MAX_PWM;
                 if (sendPWM> 0 && sendPWM <= MAX_PWM){ // min voltage condition cw
-                       if (sendPWM <5 && sendPWM >0) // min speed cw
-                           sendPWM  = 5;
-                        if (sendPWM >= MAX_VELOCITY) // max speed cw
+                        if (sendPWM >= MAX_VELOCITY) // max speed limit
                            sendPWM = MAX_VELOCITY;
                 }
 
-            //    sprintf(posPrint, "pwm %d,vE %d pE %d \n\r", sendPWM, velError1, posError1); // insert the number of characters into the display string
-            //    ret = ucsiA1UartTxString(&posPrint); // print the string
-
-
                 if (dir1 == 1){ // send motor the speed signal based on direction
-                    exit = mddInputCtrl(CTRLCW);
-                    exit = timerA0DutyCycleSet(sendPWM); // send the previously pressed dutyCycle
+                    mddInputCtrl(CTRLCW);
+                    timerA0DutyCycleSet(sendPWM); // send the previously pressed dutyCycle
                 }
                 else{
-                    exit = mddInputCtrl(CTRLCCW);
-                    exit = timerA0DutyCycleSet(sendPWM); // send the previously pressed dutyCycle
+                    mddInputCtrl(CTRLCCW);
+                    timerA0DutyCycleSet(sendPWM); // send the previously pressed dutyCycle
 
                 }
 
@@ -136,7 +131,7 @@ void updateTimer(){
                 prevError2 = posError2;// store the current error for the derivative of position
                 posError2Sum = posError2Sum + posError2;// update the sum of the errors for the integral of position
 
-
+                posArray2[updateIndex] = posError2; // tracking
 
                 if (sendPWM2 < 0){ // convert sendPWM to a posotive signal with a direction (dir1)
                     sendPWM2 = sendPWM2*-1;
@@ -146,9 +141,10 @@ void updateTimer(){
                 if (sendPWM2 > MAX_PWM) // constrain max limits
                    sendPWM2 = MAX_PWM;
                 if (sendPWM2 > 0 && sendPWM2 <= MAX_PWM){ // min voltage condition cw
-                    if (sendPWM2 <5 && sendPWM2 >0) // min speed cw
-                        sendPWM2  = 5;
-                     if (sendPWM2 >= MAX_VELOCITY) // max speed cw
+                    // attempting to eliminate starting torque requirement for high geared motor
+                   // if (sendPWM2 < 5 && sendPWM2 > 0) // min speed
+                   //     sendPWM2  = 5;
+                     if (sendPWM2 >= MAX_VELOCITY) // max speed
                            sendPWM2 = MAX_VELOCITY;
                 }
 
@@ -157,18 +153,20 @@ void updateTimer(){
 
 
                 if (dir2 == 1){ // send motor the speed signal based on direction
-                    exit = mddInputCtrl2(CTRLCW2);
-                    exit = timerA0DutyCycleSet2(sendPWM2); // send the previously pressed dutyCycle
+                    mddInputCtrl2(CTRLCW2);
+                    timerA0DutyCycleSet2(sendPWM2); // send the previously pressed dutyCycle
                 }
                 else{
-                    exit = mddInputCtrl2(CTRLCCW2);
-                    exit = timerA0DutyCycleSet2(sendPWM2); // send the previously pressed dutyCycle
+                    mddInputCtrl2(CTRLCCW2);
+                    timerA0DutyCycleSet2(sendPWM2); // send the previously pressed dutyCycle
                 }
 
 
 
                 }
+            updateIndex++;
         }
+
 
     }
 

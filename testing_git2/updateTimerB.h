@@ -11,7 +11,7 @@
 //------- loop and position variables---------
 
 #define MAX_PWM 90
-#define MAX_VELOCITY 99
+#define MAX_VELOCITY 50
 #define MIN_VELOCITY 12
 
 
@@ -21,7 +21,7 @@
 
 
 volatile signed int updateIndex;
-volatile int startMoveJ;
+volatile unsigned int startMoveJ;
 
 volatile signed int velCount; // units pulses/updatetime
 volatile signed int velCount2; // units pulses/updatetime

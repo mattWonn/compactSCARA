@@ -10,7 +10,7 @@
 #include "eStopLimitSwitch.h"
 
 zAxisController zControl;       // stores information about z-control
-volatile signed int gZPos = -1234;      // easily accessed global set from interrupt
+volatile signed int gZPos = 0;      // easily accessed global set from interrupt
 
 // initializes timerA 1 for output and sets pins for direction and enable
 void zAxisInit (void){

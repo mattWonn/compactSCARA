@@ -46,13 +46,13 @@ int main(void) {
            posError2Sum = 0;
 
            //  set control variables for angular moves vs linear moves
-           kPAng = 2.3;
-           kIAng = 0.02;
+           kPAng = 2.2;
+           kIAng = 0.03;//.03
            kDAng = 0;
 
            kPLin = 2.2;
-           kILin = 0.0;
-           kDLin = 0;
+           kILin = 0.1;
+           kDLin = 0.0;
 
 
 

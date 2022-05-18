@@ -9,7 +9,7 @@
 #define MDD_DRIVER_H_
 
 //--------------- motor driver -----------------------
-unsigned int counting1;
+/*unsigned int counting1;
 unsigned int counting2;
 
 #define CTRLPORT P3OUT
@@ -31,17 +31,17 @@ unsigned int counting2;
 
 #define CTRLCW2 (CTRLMASK2 & (INA2 & ~INB2))
 #define CTRLCCW2 (CTRLMASK2 & (INB2 & ~INA2))
-#define CTRLBRAKE2 (CTRLMASK2 & (~INA2 & ~INB2))
+#define CTRLBRAKE2 (CTRLMASK2 & (~INA2 & ~INB2))*/
 
 
 //---- CW and CCW / brake global variabless--------------
 
 void displayPos();
-char mddInputCtrl(unsigned char ctrl);
+//char mddInputCtrl(unsigned char ctrl);
 
 
 void displayPos2();
-char mddInputCtrl2(unsigned char ctrl);
+//char mddInputCtrl2(unsigned char ctrl);
 
 
 #endif /* MDD_DRIVER_H_ */
